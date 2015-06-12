@@ -47,6 +47,13 @@ public abstract class RviConnection  {
         return auth;
     }
 
+    //{"tid":1,"cmd":"rcv","mod":"proto_json_rpc","data":"eyJzZXJ2aWNlIjoiamxyLmNvbS9idC9zdG9mZmUvbG9jayIsInRpbWVvdXQiOjE
+    //0MzQwNTMyNTkwMDAsInBhcmFtZXRlcnMiOlt7ImEiOiJiIn1dLCJzaWduYXR1cmUiOiJzaWduYXR1cmUiLCJjZXJ0aWZpY2F
+    //0ZSI6ImNlcnRpZmljYXRlIn0="}
+    //
+    // Decoded
+    // {"service":"jlr.com/bt/stoffe/lock","timeout":1434053259000,"parameters":[{"a":"b"}],"signature":"signature","certificate":"certificate"}
+
     public static JSONObject createReceiveData(int tid, String service, JSONArray params, String cert, String sig) throws JSONException {
         JSONObject payload = new JSONObject();
         payload.put("service", service);
@@ -57,11 +64,11 @@ public abstract class RviConnection  {
 
         JSONObject rcvData = new JSONObject();
         rcvData.put("tid", tid);
-        rcvData.put("cmd", "receive_data");
+        rcvData.put("cmd", "rcv");
 
-        rcvData.put("proto_mod", "proto_json_rpc");
+        rcvData.put("mod", "proto_json_rpc");
         String enc = Base64.encodeToString(payload.toString().getBytes(), 0);
-        rcvData.put("payload", enc);
+        rcvData.put("data", enc);
 
         Log.d("STOFFE", "sa : " + rcvData.toString());
         return rcvData;
