@@ -1,5 +1,11 @@
 <resources>
     <string name="app_name">Vehicle Entry</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="hello_world">Vehicle Entry Demo</string>
+    <string name="lock">Lock</string>
+    <string name="unlock">Unlock</string>
+    <string name="trunk">Trunk</string>
+    <string name="panic">Panic</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
     <string name="action_settings">Settings</string>
 </resources>
