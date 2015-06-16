@@ -1,37 +1,51 @@
 package com.ericsson.auto.remote.vehicleentry;
 
-import android.support.v4.app.Fragment;
+import android.graphics.Typeface;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 
 
-/**
- * A placeholder fragment containing a simple view.
- */
-public class LockActivityFragment extends Fragment {
+public class LockActivityFragment extends FragmentActivity {
 
     public LockActivityFragment() {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_lock, container, false);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.fragment_lock);
+        //View view = inflater.inflate(R.layout.fragment_lock, container, false);
+        Typeface fontawesome = Typeface.createFromAsset(getAssets(), "fonts/fontawesome-webfont.ttf");
+        Button lock = (Button)findViewById(R.id.lock);
+        lock.setTypeface(fontawesome);
+        Button unlock = (Button)findViewById(R.id.unlock);
+        unlock.setTypeface(fontawesome);
+        Button trunk = (Button)findViewById(R.id.trunk);
+        trunk.setTypeface(fontawesome);
+        Button panic = (Button)findViewById(R.id.panic);
+        panic.setTypeface(fontawesome);
+        Button panic_on = (Button)findViewById(R.id.panic_on);
+        panic_on.setTypeface(fontawesome);
 
-        Button lock = (Button) view.findViewById(R.id.lock);
-        Button unlock = (Button) view.findViewById(R.id.unlock);
-        Button start = (Button) view.findViewById(R.id.start);
-        Button stop = (Button) view.findViewById(R.id.stop);
-        Button trunk = (Button) view.findViewById(R.id.trunk);
-        Button panic = (Button) view.findViewById(R.id.panic);
+
+        /*        Button start = (Button) view.findViewById(R.id.start);
+        Button stop = (Button) view.findViewById(R.id.stop);*/
 
         unlock.setEnabled(true);
-        start.setEnabled(true);
+        /*start.setEnabled(true);*/
         trunk.setEnabled(true);
 
-        return view;
+        //return view;
+    }
+
+    public void sendPoptrunk(View view) {
+    }
+
+    public void sendPanic(View view) {
+    }
+
+    public void sendPanicOff(View view) {
     }
 }

@@ -1,72 +1,111 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".LockActivityFragment">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#555"
+              android:orientation="vertical"
+              android:paddingBottom="@dimen/activity_vertical_margin"
+              android:paddingLeft="@dimen/activity_horizontal_margin"
+              android:paddingRight="@dimen/activity_horizontal_margin"
+              android:paddingTop="@dimen/activity_vertical_margin"
+              tools:context=".MainActivity">
 
-    <LinearLayout
-        android:id="@+id/motor"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-    >
-        <Button android:id="@+id/start"
-            android:text="@string/start"
-            android:layout_width="0dp"
-            android:layout_height="80dp"
-            android:layout_weight=".50"
-            android:enabled="false"
-            />
-        <Button
-            android:id="@+id/stop"
-            android:text="@string/stop"
-            android:layout_width="0dp"
-            android:layout_height="80dp"
-            android:layout_weight=".50"
-            android:enabled="false"
-            android:layout_alignRight="@id/start"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/locking"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/motor"
-        >
-        <Button android:id="@+id/lock"
-            android:text="@string/lock"
-            android:layout_width="0dp"
-            android:layout_height="80dp"
-            android:layout_weight=".50"
-            android:enabled="false"
-            />
-        <Button
+    <Button
             android:id="@+id/unlock"
+            android:layout_width="190sp"
+            android:layout_height="190sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
             android:text="@string/unlock"
-            android:layout_width="0dp"
-            android:layout_height="80dp"
-            android:layout_weight=".50"
-            android:enabled="false"
-            android:layout_alignRight="@id/lock"/>
-    </LinearLayout>
-    <Button android:id="@+id/trunk"
-        android:text="@string/trunk"
-        android:layout_width="fill_parent"
-        android:layout_height="80dp"
-        android:enabled="false"
-        android:layout_above="@id/locking"
-        />
-    <Button android:id="@+id/panic"
-        android:visibility="gone"
-        android:text="@string/panic"
-        android:layout_width="fill_parent"
-        android:layout_height="80dp"
-        android:layout_above="@id/trunk"
-        />
-    <TextView android:text="@string/hello_world"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_above="@id/trunk"/>
+            android:background="@drawable/grey_button"
+            android:textSize="150sp"
+            android:textColor="#fff"
+            android:shadowColor="#000"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="50"
+            android:visibility="visible" />
 
-</RelativeLayout>
+    <Button
+            android:id="@+id/lock"
+            android:layout_width="190sp"
+            android:layout_height="190sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:text="@string/unlock"
+            android:background="@drawable/grey_button"
+            android:textSize="150sp"
+            android:textColor="#fff"
+            android:shadowColor="#000"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="50"
+            android:visibility="gone" />
+
+    <Button
+            android:id="@+id/trunk"
+            android:layout_width="190sp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:text="@string/trunk"
+            android:onClick="sendPoptrunk"
+            android:background="@drawable/black_button"
+            android:textAllCaps="false"
+            style="@style/black_button_text" />
+
+    <Button
+            android:id="@+id/panic"
+            android:layout_width="115sp"
+            android:layout_height="115sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:text="@string/panic"
+            android:onClick="sendPanic"
+            android:background="@drawable/red_button"
+            android:textSize="90sp"
+            android:textColor="#fff"
+            android:visibility="visible" />
+
+    <Button
+            android:id="@+id/panic_on"
+            android:layout_width="115sp"
+            android:layout_height="115sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:text="@string/panic_stop"
+            android:onClick="sendPanicOff"
+            android:background="@drawable/red_button"
+            android:textSize="90sp"
+            android:textColor="#fff"
+            android:visibility="gone" />
+
+</LinearLayout>
+
+
+<!--
+<LinearLayout
+android:id="@+id/motor"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_alignParentBottom="true"
+android:visibility="gone"
+ >
+<Button
+        android:id="@+id/start"
+        android:text="@string/start"
+        android:layout_width="0dp"
+        android:layout_height="80dp"
+        android:layout_weight=".50"
+        android:enabled="false"
+        />
+
+<Button
+        android:id="@+id/stop"
+        android:text="@string/stop"
+        android:layout_width="0dp"
+        android:layout_height="80dp"
+        android:layout_weight=".50"
+        android:enabled="false"
+        android:layout_alignRight="@id/start"/>
+</LinearLayout>-->
