@@ -21,16 +21,19 @@ public class RviServerConnection extends RviConnection {
 
 
     public void disconnect() throws IOException {
-        socket.close();
+        if( socket != null )
+            socket.close();
     }
 
     @Override
     public InputStream getInputStream() throws IOException {
+        if( socket == null ) throw new IOException("Socket to RVI not open");
         return socket.getInputStream();
     }
 
     @Override
     public OutputStream getOutputStream() throws IOException {
+        if( socket == null ) throw new IOException("Socket to RVI not open");
         return socket.getOutputStream();
     }
 }
