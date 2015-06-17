@@ -1,5 +1,6 @@
 package com.ericsson.auto.remote.vehicleentry;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -62,6 +63,8 @@ public class RviService extends Service implements BeaconConsumer {
     private BluetoothSocket sock;
 
     private PublishSubject<String> subject = null;
+
+    public static final String[] SUPPORTED_SERVICES = {"jlr.com/bt/mobile/remote"};
 
     public RviService() {
     }
@@ -210,6 +213,8 @@ public class RviService extends Service implements BeaconConsumer {
                             try {
                                 Log.i("STOFFE", "Sending to socket auth" + socket);
                                 OutputStream out = socket.getOutputStream();
+                                Notification n = BeaconDetector.creteNotification(RviService.this, "Connected to car");
+                                notificationManager.notify(0,n);
 
                                 JSONObject auth = RviConnection.createAuth(1, device.getAddress(), 1, "", "");
 
@@ -259,12 +264,19 @@ public class RviService extends Service implements BeaconConsumer {
                                                                 }
                                                             }
 
+                                                            JSONObject saData = RviConnection.createServiceAnnouncement(
+                                                                    1, SUPPORTED_SERVICES, "av", "", "");
+                                                            out.write(saData.toString().getBytes());
+                                                            out.flush();
+
                                                             JSONObject rcvData = RviConnection.createReceiveData(
                                                                     1, "jlr.com/bt/stoffe/unlock",
                                                                     new JSONArray("[{\"X\":\"O\"}]"), "", "");
 
                                                             out.write(rcvData.toString().getBytes());
                                                             out.flush();
+                                                            Notification not = BeaconDetector.creteNotification(RviService.this, "Sent Unlock");
+                                                            notificationManager.notify(0, not);
 
                                                             //ToDo send back
                                                         } else if(cmd!= null && cmd.equalsIgnoreCase("ping")) {
