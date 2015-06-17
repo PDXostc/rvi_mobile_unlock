@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.support.v7.app.ActionBarActivity;
@@ -18,17 +19,24 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 
-public class LockActivity extends ActionBarActivity {
+public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener {
     private static final String TAG = "LockActivity";
     private boolean mIsBound = false;
     private Messenger mService = null;
 
     private RviService rviService = null;
 
+    LockActivityFragment fragment = null;
+
+    //Temp button press storage
+    SharedPreferences sharedPref;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock);
+        fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragment);
+        sharedPref = getPreferences(Context.MODE_PRIVATE);
         doBindService();
     }
 
@@ -87,7 +95,9 @@ public class LockActivity extends ActionBarActivity {
 
                         @Override
                         public void onNext(String s) {
-                            Toast.makeText(LockActivity.this, "X: "+s, Toast.LENGTH_SHORT).show();
+                            Log.i(TAG, "X: "+s);
+                            fragment.onNewServiceDiscovered(s);
+                            //Toast.makeText(LockActivity.this, "X: "+s, Toast.LENGTH_SHORT).show();
                         }
                     });
 
@@ -119,5 +129,10 @@ public class LockActivity extends ActionBarActivity {
             unbindService(mConnection);
             mIsBound = false;
         }
+    }
+
+    @Override
+    public void onButtonCommand(String cmd) {
+        //TODO send to RVI service
     }
 }
