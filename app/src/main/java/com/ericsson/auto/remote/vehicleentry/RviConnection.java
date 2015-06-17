@@ -73,4 +73,26 @@ public abstract class RviConnection  {
         Log.d("STOFFE", "sa : " + rcvData.toString());
         return rcvData;
     }
+
+
+    //{"sign": "","cmd": "sa","tid": 1,"svcs": ["jlr.com\/bt\/stoffe\/unlock","jlr.com\/bt\/stoffe\/unlock:lock"],"stat": "av"}
+    public static JSONObject createServiceAnnouncement(int tid, String[] services, String stat, String cert, String sig) throws JSONException {
+        JSONObject sa = new JSONObject();
+
+        sa.put("tid", tid);
+        sa.put("cmd", "sa");
+        sa.put("stat", stat);
+        sa.put("svcs", services);
+        sa.put("certificate", cert);
+        sa.put("signature", sig);
+
+        Log.d("STOFFE", "sa : " + sa.toString());
+        return sa;
+    }
+
+
+
+
+
+    //{"cmd": "ping"}
 }
