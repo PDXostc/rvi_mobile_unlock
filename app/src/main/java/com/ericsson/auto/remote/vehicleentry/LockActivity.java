@@ -4,11 +4,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,15 +27,11 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
     LockActivityFragment fragment = null;
 
-    //Temp button press storage
-    SharedPreferences sharedPref;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock);
         fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragment);
-        sharedPref = getPreferences(Context.MODE_PRIVATE);
         doBindService();
     }
 
@@ -44,10 +39,11 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     public void onDestroy() {
         Log.i(TAG, "onDestroy()");
         doUnbindService();
+
         super.onDestroy();
         //For testing cleanup
-        Intent i = new Intent(this, RviService.class);
-        stopService(i);
+        //Intent i = new Intent(this, RviService.class);
+        //stopService(i);
     }
 
 
