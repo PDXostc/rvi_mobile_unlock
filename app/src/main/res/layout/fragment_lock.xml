@@ -16,14 +16,10 @@
             android:layout_height="190sp"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
-            android:text="@string/unlock"
+            android:text="@string/unlock_icon"
             android:background="@drawable/grey_button"
             android:textSize="150sp"
             android:textColor="#fff"
-            android:shadowColor="#000"
-            android:shadowDx="0"
-            android:shadowDy="0"
-            android:shadowRadius="50"
             android:visibility="visible" />
 
     <Button
@@ -32,14 +28,10 @@
             android:layout_height="190sp"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
-            android:text="@string/unlock"
+            android:text="@string/lock_icon"
             android:background="@drawable/grey_button"
             android:textSize="150sp"
             android:textColor="#fff"
-            android:shadowColor="#000"
-            android:shadowDx="0"
-            android:shadowDy="0"
-            android:shadowRadius="50"
             android:visibility="gone" />
 
     <Button
@@ -52,7 +44,9 @@
             android:onClick="sendPoptrunk"
             android:background="@drawable/black_button"
             android:textAllCaps="false"
-            style="@style/black_button_text" />
+            style="@style/black_button_text"
+
+        />
 
     <Button
             android:id="@+id/panic"
@@ -60,7 +54,7 @@
             android:layout_height="115sp"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="20dp"
-            android:text="@string/panic"
+            android:text="@string/panic_icon"
             android:onClick="sendPanic"
             android:background="@drawable/red_button"
             android:textSize="90sp"
@@ -68,44 +62,39 @@
             android:visibility="visible" />
 
     <Button
-            android:id="@+id/panic_on"
+            android:id="@+id/panicOn"
             android:layout_width="115sp"
             android:layout_height="115sp"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="20dp"
-            android:text="@string/panic_stop"
+            android:text="@string/panic_stop_icon"
             android:onClick="sendPanicOff"
             android:background="@drawable/red_button"
             android:textSize="90sp"
             android:textColor="#fff"
             android:visibility="gone" />
 
+        <Button
+            android:id="@+id/start"
+            android:layout_width="115sp"
+            android:layout_height="115sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:text="@string/start"
+            android:background="@drawable/red_button"
+            android:textSize="90sp"
+            android:textColor="#fff"
+            android:visibility="gone" />
+        <Button
+            android:id="@+id/stop"
+            android:layout_width="115sp"
+            android:layout_height="115sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:text="@string/stop"
+            android:background="@drawable/red_button"
+            android:textSize="90sp"
+            android:textColor="#fff"
+            android:visibility="gone" />
+
 </LinearLayout>
-
-
-<!--
-<LinearLayout
-android:id="@+id/motor"
-android:layout_width="match_parent"
-android:layout_height="wrap_content"
-android:layout_alignParentBottom="true"
-android:visibility="gone"
- >
-<Button
-        android:id="@+id/start"
-        android:text="@string/start"
-        android:layout_width="0dp"
-        android:layout_height="80dp"
-        android:layout_weight=".50"
-        android:enabled="false"
-        />
-
-<Button
-        android:id="@+id/stop"
-        android:text="@string/stop"
-        android:layout_width="0dp"
-        android:layout_height="80dp"
-        android:layout_weight=".50"
-        android:enabled="false"
-        android:layout_alignRight="@id/start"/>
-</LinearLayout>-->
