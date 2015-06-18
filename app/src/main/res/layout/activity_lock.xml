@@ -1,5 +1,15 @@
+<!--
+
+  Copyright (C) 2015, Jaguar Land Rover
+
+  This program is licensed under the terms and conditions of the
+  Mozilla Public License, version 2.0.  The full text of the
+  Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
+
+-->
+
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:id="@+id/fragment"
-    android:name="com.ericsson.auto.remote.vehicleentry.LockActivityFragment"
+    android:name="com.jaguarlandrover.auto.remote.vehicleentry.LockActivityFragment"
     tools:layout="@layout/fragment_lock" android:layout_width="match_parent"
     android:layout_height="match_parent" />

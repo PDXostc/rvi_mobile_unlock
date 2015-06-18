@@ -1,4 +1,13 @@
-package com.ericsson.auto.remote.vehicleentry;
+/**
+ *  Copyright (C) 2015, Jaguar Land Rover
+ *
+ *  This program is licensed under the terms and conditions of the
+ *  Mozilla Public License, version 2.0.  The full text of the
+ *  Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
+ *
+ */
+
+package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -7,14 +16,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 
-/**
- * Created by stoffe on 4/6/15.
- */
 public class BeaconDetector {
+    private static final String TAG = "RVI";
+
     final NotificationManager notificationManager;
     final Context context;
 
-    ///int NOTIFICATION_ID = 12345;
     public BeaconDetector(NotificationManager notificationManager, Context context) {
         this.notificationManager = notificationManager;
         this.context = context;
