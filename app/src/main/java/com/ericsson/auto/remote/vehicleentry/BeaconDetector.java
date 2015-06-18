@@ -21,21 +21,21 @@ public class BeaconDetector {
     }
 
     public void reportNewBeacon(String bid) {
-        Notification n = creteNotification(context, "New Beacon : " + bid);
+        Notification n = creteNotification(context, "Car Discovered : " + bid);
         notificationManager.notify(0,n);
         //TODO notify the GUI
     }
 
     public void reportLostBeacon(String bid) {
-        Notification n = creteNotification(context, "Lost Beacon : " + bid);
+        Notification n = creteNotification(context, "Car Out of Range : " + bid);
         notificationManager.notify(0,n);
         //TODO notify the GUI
     }
 
-    private Notification creteNotification(Context ctx, String action) {
+    static Notification creteNotification(Context ctx, String action) {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(ctx)
-                        .setSmallIcon(R.drawable.jlr)
+                        .setSmallIcon(R.drawable.rvi)
                         .setContentTitle("Lock App")
                         .setContentText(action);
 

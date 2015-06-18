@@ -18,17 +18,20 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 
-public class LockActivity extends ActionBarActivity {
+public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener {
     private static final String TAG = "LockActivity";
     private boolean mIsBound = false;
     private Messenger mService = null;
 
     private RviService rviService = null;
 
+    LockActivityFragment fragment = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock);
+        fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragment);
         doBindService();
     }
 
@@ -36,10 +39,11 @@ public class LockActivity extends ActionBarActivity {
     public void onDestroy() {
         Log.i(TAG, "onDestroy()");
         doUnbindService();
+
         super.onDestroy();
         //For testing cleanup
-        Intent i = new Intent(this, RviService.class);
-        stopService(i);
+        //Intent i = new Intent(this, RviService.class);
+        //stopService(i);
     }
 
 
@@ -87,7 +91,9 @@ public class LockActivity extends ActionBarActivity {
 
                         @Override
                         public void onNext(String s) {
-                            Toast.makeText(LockActivity.this, "X: "+s, Toast.LENGTH_SHORT).show();
+                            Log.i(TAG, "X: "+s);
+                            fragment.onNewServiceDiscovered(s);
+                            //Toast.makeText(LockActivity.this, "X: "+s, Toast.LENGTH_SHORT).show();
                         }
                     });
 
@@ -119,5 +125,10 @@ public class LockActivity extends ActionBarActivity {
             unbindService(mConnection);
             mIsBound = false;
         }
+    }
+
+    @Override
+    public void onButtonCommand(String cmd) {
+        //TODO send to RVI service
     }
 }
