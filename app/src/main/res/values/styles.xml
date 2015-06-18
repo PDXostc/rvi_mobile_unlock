@@ -5,4 +5,9 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="black_button_text">
+        <item name="android:textColor">#fff</item>
+        <item name="android:textSize">22dp</item>
+    </style>
+
 </resources>
