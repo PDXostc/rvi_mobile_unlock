@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+
+  Copyright (C) 2015, Jaguar Land Rover
+
+  This program is licensed under the terms and conditions of the
+  Mozilla Public License, version 2.0.  The full text of the
+  Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
+
+-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ericsson.auto.remote.vehicleentry">
+    package="com.jaguarlandrover.auto.remote.vehicleentry">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <application
         android:allowBackup="true"
@@ -45,13 +53,6 @@
             </intent-filter>
         </receiver>
 
-        <!--
-        <receiver
-            android:name=".GcmBroadcastReceiver"
-            android:enabled="true"
-            android:exported="true" >
-        </receiver>
-        -->
     </application>
 
 </manifest>

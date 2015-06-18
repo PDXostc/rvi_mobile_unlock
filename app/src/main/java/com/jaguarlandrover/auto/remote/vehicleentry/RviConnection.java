@@ -1,4 +1,13 @@
-package com.ericsson.auto.remote.vehicleentry;
+/**
+ *  Copyright (C) 2015, Jaguar Land Rover
+ *
+ *  This program is licensed under the terms and conditions of the
+ *  Mozilla Public License, version 2.0.  The full text of the
+ *  Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
+ *
+ */
+
+package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.util.Base64;
 import android.util.Log;
@@ -11,10 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/**
- * Created by stoffe on 6/8/15.
- */
 public abstract class RviConnection  {
+    private static final String TAG = "RVI";
+
     public abstract InputStream getInputStream() throws IOException;
     public abstract OutputStream getOutputStream() throws IOException;
 
@@ -70,7 +78,7 @@ public abstract class RviConnection  {
         String enc = Base64.encodeToString(payload.toString().getBytes(), 0);
         rcvData.put("data", enc);
 
-        Log.d("STOFFE", "sa : " + rcvData.toString());
+        Log.d(TAG, "rcv : " + rcvData.toString());
         return rcvData;
     }
 
@@ -86,13 +94,9 @@ public abstract class RviConnection  {
         sa.put("certificate", cert);
         sa.put("signature", sig);
 
-        Log.d("STOFFE", "sa : " + sa.toString());
+        Log.d(TAG, "sa : " + sa.toString());
         return sa;
     }
-
-
-
-
 
     //{"cmd": "ping"}
 }

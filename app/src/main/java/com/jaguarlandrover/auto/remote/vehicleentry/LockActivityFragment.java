@@ -1,4 +1,13 @@
-package com.ericsson.auto.remote.vehicleentry;
+/**
+ *  Copyright (C) 2015, Jaguar Land Rover
+ *
+ *  This program is licensed under the terms and conditions of the
+ *  Mozilla Public License, version 2.0.  The full text of the
+ *  Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
+ *
+ */
+
+package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -13,14 +22,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-
-/**
- * A placeholder fragment containing a simple view.
- */
 public class LockActivityFragment extends Fragment {
 
     public static final String STOPPED_LBL="StartStop";
     public static final String LOCKED_LBL="OpenClose";
+
+    private static final String TAG = "RVI";
 
     private Button lock;
     private Button unlock;
@@ -97,45 +104,46 @@ public class LockActivityFragment extends Fragment {
             SharedPreferences.Editor ed = sharedPref.edit();
             switch(v.getId()) {
                 case R.id.lock:
-                    Log.i("STOFFE","LockBtn");
+                    Log.i(TAG,"LockBtn");
                     ed.putBoolean(LOCKED_LBL,true);
                     break;
                 case R.id.unlock:
-                    Log.i("STOFFE","UnlockBtn");
+                    Log.i(TAG,"UnlockBtn");
                     ed.putBoolean(LOCKED_LBL, false);
                     break;
                 case R.id.start:
-                    Log.i("STOFFE","StartBtn");
+                    Log.i(TAG,"StartBtn");
                     ed.putBoolean(STOPPED_LBL, false);
                     break;
                 case R.id.stop:
-                    Log.i("STOFFE","StopBtn");
+                    Log.i(TAG,"StopBtn");
                     ed.putBoolean(STOPPED_LBL, true);
                     break;
-                case R.id.trunk:Log.i("STOFFE", "TrunkBtn");ed.putBoolean("Gruka", false);break;
-                case R.id.panic:Log.i("STOFFE", "PanicBtn");
+                case R.id.trunk:Log.i(TAG, "TrunkBtn");ed.putBoolean("Gruka", false);break;
+                case R.id.panic:
+                    Log.i(TAG, "PanicBtn");
                     panicOn.setVisibility(View.VISIBLE);
                     panic.setVisibility(View.GONE);
-                    Log.i("STOFFE", "PanicBtn swap 1 ");
+                    Log.i(TAG, "PanicBtn swap 1 ");
                     Handler handler = new Handler(Looper.getMainLooper());
                     handler.postDelayed(new Runnable() {
                         public void run() {
                             panic.setVisibility(View.VISIBLE);
                             panicOn.setVisibility(View.GONE);
-                            Log.i("STOFFE", "PanicBtn swap 2 ");
+                            Log.i(TAG, "PanicBtn swap 2 ");
                         }
                     }, 5000);
                     break;
-                case R.id.panicOn:Log.i("STOFFE","PanicOnBtn");break;
+                case R.id.panicOn:Log.i(TAG,"PanicOnBtn");break;
             }
 
-            Log.i("STOFFE", "Before commit");
-            //ed.commit();
-            ed.apply();
-            Log.i("STOFFE", "After commit");
+            Log.i(TAG, "Before commit");
+            ed.commit();
+            //ed.apply();
+            Log.i(TAG, "After commit");
 
             toggleButtonsFromPref();
-            Log.i("STOFFE", "After toggle");
+            Log.i(TAG, "After toggle");
         }
     };
 
@@ -152,7 +160,7 @@ public class LockActivityFragment extends Fragment {
 
     public void onNewServiceDiscovered(String... service) {
         for(String s:service)
-            Log.e("Stoffe", "Service = " + s);
+            Log.e(TAG, "Service = " + s);
     }
 
     public interface LockFragmentButtonListener {

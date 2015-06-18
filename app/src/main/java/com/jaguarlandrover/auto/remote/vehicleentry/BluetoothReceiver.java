@@ -1,24 +1,25 @@
-package com.ericsson.auto.remote.vehicleentry;
+/**
+ *  Copyright (C) 2015, Jaguar Land Rover
+ *
+ *  This program is licensed under the terms and conditions of the
+ *  Mozilla Public License, version 2.0.  The full text of the
+ *  Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
+ *
+ */
+
+package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Parcelable;
 import android.util.Log;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.UUID;
-
 public class BluetoothReceiver extends BroadcastReceiver
 {
     public static boolean BluetoothConnected;
-    private static final String TAG = "STOFFE";
+    private static final String TAG = "RVI";
 
     public void onReceive(Context context, Intent intent)
     {
