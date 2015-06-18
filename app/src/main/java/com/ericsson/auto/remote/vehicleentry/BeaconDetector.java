@@ -35,7 +35,7 @@ public class BeaconDetector {
     static Notification creteNotification(Context ctx, String action) {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(ctx)
-                        .setSmallIcon(R.drawable.jlr)
+                        .setSmallIcon(R.drawable.rvi)
                         .setContentTitle("Lock App")
                         .setContentText(action);
 
