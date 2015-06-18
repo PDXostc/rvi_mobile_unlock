@@ -63,6 +63,7 @@ public class RviService extends Service implements BeaconConsumer {
     private BluetoothSocket sock;
 
     private PublishSubject<String> subject = null;
+    ScheduledExecutorService executorService = null;
 
     public static final String[] SUPPORTED_SERVICES = {"jlr.com/bt/mobile/remote"};
 
@@ -103,6 +104,14 @@ public class RviService extends Service implements BeaconConsumer {
     @Override
     public void onDestroy() {
         subject.onCompleted();
+        beaconManager.unbind(this);
+        beaconManager.getBeaconParsers().clear();
+        if(executorService != null) executorService.shutdown();
+        if(sock !=null) try {
+            sock.close();
+        } catch (IOException e) {
+            Log.i(TAG, "closing BT");
+        }
     }
 
     private PublishSubject<String> ps = PublishSubject.create();
@@ -314,7 +323,6 @@ public class RviService extends Service implements BeaconConsumer {
     }
 
     private void initBeacon() {
-        ScheduledExecutorService executorService = null;
         executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(new Runnable() {
             @Override
