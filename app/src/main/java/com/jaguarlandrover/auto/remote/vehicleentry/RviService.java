@@ -1,4 +1,13 @@
-package com.ericsson.auto.remote.vehicleentry;
+/**
+ *  Copyright (C) 2015, Jaguar Land Rover
+ *
+ *  This program is licensed under the terms and conditions of the
+ *  Mozilla Public License, version 2.0.  The full text of the
+ *  Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
+ *
+ */
+
+package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -12,7 +21,7 @@ import android.net.ConnectivityManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Base64;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import org.altbeacon.beacon.Beacon;
@@ -28,7 +37,6 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -42,12 +50,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
-import rx.Observer;
-import rx.Subscriber;
 import rx.subjects.PublishSubject;
 
 public class RviService extends Service implements BeaconConsumer {
-    private static final String TAG = "RviService";
+    private static final String TAG = "RVI";
     private BeaconManager beaconManager;
     private NotificationManager notificationManager;
     private ConnectivityManager cm;
@@ -65,7 +71,7 @@ public class RviService extends Service implements BeaconConsumer {
     private PublishSubject<String> subject = null;
     ScheduledExecutorService executorService = null;
 
-    public static final String[] SUPPORTED_SERVICES = {"jlr.com/bt/mobile/remote"};
+    public static final String[] SUPPORTED_SERVICES = new String[1];
 
     public RviService() {
     }
@@ -85,7 +91,11 @@ public class RviService extends Service implements BeaconConsumer {
     public void onCreate() {
         Log.d(TAG, "onCreate");
         notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+
         cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        SUPPORTED_SERVICES[0] = "jlr.com/mobile/"+ tm.getDeviceId()+"/control/status";
 
         subject = PublishSubject.create();
 
@@ -202,10 +212,10 @@ public class RviService extends Service implements BeaconConsumer {
                             //BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
 //
                             device.createBond();
-                            //Log.i("STOFFE","3 "+socket+" : "/*device.createBond()*/);
+                            //Log.i(TAG,"3 "+socket+" : "/*device.createBond()*/);
                             socket.connect();
                         } catch (IOException e) {
-                            Log.d("STOFFE", "Excepption:" + e.getLocalizedMessage());
+                            Log.d(TAG, "Excepption:" + e.getLocalizedMessage());
                             try {
                                 Method m = device.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
                                 socket = (BluetoothSocket) m.invoke(device, 1);
@@ -220,7 +230,7 @@ public class RviService extends Service implements BeaconConsumer {
                                 e1.printStackTrace();
                             }
                             try {
-                                Log.i("STOFFE", "Sending to socket auth" + socket);
+                                Log.i(TAG, "Sending to socket auth" + socket);
                                 OutputStream out = socket.getOutputStream();
                                 Notification n = BeaconDetector.creteNotification(RviService.this, "Connected to car");
                                 notificationManager.notify(0,n);
@@ -237,16 +247,16 @@ public class RviService extends Service implements BeaconConsumer {
                                 while(running) {
 
                                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                                    Log.i("STOFFE", "Sent to socket - ready : " + input.available());
+                                    Log.i(TAG, "Sent to socket - ready : " + input.available());
                                     int open = input.read();
                                     if( open != '{') {
                                         running = false;
-                                        Log.i("STOFFE", "First char did not match : " + open);
+                                        Log.i(TAG, "First char did not match : " + open);
                                         break;
                                     }
                                     cnt++;
                                     baos.write(open); //Wait for the first then go
-                                    Log.i("STOFFE", "Sent to socket - ready : " + input.available() + " open = " + open);
+                                    Log.i(TAG, "Sent to socket - ready : " + input.available() + " open = " + open);
 
                                     while (input.available() > 0) {
                                         try {
@@ -259,13 +269,13 @@ public class RviService extends Service implements BeaconConsumer {
                                                     baos.flush();
                                                     String toparse = baos.toString();
                                                     baos.reset();
-                                                    //Log.d("STOFFE", "Pre Obj: "+toparse);
+                                                    //Log.d(TAG, "Pre Obj: "+toparse);
                                                     JSONObject inObj = new JSONObject(toparse);
-                                                    Log.d("STOFFE", "Done Obj: " + inObj.toString(2));
+                                                    Log.d(TAG, "Done Obj: " + inObj.toString(2));
                                                     if (inObj.has("cmd")) {
                                                         String cmd = inObj.getString("cmd");
                                                         if(cmd!= null && cmd.equalsIgnoreCase("sa")){
-                                                            Log.d("STOFFE", "sa");
+                                                            Log.d(TAG, "sa");
                                                             if(inObj.has("svcs")) {
                                                                 JSONArray services = inObj.getJSONArray("svcs");
                                                                 for (int i = 0;i < services.length();i++) {
@@ -289,13 +299,13 @@ public class RviService extends Service implements BeaconConsumer {
 
                                                             //ToDo send back
                                                         } else if(cmd!= null && cmd.equalsIgnoreCase("ping")) {
-                                                            Log.d("STOFFE", "ping");
+                                                            Log.d(TAG, "ping");
                                                             //todo send back
                                                         }
                                                     }
                                                 }
                                             }
-                                            Log.i("STOFFE", "Sent to socket - ready loop : " + input.available());
+                                            Log.i(TAG, "Sent to socket - ready loop : " + input.available());
                                         } catch (IOException ioe) {
                                             ioe.printStackTrace();
                                         }
@@ -352,7 +362,7 @@ public class RviService extends Service implements BeaconConsumer {
 
     //Service Sub
     private void connectCloud() {
-        Log.i("STOFFE", "Connecting to Cloud!");
+        Log.i(TAG, "Connecting to Cloud!");
         if(cm.getActiveNetworkInfo() == null || !cm.getActiveNetworkInfo().isConnected()) return;
         new Thread(new Runnable() {
             public void run() {
@@ -370,16 +380,16 @@ public class RviService extends Service implements BeaconConsumer {
                     while(running) {
 
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        Log.i("STOFFE", "Sent to socket - ready : " + input.available());
+                        Log.i(TAG, "Sent to socket - ready : " + input.available());
                         int open = input.read();
                         if (open != '{') {
                             running = false;
-                            Log.i("STOFFE", "First char did not match : " + open);
+                            Log.i(TAG, "First char did not match : " + open);
                             break;
                         }
                         cnt++;
                         baos.write(open); //Wait for the first then go
-                        Log.i("STOFFE", "Sent to socket - ready : " + input.available() + " open = " + open);
+                        Log.i(TAG, "Sent to socket - ready : " + input.available() + " open = " + open);
 
                         while (input.available() > 0) {
                             try {
@@ -392,7 +402,7 @@ public class RviService extends Service implements BeaconConsumer {
                                         baos.flush();
                                         String toparse = baos.toString();
                                         baos.reset();
-                                        Log.i("STOFFE", "Received from Cloud : " + toparse);
+                                        Log.i(TAG, "Received from Cloud : " + toparse);
                                         JSONObject obj = new JSONObject(toparse);
                                     }
                                 }
