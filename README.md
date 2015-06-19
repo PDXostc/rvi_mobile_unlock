@@ -14,3 +14,12 @@ Note that the Beacon will change. Right now is a proper iBeacon and can be detec
 One good in particular is the Locate App
 [iOS App](https://itunes.apple.com/us/app/locate-beacon/id738709014?mt=8) or 
 [Android App](https://play.google.com/store/apps/details?id=com.radiusnetworks.locate&hl=en)
+
+
+# INSTALL
+rvi_0.4.0
+fob.py
+apt-get install  bluez
+/etc/rc.local
+/etc/bluetooth/main.conf Add
+  DisablePlugins = pnat
