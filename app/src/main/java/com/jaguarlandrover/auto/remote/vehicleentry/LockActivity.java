@@ -13,9 +13,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Messenger;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -29,8 +31,8 @@ import rx.schedulers.Schedulers;
 
 public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener {
     private static final String TAG = "RVI";
-    private boolean mIsBound = false;
-    private Messenger mService = null;
+    private boolean bound = false;
+    //private Messenger service = null;
 
     private RviService rviService = null;
 
@@ -39,6 +41,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_lock);
         fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragment);
         doBindService();
@@ -67,6 +70,13 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
+            Intent intent = new Intent();
+            intent.setClass(LockActivity.this, AdvancedPreferenceActivity.class);
+            startActivityForResult(intent, 0);
+            return true;
+        } else if( id == R.id.action_reset) {
+            PreferenceManager.getDefaultSharedPreferences(this).edit().clear().apply(); //reset
+            PreferenceManager.setDefaultValues(this, R.xml.advanced, true);
             return true;
         }
 
@@ -120,14 +130,14 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         // supporting component replacement by other applications).
         bindService(new Intent(LockActivity.this,
                 RviService.class), mConnection, Context.BIND_AUTO_CREATE);
-        mIsBound = true;
+        bound = true;
     }
 
     void doUnbindService() {
-        if (mIsBound) {
+        if (bound) {
             // Detach our existing connection.
             unbindService(mConnection);
-            mIsBound = false;
+            bound = false;
         }
     }
 
