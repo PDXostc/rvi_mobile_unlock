@@ -19,6 +19,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
 
 public abstract class RviConnection  {
     private static final String TAG = "RVI";
@@ -90,7 +92,9 @@ public abstract class RviConnection  {
         sa.put("tid", tid);
         sa.put("cmd", "sa");
         sa.put("stat", stat);
-        sa.put("svcs", services);
+        List<String> l = Arrays.asList(services);
+        Log.e("STOFFE"," Col="+l.size()+" JArray = "+new JSONArray(l));
+        sa.put("svcs", new JSONArray(l));
         sa.put("certificate", cert);
         sa.put("signature", sig);
 

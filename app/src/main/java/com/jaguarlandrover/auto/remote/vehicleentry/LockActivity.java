@@ -78,6 +78,10 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             PreferenceManager.getDefaultSharedPreferences(this).edit().clear().apply(); //reset
             PreferenceManager.setDefaultValues(this, R.xml.advanced, true);
             return true;
+        } else if(id == R.id.action_quit) {
+            Intent i = new Intent(this, RviService.class);
+            stopService(i);
+            finish();
         }
 
         return super.onOptionsItemSelected(item);
@@ -144,5 +148,6 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     public void onButtonCommand(String cmd) {
         //TODO send to RVI service
+        rviService.service(cmd);
     }
 }

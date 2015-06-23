@@ -15,4 +15,6 @@
         android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/action_reset" android:title="@string/action_reset"
         android:orderInCategory="101" app:showAsAction="never" />
+    <item android:id="@+id/action_quit" android:title="@string/action_quit"
+        android:orderInCategory="102" app:showAsAction="never" />
 </menu>
