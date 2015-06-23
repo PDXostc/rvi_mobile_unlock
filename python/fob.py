@@ -24,7 +24,6 @@ GPIO_LIGHTS = 13
 GPIO_TRUNK  = 19
 GPIO_PANIC  = 26
 
-
 def usage():
     print "Usage:", sys.argv[0], "[-n <rvi_url>]"
     print "  <rvi_url>                     URL of Service Edge on a local RVI node."
@@ -125,7 +124,6 @@ if len(args) != 0:
 
 
 # Setup GPIO pins
-GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(GPIO_UNLOCK, GPIO.OUT)  # unlock
 GPIO.setup(GPIO_LOCK, GPIO.OUT)  # lock
@@ -158,9 +156,9 @@ rvi.set_services_unavailable_callback(services_unavailable)
 #
 rvi.register_service("unlock", unlock_invoked) 
 rvi.register_service("lock", lock_invoked) 
-rvi.register_service("start", start_invoked) 
-rvi.register_service("stop", stop_invoked) 
-rvi.register_service("horn", horn_invoked) 
+#rvi.register_service("start", start_invoked) 
+#rvi.register_service("stop", stop_invoked) 
+#rvi.register_service("horn", horn_invoked) 
 rvi.register_service("trunk", trunk_invoked) 
 rvi.register_service("panic", panic_invoked) 
 rvi.register_service("lights", lights_invoked) 
