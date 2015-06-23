@@ -17,9 +17,24 @@ One good in particular is the Locate App
 
 
 # INSTALL
+Raspbian 
 rvi_0.4.0
 fob.py
+jsonrpclib + rvilib.py
 apt-get install  bluez
 /etc/rc.local
 /etc/bluetooth/main.conf Add
   DisablePlugins = pnat
+
+
+
+# TO BUILD
+sudo apt-get update
+apt-get install libbluetooth-dev
+apt-get install git
+apt-get install libssl-dev
+apt-get install libncurses-dev
+Unpack OTP R16B03
+./configure --prefix=/usr
+make
+make install
