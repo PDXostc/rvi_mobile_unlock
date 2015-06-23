@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="General"
+        android:key="pref_key_general">
+        <EditTextPreference android:title="VIN"
+            android:key="vin"
+            android:summary="Please provide car VIN"
+            android:defaultValue="1234567890ABCDEFG"
+            />
+        <CheckBoxPreference
+            android:key="fire_notifications"
+            android:title="Should notify on events"
+            android:summary="Events on/off in the top notification bar."
+            android:defaultValue="true"
+            />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="RVI Server"
+        android:key="pref_key_rvi_server">
+        <EditTextPreference android:title="RVI Server"
+            android:key="rvi_server"
+            android:summary="RVI Cloud server"
+            android:defaultValue="rvi-test1.nginfotpdx.net"
+            />
+        <EditTextPreference android:title="RVI Server Port"
+            android:key="rvi_server_port"
+            android:summary="RVI Cloud server port"
+            android:defaultValue="8807"
+            />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Bluetooth"
+        android:key="pref_key_bluetooth">
+        <EditTextPreference android:title="Bluetooth protocol"
+            android:key="bt_protocol"
+            android:summary="BT Protocol profile"
+            android:defaultValue="RFCOMM"
+            />
+        <EditTextPreference android:title="Bluetooth protocol channel"
+            android:key="bt_channel"
+            android:summary="BT Protocol channel"
+            android:defaultValue="1"
+            />
+        <EditTextPreference android:title="Beacon Timeout"
+            android:key="beacon_time"
+            android:summary="Discovery beacon timeout"
+            android:defaultValue="10"
+            />
+    </PreferenceCategory>
+
+</PreferenceScreen>
