@@ -57,6 +57,7 @@ public class RviService extends Service implements BeaconConsumer {
     private BeaconManager beaconManager;
     private NotificationManager notificationManager;
     private ConnectivityManager cm;
+    private TelephonyManager tm;
     private ConcurrentHashMap<String,Long> visible = new ConcurrentHashMap<String, Long>();
 
     private BeaconDetector detector = null;
@@ -71,7 +72,7 @@ public class RviService extends Service implements BeaconConsumer {
     private PublishSubject<String> subject = null;
     ScheduledExecutorService executorService = null;
 
-    public static final String[] SUPPORTED_SERVICES = new String[1];
+    //public static final String[] SUPPORTED_SERVICES = new String[1];
 
     public RviService() {
     }
@@ -94,8 +95,8 @@ public class RviService extends Service implements BeaconConsumer {
 
         cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        SUPPORTED_SERVICES[0] = "jlr.com/mobile/"+ tm.getDeviceId()+"/control/status";
+        tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        //SUPPORTED_SERVICES[0] = "jlr.com/mobile/"+ tm.getDeviceId()+"/control/status";
 
         subject = PublishSubject.create();
 
@@ -199,9 +200,9 @@ public class RviService extends Service implements BeaconConsumer {
 
                         bluetoothAdapter.cancelDiscovery();
                         BluetoothDevice device = bluetoothAdapter.getRemoteDevice(remote);
-                        BluetoothSocket socket = null;
+                        //BluetoothSocket socket = null;
                         try {
-                            socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB".toLowerCase())); //SerialPortServiceClass
+                            sock = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB".toLowerCase())); //SerialPortServiceClass
                             //00001105-0000-1000-8000-00805f9b34fb //OBEXObjectPushServiceClass
                             //00001106-0000-1000-8000-00805f9b34fb //OBEXFileTransferServiceClass
                             //0000112d-0000-1000-8000-00805f9b34fb //SIMAccessServiceClass
@@ -213,13 +214,13 @@ public class RviService extends Service implements BeaconConsumer {
 //
                             device.createBond();
                             //Log.i(TAG,"3 "+socket+" : "/*device.createBond()*/);
-                            socket.connect();
+                            sock.connect();
                         } catch (IOException e) {
                             Log.d(TAG, "Excepption:" + e.getLocalizedMessage());
                             try {
                                 Method m = device.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
-                                socket = (BluetoothSocket) m.invoke(device, 1);
-                                socket.connect();
+                                sock = (BluetoothSocket) m.invoke(device, 1);
+                                sock.connect();
                             } catch (InvocationTargetException ite) {
                                 e.printStackTrace();
                             } catch (NoSuchMethodException ne) {
@@ -230,8 +231,8 @@ public class RviService extends Service implements BeaconConsumer {
                                 e1.printStackTrace();
                             }
                             try {
-                                Log.i(TAG, "Sending to socket auth" + socket);
-                                OutputStream out = socket.getOutputStream();
+                                Log.i(TAG, "Sending to socket auth" + sock);
+                                OutputStream out = sock.getOutputStream();
                                 Notification n = BeaconDetector.creteNotification(RviService.this, "Connected to car");
                                 notificationManager.notify(0,n);
 
@@ -242,7 +243,7 @@ public class RviService extends Service implements BeaconConsumer {
 
 
                                 boolean running = true;
-                                BufferedInputStream input = new BufferedInputStream(socket.getInputStream());
+                                BufferedInputStream input = new BufferedInputStream(sock.getInputStream());
                                 int cnt = 0;
                                 while(running) {
 
@@ -283,8 +284,10 @@ public class RviService extends Service implements BeaconConsumer {
                                                                 }
                                                             }
 
+                                                            String[] ss = {"jlr.com/mobile/"+ tm.getDeviceId()+"/control/status"};
+
                                                             JSONObject saData = RviConnection.createServiceAnnouncement(
-                                                                    1, SUPPORTED_SERVICES, "av", "", "");
+                                                                    1, ss, "av", "", "");
                                                             out.write(saData.toString().getBytes());
                                                             out.flush();
 
@@ -311,7 +314,7 @@ public class RviService extends Service implements BeaconConsumer {
                                         }
                                     }
                                 }
-                                socket.close();
+                                sock.close();
                             } catch (IOException ioe) {
 
                             } catch (JSONException e1) {
@@ -416,9 +419,34 @@ public class RviService extends Service implements BeaconConsumer {
                     e.printStackTrace();
                 } catch (JSONException e) {
                     e.printStackTrace();
+                } catch(Throwable t) {
+                    t.printStackTrace();
+
                 }
 
             }}).start();
+
+        }
+    public void service(String service) {
+        Log.i(TAG, "Locking the car, conn = "+sock);
+        if( sock != null && sock.isConnected() ) {
+            Log.i(TAG, "Locking the car, we have a BT socket");
+            OutputStream out = null;
+            try {
+                out = sock.getOutputStream();
+                JSONObject rcv = RviConnection.createReceiveData(2, "jlr.com/bt/stoffe/"+service,
+                        new JSONArray("[{\"O\":\"K\"}]"), "", "");
+
+                        out.write(rcv.toString().getBytes());
+                out.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
+        }
 
     }
 

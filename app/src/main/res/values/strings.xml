@@ -12,6 +12,7 @@
     <string name="app_name">Vehicle Entry</string>
     <string name="action_settings">Settings</string>
     <string name="action_reset">Reset</string>
+    <string name="action_quit">Quit</string>
     <string name="lock">Lock</string>
     <string name="unlock">Unlock</string>
     <string name="lock_icon">&#xf13e;</string>

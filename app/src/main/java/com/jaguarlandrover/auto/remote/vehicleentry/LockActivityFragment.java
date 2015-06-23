@@ -37,6 +37,8 @@ public class LockActivityFragment extends Fragment {
     private Button panic;
     private Button panicOn;
 
+    private LockFragmentButtonListener buttonListener;
+
     //Temp button press storage
     private SharedPreferences sharedPref;
 
@@ -75,6 +77,8 @@ public class LockActivityFragment extends Fragment {
         panic.setOnClickListener(l);
         panicOn.setOnClickListener(l);
 
+        buttonListener = (LockFragmentButtonListener) getActivity();
+
         return view;
     }
 
@@ -106,10 +110,12 @@ public class LockActivityFragment extends Fragment {
                 case R.id.lock:
                     Log.i(TAG,"LockBtn");
                     ed.putBoolean(LOCKED_LBL,true);
+                    buttonListener.onButtonCommand("lock");
                     break;
                 case R.id.unlock:
                     Log.i(TAG,"UnlockBtn");
                     ed.putBoolean(LOCKED_LBL, false);
+                    buttonListener.onButtonCommand("unlock");
                     break;
                 case R.id.start:
                     Log.i(TAG,"StartBtn");
@@ -119,11 +125,15 @@ public class LockActivityFragment extends Fragment {
                     Log.i(TAG,"StopBtn");
                     ed.putBoolean(STOPPED_LBL, true);
                     break;
-                case R.id.trunk:Log.i(TAG, "TrunkBtn");ed.putBoolean("Gruka", false);break;
+                case R.id.trunk:Log.i(TAG, "TrunkBtn");
+                    ed.putBoolean("Gruka", false);
+                    buttonListener.onButtonCommand("trunk");
+                    break;
                 case R.id.panic:
                     Log.i(TAG, "PanicBtn");
                     panicOn.setVisibility(View.VISIBLE);
                     panic.setVisibility(View.GONE);
+                    buttonListener.onButtonCommand("panic");
                     Log.i(TAG, "PanicBtn swap 1 ");
                     Handler handler = new Handler(Looper.getMainLooper());
                     handler.postDelayed(new Runnable() {
