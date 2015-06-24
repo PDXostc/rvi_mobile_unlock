@@ -51,34 +51,40 @@ def usage():
 #    def service(a,b,c)
 # 
 def unlock_invoked(**args):
+    print "UNLOCK"
     GPIO.output(GPIO_UNLOCK, GPIO.HIGH)
     time.sleep( 0.3 ) 
     GPIO.output(GPIO_UNLOCK, GPIO.LOW)
     return ['ok']
 
 def lock_invoked(**args):
+    print "LOCK"
     GPIO.output(GPIO_LOCK, GPIO.HIGH)
     time.sleep( 0.3 ) 
     GPIO.output(GPIO_LOCK, GPIO.LOW)
     return ['ok']
 
 def lights_invoked(**args):
+    print "LIGHTS car"
     GPIO.output(GPIO_LIGHTS, GPIO.HIGH)
     time.sleep( 0.3 ) 
     GPIO.output(GPIO_LIGHTS, GPIO.LOW)
     return ['ok']
 
 def trunk_invoked(**args):
+    print "TRUNK"
     GPIO.output(GPIO_TRUNK, GPIO.HIGH)
     time.sleep( 0.3 ) 
     GPIO.output(GPIO_TRUNK, GPIO.LOW)
     return ['ok']
 
 def start_invoked(**args):
+    print "START"
     print "Start not supported"
     return ['ok']
 
 def stop_invoked(**args):
+    print "STOP"
     print "Stop not supported"
     return ['ok']
 
@@ -88,6 +94,7 @@ def horn_invoked(**args):
 
 
 def panic_invoked(**args):
+    print "PANIC"
     GPIO.output(GPIO_PANIC, GPIO.HIGH)
     time.sleep( 0.3 )  # Longer?
     GPIO.output(GPIO_PANIC, GPIO.LOW)
@@ -104,6 +111,7 @@ def services_unavailable(**args):
     print "Services unavailable!"
     # Lock the door when BT connection goes away
     lock_invoked() 
+    sys.exit(0)
     return ['ok']
 
 
@@ -124,6 +132,7 @@ if len(args) != 0:
 
 
 # Setup GPIO pins
+GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(GPIO_UNLOCK, GPIO.OUT)  # unlock
 GPIO.setup(GPIO_LOCK, GPIO.OUT)  # lock
