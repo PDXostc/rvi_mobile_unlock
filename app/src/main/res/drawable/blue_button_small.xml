@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+
+  Copyright (C) 2015, Jaguar Land Rover
+
+  This program is licensed under the terms and conditions of the
+  Mozilla Public License, version 2.0.  The full text of the
+  Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
+
+-->
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape>
+            <solid
+                    android:color="#b2f0ff" />
+            <stroke
+                    android:color="#fff"
+                    android:width="1dp" />
+            <padding
+                    android:bottom="10dp"
+                    android:top="10dp"
+                    android:left="10dp"
+                    android:right="10dp" />
+        </shape>
+    </item>
+    <item>
+        <shape>
+            <solid
+                    android:color="#53b5ce" />
+            <stroke
+                    android:color="#fff"
+                    android:width="1dp" />
+            <padding
+                    android:bottom="10dp"
+                    android:top="10dp"
+                    android:left="10dp"
+                    android:right="10dp" />
+        </shape>
+    </item>
+
+</selector>

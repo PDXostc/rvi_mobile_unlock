@@ -54,9 +54,7 @@
             android:onClick="sendPoptrunk"
             android:background="@drawable/black_button"
             android:textAllCaps="false"
-            style="@style/black_button_text"
-
-        />
+            style="@style/black_button_text" />
 
     <Button
             android:id="@+id/panic"
