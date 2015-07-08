@@ -1,0 +1,33 @@
+<resources>
+
+    <!--basic colors from Styleguide 1.1 -->
+    <color name="white"         >#FFFFFF</color>
+    <color name="grey"          >#C4C4C4</color>
+    <color name="black"         >#000000</color>
+    <color name="blueLt"        >#B2F0FF</color>
+    <color name="blueViv"       >#53B5CE</color>
+    <color name="orangeLt"      >#FFD38C</color>
+    <color name="orangeViv"     >#FE9C00</color>
+
+    <!--font sizes-->
+    <dimen name="fontSizeSmall" >12sp</dimen>
+    <dimen name="fontSizeLarge" >15sp</dimen>
+    <dimen name="fontSizeLarger">18sp</dimen>
+    <dimen name="fontSizeXLarge">22sp</dimen>
+
+    <!--margin-->
+    <dimen name="marginLeft">20dp</dimen>
+    <dimen name="marginRight">20dp</dimen>
+    <dimen name="marginTop">10dp</dimen>
+    <dimen name="marginBottom">10dp</dimen>
+    <dimen name="marginLeftRVIscreen">5dp</dimen>
+    <dimen name="marginRightRVIscreen">5dp</dimen>
+
+
+    <!--padding-->
+    <dimen name="paddingLeft">5dp</dimen>
+    <dimen name="paddingRight">5dp</dimen>
+    <dimen name="paddingTop">5dp</dimen>
+    <dimen name="paddingBottom">5dp</dimen>
+
+</resources>

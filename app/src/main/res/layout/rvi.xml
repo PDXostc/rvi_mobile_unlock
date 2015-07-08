@@ -1,0 +1,77 @@
+<!--
+
+  Copyright (C) 2015, Jaguar Land Rover
+
+  This program is licensed under the terms and conditions of the
+  Mozilla Public License, version 2.0.  The full text of the
+  Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
+
+-->
+
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#555"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context=".MainActivity">
+
+    <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:columnCount="2"
+            android:rowCount="3">
+
+        <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/grey_button_small"
+                android:paddingRight="@dimen/paddingRight"
+                android:text="@string/unlock_icon"
+                android:textColor="#fff"
+                android:textSize="80sp"/>
+
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/blue_button_small"
+                android:paddingLeft="@dimen/paddingLeft"
+                android:src="@drawable/hvac_app_icon"/>
+
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/orange_button_small"
+                android:paddingRight="@dimen/paddingRight"
+                android:src="@drawable/dashboard_app_icon"/>
+
+        <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/light_grey_button_small"
+                android:paddingLeft="@dimen/paddingLeft"
+                android:text="@string/notification"
+                android:textColor="#fff"
+                android:textSize="80sp"/>
+
+        <Button
+                android:id="@+id/profile"
+                style="@style/black_button_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_columnSpan="2"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/black_button"
+                android:onClick=""
+                android:text="@string/profile"
+                android:textAllCaps="false"/>
+
+    </GridLayout>
+
+</LinearLayout>

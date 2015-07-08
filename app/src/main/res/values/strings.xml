@@ -22,4 +22,6 @@
     <string name="panic_stop_icon">&#xf028;</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
+    <string name="profile">profile settings</string>
+    <string name="notification">&#xf071;</string>
 </resources>
