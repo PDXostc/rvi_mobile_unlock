@@ -7,7 +7,9 @@ The PI has to have BT scanning on and also BT LE announcment of the Beacon
 
 ```
 sudo hciconfig hci0 piscan leadv
-sudo hcitool -i hci0 cmd 0x08 0x0008 1E 02 01 1A 1A FF 4C 00 02 15 92 77 83 0A B2 EB 49 0F A1 DD 7F E3 8C 49 2E DE 00 00 00 00 C5 00
+sudo hcitool -i hci0 cmd 0x08 0x0008 1E 02 01 1A 1A FF 4C 00 02 15 33 43 33 43 46 46 47 45 38 45 54 32 39 31 34 30 39 00 00 00 C5 00
+sudo hcitool -i hci0 cmd 0x08 0x0006 A0 00 A0 00 03 00 00 00 00 00 00 00 00 07 00
+sudo hcitool -i hci0 cmd 0x08 0x000a 01
 ```
 
 Note that the Beacon will change. Right now is a proper iBeacon and can be detected with any apps.
