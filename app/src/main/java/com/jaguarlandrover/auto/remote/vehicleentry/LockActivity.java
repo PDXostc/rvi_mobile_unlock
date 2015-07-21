@@ -9,8 +9,10 @@
 
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -42,14 +44,47 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Log.i(TAG, "onCreate() Activity");
+
+        handleExtra(getIntent());
+
         setContentView(R.layout.activity_lock);
         fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragment);
         doBindService();
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleExtra(intent);
+    }
+
+    private void handleExtra(Intent intent) {
+        Bundle extras = intent.getExtras();
+        if( extras != null && extras.size() > 0 ) {
+            for(String k : extras.keySet()) {
+                Log.i(TAG, "k = " + k+" : "+extras.getString(k));
+            }
+        }
+        if( extras != null && "dialog".equals(extras.get("_extra1")) ) {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setTitle(""+extras.get("_extra2"));
+            alertDialogBuilder
+                    .setMessage(""+extras.get("_extra3"))
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+            alertDialogBuilder.create().show();
+        }
+    }
+
+
+    @Override
     public void onDestroy() {
-        Log.i(TAG, "onDestroy()");
+        Log.i(TAG, "onDestroy() Activity");
         doUnbindService();
 
         super.onDestroy();

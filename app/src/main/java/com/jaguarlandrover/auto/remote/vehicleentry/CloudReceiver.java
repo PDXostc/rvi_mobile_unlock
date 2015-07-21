@@ -29,6 +29,9 @@ public class CloudReceiver extends BroadcastReceiver {
                 Log.i(TAG, "Network is disconnected: " + networkInfo);
             } else if(networkInfo.getDetailedState() == NetworkInfo.DetailedState.CONNECTED) {
                 Log.i(TAG, "Network is connected: " + networkInfo+" type = "+networkInfo.getTypeName()+" : "+networkInfo.getSubtypeName());
+                Intent i = new Intent(context, RviService.class);
+                i.putExtra("networkinfo", networkInfo);
+                context.startService(i);
             }
         }
     }
