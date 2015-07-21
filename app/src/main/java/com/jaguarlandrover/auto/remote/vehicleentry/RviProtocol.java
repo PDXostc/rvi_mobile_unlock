@@ -22,27 +22,21 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class RviConnection  {
+public abstract class RviProtocol {
     private static final String TAG = "RVI";
+
+    public enum RviTransport {SERVER, BT} //NFC,WIFI DIRECT, IR
 
     public abstract InputStream getInputStream() throws IOException;
     public abstract OutputStream getOutputStream() throws IOException;
 
+    //Helper static protocol wire functions
 
-    //                     String output = "{\"tid\":1,\"cmd\":\"authorize\",\"addr\":"+
-    //                            "\"00:1B:DC:06:7D:66\",\"chan\":1,\"rvi_proto\":"+
-    //                            "\"rvi_json\",\"certificate\":\"\",\"signature\":\"\"}";
-//    public static JSONObject createBtAuth(int tid, String addr, int ch, String cert, String sig) throws JSONException {
-//        JSONObject auth = new JSONObject();
-//        auth.put("tid", tid);
-//        auth.put("cmd", "authorize");
-//        auth.put("addr", addr);
-//        auth.put("chan", ch);
-//        auth.put("rvi_proto", "rvi_json");
-//        auth.put("certificate", cert);
-//        auth.put("signature", sig);
-//        return auth;
-//    }
+    public static JSONObject parseData(String data) throws JSONException {
+        byte[] jsonBuff = Base64.decode(data,Base64.DEFAULT);
+        String jsonStr = new String(jsonBuff);
+        return new JSONObject(jsonStr);
+    }
 
     //{"tid":1,"cmd":"au","addr":"127.0.0.1","port":8807,"ver":"1.0","cert":"","sign":"" }
     public static JSONObject createAuth(int tid, String addr, int port, String cert, String sig) throws JSONException {
@@ -93,7 +87,7 @@ public abstract class RviConnection  {
         sa.put("cmd", "sa");
         sa.put("stat", stat);
         List<String> l = Arrays.asList(services);
-        Log.e("STOFFE"," Col="+l.size()+" JArray = "+new JSONArray(l));
+        Log.e(TAG," Col="+l.size()+" JArray = "+new JSONArray(l));
         sa.put("svcs", new JSONArray(l));
         sa.put("certificate", cert);
         sa.put("signature", sig);
@@ -103,4 +97,17 @@ public abstract class RviConnection  {
     }
 
     //{"cmd": "ping"}
+
+    public static String[] parseAndValidateJWT( String encToken ) {
+        String[] result = new String[3];
+
+        String [] jwtParts = encToken.split("\\.");
+        if( jwtParts[0] != null ) result[0] = new String(Base64.decode(jwtParts[0],Base64.DEFAULT));
+        if( jwtParts[1] != null ) result[1] = new String(Base64.decode(jwtParts[1],Base64.DEFAULT));
+        if( jwtParts[2] != null ) result[2] = new String(Base64.decode(jwtParts[2],Base64.DEFAULT));
+
+        //TODO validate, maybe also just return JSONObject?
+
+        return result;
+    }
 }

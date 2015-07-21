@@ -22,4 +22,10 @@
     <string name="panic_stop_icon">&#xf028;</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
+    <string name="not_connected_car">Connected to car</string>
+    <string name="not_auto_unlock">Auto Unlock</string>
+    <string name="not_car_disc">Car Discovered : </string>
+    <string name="not_car_out_range">Car Out of Range : </string>
+    <string name="not_new_key">New Digital Key</string>
+    <string name="not_auto_lock">Auto Locked</string>
 </resources>
