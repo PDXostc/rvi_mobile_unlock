@@ -185,4 +185,9 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         //TODO send to RVI service
         rviService.service(cmd);
     }
+
+    @Override
+    public void keyShareCommand(String key){
+
+    }
 }
