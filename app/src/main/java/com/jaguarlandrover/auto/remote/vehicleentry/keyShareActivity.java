@@ -10,48 +10,33 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import android.widget.ArrayAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ExpandableListView.OnGroupClickListener;
 import android.widget.ExpandableListView.OnGroupCollapseListener;
 import android.widget.ExpandableListView.OnGroupExpandListener;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 public class keyShareActivity extends ActionBarActivity {
 
-    ExpandableListAdapter listAdapter;
-    ExpandableListView expListView;
-    List<String> listDataHeader;
-    HashMap<String, List<String>> listDataChild;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_key_share);
 
-        expListView = (ExpandableListView) findViewById(R.id.expandableListView);
-        prepareListData();
+        Spinner userdropdown = (Spinner)findViewById(R.id.spinner1);
+        String[] users = new String[]{"SelectUser", "dthiriez", "arodriguez"};
+        ArrayAdapter<String> useradapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, users);
+        userdropdown.setAdapter(useradapter);
 
-        listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
-        expListView.setAdapter(listAdapter);
-    }
-    private void prepareListData(){
-        listDataHeader = new ArrayList<String>();
-        listDataChild = new HashMap<String, List<String>>();
-
-        listDataHeader.add("User: ");
-        listDataHeader.add("Vehicle: ");
-
-        List<String> users = new ArrayList<String>();
-        users.add("dthiriez");
-        users.add("arodriguez");
-
-        List<String> vehicle = new ArrayList<String>();
-        vehicle.add("Vehicle 1");
-        vehicle.add("Vehicle 2");
-
-        listDataChild.put(listDataHeader.get(0), users);
-        listDataChild.put(listDataHeader.get(1), vehicle);
+        Spinner cardropdown = (Spinner)findViewById(R.id.spinner2);
+        String[] vehicles = new String[]{"Select Vehicle", "Vehicle1", "Vehicle2"};
+        ArrayAdapter<String> caradapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, vehicles);
+        cardropdown.setAdapter(caradapter);
     }
 
     @Override
