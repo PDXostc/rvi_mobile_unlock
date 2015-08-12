@@ -189,7 +189,15 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     public void keyShareCommand(String key){
         Intent intent = new Intent();
-        intent.setClass(LockActivity.this, keyShareActivity.class);
-        startActivityForResult(intent, 0);
+        switch(key) {
+            case "keyshare":
+            intent.setClass(LockActivity.this, keyShareActivity.class);
+            startActivityForResult(intent, 0);
+                break;
+            case "keychange":
+                intent.setClass(LockActivity.this, keyChangeActivity.class);
+                startActivityForResult(intent, 0);
+                break;
+        }
     }
 }
