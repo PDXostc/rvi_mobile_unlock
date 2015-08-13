@@ -9,7 +9,7 @@
             android:defaultValue="1234567890ABCDEFG"
             />
         <CheckBoxPreference
-            android:key="fire_notifications"
+            android:key="pref_fire_notifications"
             android:title="Should notify on events"
             android:summary="Events on/off in the top notification bar."
             android:defaultValue="true"
@@ -19,33 +19,76 @@
         android:title="RVI Server"
         android:key="pref_key_rvi_server">
         <EditTextPreference android:title="RVI Server"
-            android:key="rvi_server"
+            android:key="pref_rvi_server"
             android:summary="RVI Cloud server"
             android:defaultValue="rvi-test1.nginfotpdx.net"
             />
         <EditTextPreference android:title="RVI Server Port"
-            android:key="rvi_server_port"
+            android:key="pref_rvi_server_port"
             android:summary="RVI Cloud server port"
             android:defaultValue="8807"
+            android:inputType="numberDecimal"
             />
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Bluetooth"
         android:key="pref_key_bluetooth">
         <EditTextPreference android:title="Bluetooth protocol"
-            android:key="bt_protocol"
+            android:key="pref_bt_protocol"
             android:summary="BT Protocol profile"
             android:defaultValue="RFCOMM"
             />
         <EditTextPreference android:title="Bluetooth protocol channel"
-            android:key="bt_channel"
+            android:key="pref_bt_channel"
             android:summary="BT Protocol channel"
             android:defaultValue="1"
+            android:inputType="numberDecimal"
             />
         <EditTextPreference android:title="Beacon Timeout"
-            android:key="beacon_time"
+            android:key="pref_beacon_time"
             android:summary="Discovery beacon timeout"
             android:defaultValue="10"
+            android:inputType="numberDecimal"
+            />
+        <CheckBoxPreference
+            android:key="pref_fire_bt_ping"
+            android:title="Should ping ove BT"
+            android:summary="If there is a BT connection will ping on app level."
+            android:defaultValue="true"
+            />
+        <EditTextPreference android:title="BT Ping Frequency"
+            android:key="pref_bt_ping_time"
+            android:summary="Frequency in milliseconds of ping"
+            android:defaultValue="1000"
+            android:inputType="numberDecimal"
+            />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Ranging"
+        android:key="pref_key_ranging">
+        <EditTextPreference android:title="Unlock Distance"
+            android:key="pref_auto_unlock_dist"
+            android:summary="Dinstance where door unlocks (m)"
+            android:defaultValue="1"
+            android:inputType="numberDecimal"
+            />
+        <EditTextPreference android:title="Lock Distance"
+            android:key="pref_auto_lock_dist"
+            android:summary="Dinstance where door locks (m)"
+            android:defaultValue="2"
+            android:inputType="numberDecimal"
+            />
+        <EditTextPreference android:title="Connect Distance"
+            android:key="pref_auto_conn_dist"
+            android:summary="Dinstance where BT connects (m)"
+            android:defaultValue="3"
+            android:inputType="numberDecimal"
+            />
+        <EditTextPreference android:title="Sample Buffer"
+            android:key="pref_ranging_sample_buffer"
+            android:summary="Number of samples to calculate mean distance over."
+            android:defaultValue="20"
+            android:inputType="numberDecimal"
             />
     </PreferenceCategory>
 
