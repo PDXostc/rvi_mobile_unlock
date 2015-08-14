@@ -1,8 +1,10 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.DialogInterface;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -14,7 +16,10 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
@@ -26,6 +31,10 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class keyShareActivity extends ActionBarActivity {
 
     int year_x, month_x, day_x, hour_x, min_x;
@@ -35,21 +44,83 @@ public class keyShareActivity extends ActionBarActivity {
     static final int timeDialog=1;
     private TextView activeDialog;
     private TextView activeTime;
+    private Button shareKeyBtn;
+    private String selectedUser;
+    private String selectedvehicle;
+    private CheckBox lock_unlock;
+    private CheckBox enginestart;
+    JSONObject user = new JSONObject();
+    JSONArray jsonArray = new JSONArray();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_key_share);
+        shareKeyBtn = (Button) findViewById(R.id.ShareBtn);
+        lock_unlock = (CheckBox) findViewById(R.id.lock_unlock);
+        enginestart = (CheckBox) findViewById(R.id.enginestart);
+
         showDialog();
-        Spinner userdropdown = (Spinner)findViewById(R.id.spinner1);
-        String[] users = new String[]{"SelectUser", "dthiriez", "arodriguez"};
-        ArrayAdapter<String> useradapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, users);
+        final Spinner userdropdown = (Spinner) findViewById(R.id.spinner1);
+        final String[] users = new String[]{"dthiriez", "arodriguez"};
+        final ArrayAdapter<String> useradapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, users);
         userdropdown.setAdapter(useradapter);
 
-        Spinner cardropdown = (Spinner)findViewById(R.id.spinner2);
-        String[] vehicles = new String[]{"Select Vehicle", "Vehicle1", "Vehicle2"};
+        userdropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedUser = parent.getItemAtPosition(position).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                selectedUser = null;
+            }
+        });
+
+        Spinner cardropdown = (Spinner) findViewById(R.id.spinner2);
+        final String[] vehicles = new String[]{"Vehicle1", "Vehicle2"};
         ArrayAdapter<String> caradapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, vehicles);
         cardropdown.setAdapter(caradapter);
+
+        cardropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedvehicle = parent.getItemAtPosition(position).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                selectedvehicle = null;
+            }
+        });
+
+        shareKeyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(selectedUser != null | selectedvehicle!=null){
+                    alertMessage();
+                }
+            }
+        });
+    }
+
+    public void alertMessage(){
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog, int which){
+                switch(which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+
+                        break;
+                }
+            }
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure?")
+                .setPositiveButton("Share Key", dialogClickListener)
+                .setNegativeButton("Cancel", dialogClickListener).show();
     }
 
     public void showDialog(){
@@ -102,6 +173,7 @@ public class keyShareActivity extends ActionBarActivity {
                 showDialog(timeDialog);
             }
         });
+
     }
     private void updateDisplay(TextView dateDisplay) {
         dateDisplay.setText(month_x+"/"+day_x+"/"+year_x);
