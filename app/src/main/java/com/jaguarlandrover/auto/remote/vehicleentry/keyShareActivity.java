@@ -190,7 +190,7 @@ public class keyShareActivity extends ActionBarActivity {
     @Override
     protected Dialog onCreateDialog(int id){
         if(id == dateDialog)
-            return new DatePickerDialog(this, dpickerListener , year_x, month_x, day_x);
+            return new DatePickerDialog(this, dpickerListener , year_x, month_x-1, day_x);
         if(id == timeDialog)
             return  new TimePickerDialog(this, tpickerListener, hour_x, min_x, false);
         return null;

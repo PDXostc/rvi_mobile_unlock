@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
@@ -22,6 +23,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
+import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +38,7 @@ import java.util.List;
 public class LoginActivity extends ActionBarActivity{
 
     private Button login;
-    private String user;
+    public String auth = new String("");
     public EditText userName;
     public EditText password;
     private static final String TAG = "RVI";
@@ -53,11 +56,31 @@ public class LoginActivity extends ActionBarActivity{
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                submit(v);
                 Intent intent = new Intent();
                 intent.setClass(LoginActivity.this, LockActivity.class);
                 startActivity(intent);
+
+/*                if("dthiriez".equals(userName.getText().toString()) && "rvi".equals(password.getText().toString())) {
+                    Intent intent = new Intent();
+                    intent.setClass(LoginActivity.this, LockActivity.class);
+                    startActivity(intent);
+                }
+                else {
+                    userName.setText("");
+                    password.setText("");
+                    Toast.makeText(LoginActivity.this,"username and password don't match",Toast.LENGTH_LONG).show();
+                }*/
             }
         });
+    }
+
+    public void submit(View v){
+        BKTask task = new BKTask();
+        task.setUser(userName.getEditableText().toString());
+        task.setpWd(password.getEditableText().toString());
+        task.execute(new String[]{"http://ec2-54-172-25-254.compute-1.amazonaws.com:8000/token/new.json"});
+
     }
 
     @Override
@@ -81,5 +104,4 @@ public class LoginActivity extends ActionBarActivity{
 
         return super.onOptionsItemSelected(item);
     }
-
 }
