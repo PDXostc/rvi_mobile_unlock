@@ -1,5 +1,11 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
 /**
  * Created by rdz on 8/12/2015.
  */
@@ -19,6 +25,31 @@ public class User {
         this.validto = validto;
         this.lock_unlock = lock_unlock;
         this.enginestart = enginestart;
+    }
+
+    public User(JSONObject object){
+        try{
+            this.username = object.getString("username");
+            this.vehicle = object.getString("vehicle");
+            this.validfrom = object.getString("validfrom");
+            this.validto = object.getString("validto");
+            this.lock_unlock = object.getBoolean("lock_unlock");
+            this.enginestart = object.getBoolean("enginestart");
+        }catch(JSONException e){
+            e.printStackTrace();
+        }
+    }
+
+    public static ArrayList<User> fromJson(JSONArray jsonobjects){
+        ArrayList<User> users = new ArrayList<User>();
+        for(int i=0; i <jsonobjects.length();i++){
+            try{
+                users.add(new User(jsonobjects.getJSONObject(i)));
+            }catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
+        return users;
     }
 
 }

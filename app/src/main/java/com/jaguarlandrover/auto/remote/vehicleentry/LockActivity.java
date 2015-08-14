@@ -24,6 +24,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import rx.Observer;
@@ -34,6 +35,8 @@ import rx.schedulers.Schedulers;
 public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener {
     private static final String TAG = "RVI";
     private boolean bound = false;
+    private String username;
+    private TextView userHeader;
     //private Messenger service = null;
 
     private RviService rviService = null;
@@ -43,7 +46,6 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         Log.i(TAG, "onCreate() Activity");
 
         handleExtra(getIntent());

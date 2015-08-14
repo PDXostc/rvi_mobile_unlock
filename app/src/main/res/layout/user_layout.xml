@@ -35,14 +35,14 @@
         android:text="Valid To:"/>
 
     <TextView
-        android:id="@+id/validfromlbl"
+        android:id="@+id/validfrom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_column="1"
         android:layout_row="1"
         android:text="Valid From"/>
     <TextView
-        android:id="@+id/validtolbl"
+        android:id="@+id/validto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_column="1"

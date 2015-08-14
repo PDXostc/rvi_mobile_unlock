@@ -2,18 +2,43 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.http.HttpResponseCache;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class LoginActivity extends ActionBarActivity{
 
     private Button login;
-    private View.OnClickListener loginlisten;
+    private String user;
+    public EditText userName;
+    public EditText password;
+    private static final String TAG = "RVI";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,17 +47,18 @@ public class LoginActivity extends ActionBarActivity{
         Typeface fontawesome = Typeface.createFromAsset(getAssets(), "fonts/fontawesome-webfont.ttf");
         login = (Button)findViewById(R.id.loginBtn);
         login.setTypeface(fontawesome);
+        userName = (EditText) findViewById(R.id.username);
+        password = (EditText) findViewById(R.id.password);
+
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
                 intent.setClass(LoginActivity.this, LockActivity.class);
-                startActivityForResult(intent, 0);
+                startActivity(intent);
             }
         });
     }
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -55,4 +81,5 @@ public class LoginActivity extends ActionBarActivity{
 
         return super.onOptionsItemSelected(item);
     }
+
 }
