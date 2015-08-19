@@ -27,6 +27,7 @@ import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.TabHost;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,6 +39,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -56,6 +59,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
     private ConnectivityManager cm;
     private TelephonyManager tm;
     private ConcurrentHashMap<String,Long> visible = new ConcurrentHashMap<String, Long>();
+
 
     //private int timeoutSec = 10; //If beacon did not report in 10 sec then remove
 
@@ -94,6 +98,25 @@ public class RviService extends Service /* implements BeaconConsumer */{
         Log.d(TAG, "onCreate Service");
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        /*SharedPreferences.Editor editor = prefs.edit();
+
+        Set<String> userData = prefs.getStringSet("userData", new HashSet<String>());
+        Set<String> services = prefs.getStringSet("services", new HashSet<String>());
+
+        userData.add(getResources().getString(R.string.USERNAME));
+        userData.add(getResources().getString(R.string.VEHICLE));
+        userData.add(getResources().getString(R.string.USERTYPE));
+
+        services.add(getResources().getString(R.string.LOCK));
+        services.add(getResources().getString(R.string.ENGINE));
+
+        editor.putStringSet("userData", userData);
+        editor.putStringSet("services", services);
+        editor.commit();
+*/
+
+
+
         //TODO base on VIN instead
 
         cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -172,7 +195,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
             @Override
             public void onNext(JSONObject s) {
                 //Log.i(TAG, "Received from Cloud JSON: " + s.toString());
-                if( !s.has("cmd") ) {
+                if (!s.has("cmd")) {
                     Log.w(TAG, "CMD is missing!");
                     return; //Very strange
                 }
@@ -197,16 +220,21 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         //Log.i(TAG, "Received Cert Params : " + params);
                         JSONObject p1 = params.getJSONObject(0);
                         JSONObject p2 = params.getJSONObject(1);
+                        JSONObject p3 = params.getJSONObject(2);
                         String certId = p1.getString("certid");
                         String jwt = p2.getString("certificate");
                         Log.i(TAG, "Received from Cloud Cert ID: " + certId);
                         Log.i(TAG, "JWT = " + jwt);
+                        //Log.i(TAG, "User Data:"+p3.toString());
+                       // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
+
+
                         certs.put(certId, jwt);
                         //Debug
                         String[] token = RviProtocol.parseAndValidateJWT(jwt);
                         JSONObject key = new JSONObject(token[1]);
-                        Log.d(TAG, "Token = "+ key.toString(2));
-                        sendNotification(RviService.this, getResources().getString(R.string.not_new_key)+" : "+key.getString("id"),
+                        Log.d(TAG, "Token = " + key.toString(2));
+                        sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
                                 "dialog", "New Key", key.getString("id"));
 
                     } else if ("sa".equals(cmd)) {
@@ -216,23 +244,23 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         }
                         JSONArray svcs = s.getJSONArray("svcs");
                         String[] services = new String[svcs.length()];
-                        for ( int i = 0 ; i < services.length  ; i++ ) {
+                        for (int i = 0; i < services.length; i++) {
                             services[i] = svcs.getString(i);
                         }
                         //Just print
-                        for(String s1 : services) {
-                            Log.d(TAG,"Found service : "+s1);
+                        for (String s1 : services) {
+                            Log.d(TAG, "Found service : " + s1);
                         }
 
 
                     } else if ("au".equals(cmd)) {
                         String addr = s.getString("addr");
                         int port = s.getInt("port");
-                        Log.d(TAG,"Authentication from server "+addr+" : "+port);
+                        Log.d(TAG, "Authentication from server " + addr + " : " + port);
 
                         JSONObject saData = RviProtocol.createServiceAnnouncement(
                                 1, ss, "av", "", "");
-                        cloudSender.onNext( saData );
+                        cloudSender.onNext(saData);
 
 
                     } else if ("ping".equals(cmd)) { //NOOP
@@ -240,7 +268,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         Log.w(TAG, "Unknown command received - " + cmd);
                     }
                 } catch (JSONException e) {
-                    Log.e(TAG,"",e);
+                    Log.e(TAG, "", e);
                 }
             }
         });

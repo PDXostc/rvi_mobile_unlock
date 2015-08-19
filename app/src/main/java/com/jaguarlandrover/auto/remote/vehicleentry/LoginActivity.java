@@ -1,10 +1,12 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.http.HttpResponseCache;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,15 +35,17 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 public class LoginActivity extends ActionBarActivity{
 
     private Button login;
-    public String auth = new String("");
     public EditText userName;
     public EditText password;
     private static final String TAG = "RVI";
+    private String status = "false";
+    private Boolean auth = Boolean.FALSE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,30 +61,15 @@ public class LoginActivity extends ActionBarActivity{
             @Override
             public void onClick(View v) {
                 submit(v);
-                Intent intent = new Intent();
-                intent.setClass(LoginActivity.this, LockActivity.class);
-                startActivity(intent);
-
-/*                if("dthiriez".equals(userName.getText().toString()) && "rvi".equals(password.getText().toString())) {
-                    Intent intent = new Intent();
-                    intent.setClass(LoginActivity.this, LockActivity.class);
-                    startActivity(intent);
-                }
-                else {
-                    userName.setText("");
-                    password.setText("");
-                    Toast.makeText(LoginActivity.this,"username and password don't match",Toast.LENGTH_LONG).show();
-                }*/
             }
         });
     }
 
     public void submit(View v){
-        BKTask task = new BKTask();
+        BKTask task = new BKTask(this);
         task.setUser(userName.getEditableText().toString());
         task.setpWd(password.getEditableText().toString());
         task.execute(new String[]{"http://ec2-54-172-25-254.compute-1.amazonaws.com:8000/token/new.json"});
-
     }
 
     @Override
@@ -103,5 +92,27 @@ public class LoginActivity extends ActionBarActivity{
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void setStatus(String msg){
+        try {
+            JSONObject obj = new JSONObject(msg);
+            status = obj.get("success").toString();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+
+        }
+
+        if(status.equals("true")){
+            Intent intent = new Intent();
+            intent.setClass(LoginActivity.this, LockActivity.class);
+            startActivity(intent);
+        }
+        else{
+            userName.setText("");
+            password.setText("");
+            Toast.makeText(LoginActivity.this,"username and password don't match",Toast.LENGTH_LONG).show();
+        }
     }
 }

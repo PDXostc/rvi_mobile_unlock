@@ -1,25 +1,37 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
+import android.app.AlertDialog;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Gallery;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 public class keyChangeActivity extends ActionBarActivity {
 
+    LinearLayout layout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_key_change);
+
         ArrayList<User> arrayofusers = new ArrayList<User>();
+        //layout = (LinearLayout) findViewById(R.id.userlayout);
+
         UsersAdapter adapter = new UsersAdapter(this, arrayofusers);
         ListView listView = (ListView) findViewById(R.id.sharedKeys);
         listView.setAdapter(adapter);
@@ -55,7 +67,7 @@ public class keyChangeActivity extends ActionBarActivity {
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(user1);
         jsonArray.put(user2);
-        ArrayList<User> newUsers = User.fromJson(jsonArray);
+        ArrayList<User> newUsers = User.fromJson(jsonArray);//, layout, this);
         adapter.addAll(newUsers);
     }
     @Override

@@ -15,6 +15,9 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.MessageDigest;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 /**
  * Created by rdz on 8/14/2015.
@@ -23,6 +26,12 @@ public class BKTask extends AsyncTask <String, Void, String> {
     private String name = "";
     private String password="";
     private static final String TAG = "BACKEND";
+    public LoginActivity activity;
+
+    public BKTask(LoginActivity a)
+    {
+        this.activity = a;
+    }
 
     @Override
     protected String doInBackground(String ... urls){
@@ -45,6 +54,7 @@ public class BKTask extends AsyncTask <String, Void, String> {
             }
         }catch(IOException e1){
             e1.printStackTrace();
+            Log.i(TAG, "THIS FAILED IN STREAM");
         }
         return output.toString();
     }
@@ -61,7 +71,7 @@ public class BKTask extends AsyncTask <String, Void, String> {
             httpconnection.connect();
 
             OutputStreamWriter writer = new OutputStreamWriter(httpconnection.getOutputStream());
-            String urlParameters = "username="+name+"&password="+password;
+            String urlParameters = "username="+name+"&password="+password;//"username=dthiriez&password=rvi";
             writer.write(urlParameters);
             writer.flush();
 
@@ -71,6 +81,7 @@ public class BKTask extends AsyncTask <String, Void, String> {
             writer.close();
         }catch(Exception ex){
             ex.printStackTrace();
+            Log.i(TAG, "THIS FAILED IN CONNECTION");
         }
 
         return stream;
@@ -79,6 +90,8 @@ public class BKTask extends AsyncTask <String, Void, String> {
     @Override
     protected void onPostExecute(String output){
         Log.d(TAG, output);
+        activity.setStatus(output);
+
     }
 
     public void setUser(String user){
