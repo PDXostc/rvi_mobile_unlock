@@ -1,10 +1,15 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
+import android.app.ActionBar;
+import android.widget.Button;
+import android.widget.LinearLayout;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Created by rdz on 8/12/2015.
@@ -40,11 +45,12 @@ public class User {
         }
     }
 
-    public static ArrayList<User> fromJson(JSONArray jsonobjects){
+    public static ArrayList<User> fromJson(JSONArray jsonobjects){//,LinearLayout layout, keyChangeActivity activity){
         ArrayList<User> users = new ArrayList<User>();
         for(int i=0; i <jsonobjects.length();i++){
             try{
                 users.add(new User(jsonobjects.getJSONObject(i)));
+
             }catch(JSONException e){
                 e.printStackTrace();
             }

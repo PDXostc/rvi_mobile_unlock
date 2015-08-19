@@ -5,8 +5,13 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
+import android.graphics.Point;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.Layout;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,6 +31,8 @@ import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ExpandableListView.OnGroupClickListener;
 import android.widget.ExpandableListView.OnGroupCollapseListener;
 import android.widget.ExpandableListView.OnGroupExpandListener;
+import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -45,62 +52,34 @@ public class keyShareActivity extends ActionBarActivity {
     private TextView activeDialog;
     private TextView activeTime;
     private Button shareKeyBtn;
-    private String selectedUser;
-    private String selectedvehicle;
     private CheckBox lock_unlock;
     private CheckBox enginestart;
     JSONObject user = new JSONObject();
     JSONArray jsonArray = new JSONArray();
+    ViewPager userPages;
+    ViewPager carPages;
+    int[] users={R.drawable.bjamal,
+    R.drawable.llesavre,
+    R.drawable.arodriguez,
+    R.drawable.dthiriez};
+    int[] vehicles = {R.drawable.sciontc};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_key_share);
+        showSelect();
+        showDialog();
+
         shareKeyBtn = (Button) findViewById(R.id.ShareBtn);
         lock_unlock = (CheckBox) findViewById(R.id.lock_unlock);
         enginestart = (CheckBox) findViewById(R.id.enginestart);
-
-        showDialog();
-        final Spinner userdropdown = (Spinner) findViewById(R.id.spinner1);
-        final String[] users = new String[]{"dthiriez", "arodriguez"};
-        final ArrayAdapter<String> useradapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, users);
-        userdropdown.setAdapter(useradapter);
-
-        userdropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedUser = parent.getItemAtPosition(position).toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                selectedUser = null;
-            }
-        });
-
-        Spinner cardropdown = (Spinner) findViewById(R.id.spinner2);
-        final String[] vehicles = new String[]{"Vehicle1", "Vehicle2"};
-        ArrayAdapter<String> caradapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, vehicles);
-        cardropdown.setAdapter(caradapter);
-
-        cardropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedvehicle = parent.getItemAtPosition(position).toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                selectedvehicle = null;
-            }
-        });
-
         shareKeyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(selectedUser != null | selectedvehicle!=null){
+                /*if (selectedUser != null | selectedvehicle != null) {
                     alertMessage();
-                }
+                }*/
             }
         });
     }
@@ -122,7 +101,25 @@ public class keyShareActivity extends ActionBarActivity {
                 .setPositiveButton("Share Key", dialogClickListener)
                 .setNegativeButton("Cancel", dialogClickListener).show();
     }
+    public void showSelect(){
 
+        ScrollPageAdapter userPageAdapter = new ScrollPageAdapter(this, users);
+        userPages = (ViewPager) findViewById(R.id.userscroll);
+        userPages.setOffscreenPageLimit(2);
+        userPages.setPageMargin(-500);
+        userPages.setHorizontalFadingEdgeEnabled(true);
+        userPages.setFadingEdgeLength(50);
+        userPages.setAdapter(userPageAdapter);
+
+        ScrollPageAdapter carPageAdapter = new ScrollPageAdapter(this, vehicles);
+        carPages = (ViewPager) findViewById(R.id.vehiclescroll);
+        userPages.setOffscreenPageLimit(2);
+        carPages.setPageMargin(-500);
+        carPages.setHorizontalFadingEdgeEnabled(true);
+        carPages.setFadingEdgeLength(50);
+        carPages.setAdapter(carPageAdapter);
+
+    }
     public void showDialog(){
         final Calendar cal = Calendar.getInstance();
         year_x = cal.get(Calendar.YEAR);
