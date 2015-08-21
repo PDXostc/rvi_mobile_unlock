@@ -6,11 +6,13 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.graphics.Point;
+import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Layout;
+import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,8 +20,11 @@ import android.view.View;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -34,6 +39,7 @@ import android.widget.ExpandableListView.OnGroupExpandListener;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -43,7 +49,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class keyShareActivity extends ActionBarActivity {
-
+    String TAG = "JSON DATA:";
     int year_x, month_x, day_x, hour_x, min_x;
     String am_pm;
     TextView startdate, enddate, starttime, endtime;
@@ -52,10 +58,8 @@ public class keyShareActivity extends ActionBarActivity {
     private TextView activeDialog;
     private TextView activeTime;
     private Button shareKeyBtn;
-    private CheckBox lock_unlock;
-    private CheckBox enginestart;
-    JSONObject user = new JSONObject();
-    JSONArray jsonArray = new JSONArray();
+    private Switch lock_unlock;
+    private Switch enginestart;
     ViewPager userPages;
     ViewPager carPages;
     int[] users={R.drawable.bjamal,
@@ -68,18 +72,27 @@ public class keyShareActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_key_share);
-        showSelect();
+        ArrayList<String> userList = new ArrayList<String>();
+        ArrayList<String> vehicleList = new ArrayList<String>();
+        //userList = rcvDataList(dummyData(), getResources().getString(R.string.USERNAME));
+        //vehicleList = rcvDataList(dummyData(), getResources().getString(R.string.VEHICLE));
+        Log.i(TAG, dummyData().toString());
+
+        //setUserImage(userList);
+        //setVehicleImage(vehicleList);
+        //showSelect();
         showDialog();
 
         shareKeyBtn = (Button) findViewById(R.id.ShareBtn);
-        lock_unlock = (CheckBox) findViewById(R.id.lock_unlock);
-        enginestart = (CheckBox) findViewById(R.id.enginestart);
+        lock_unlock = (Switch) findViewById(R.id.lock_unlock);
+        enginestart = (Switch) findViewById(R.id.engine);
+
         shareKeyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*if (selectedUser != null | selectedvehicle != null) {
-                    alertMessage();
-                }*/
+
+                //String selectedUser = getResources().getString(users[userPages.getCurrentItem()]);
+                //Toast.makeText(keyShareActivity.this, selectedUser, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -120,6 +133,7 @@ public class keyShareActivity extends ActionBarActivity {
         carPages.setAdapter(carPageAdapter);
 
     }
+
     public void showDialog(){
         final Calendar cal = Calendar.getInstance();
         year_x = cal.get(Calendar.YEAR);
@@ -184,6 +198,7 @@ public class keyShareActivity extends ActionBarActivity {
         }
         timeDisplay.setText(hour_x+":"+newMin+""+am_pm);
     }
+
     @Override
     protected Dialog onCreateDialog(int id){
         if(id == dateDialog)
@@ -230,6 +245,8 @@ public class keyShareActivity extends ActionBarActivity {
             updateTime(activeTime);
         }
     };
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -250,5 +267,61 @@ public class keyShareActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void setUserImage(ArrayList<String> userList){
+
+        for(int i=0; i<userList.size();i++){
+            users[i]= getResources().getIdentifier(userList.get(i),"drawable", getPackageName());
+        }
+    }
+
+    public void setVehicleImage(ArrayList<String> carList){
+
+        for(int i=0; i<carList.size();i++){
+            vehicles[i]= getResources().getIdentifier(carList.get(i),"drawable", getPackageName());
+        }
+    }
+    public ArrayList<String> rcvDataList(JSONArray data, String datatype){
+        JSONObject object = new JSONObject();
+        ArrayList<String> item = new ArrayList<String>();
+        List<String> oldData = new ArrayList<String>();
+        int repeatcount =0;
+        for(int i=0; i <data.length();i++){
+            try{
+                    item.add(object.getString(datatype));
+            }catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
+        return item;
+    }
+
+    public JSONArray dummyData(){
+        JSONObject users = new JSONObject();
+        JSONObject vehicle = new JSONObject();
+        try{
+            users.accumulate("user", "arodriguez");
+            users.accumulate("user", "dthiriez");
+            users.accumulate("user", "llesavre");
+            users.accumulate("user", "bjamal");
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+
+        try{
+            vehicle.accumulate("vehicle", "sciontc");
+            vehicle.accumulate("vehicle", "hasdjklhfsdjhf");
+            vehicle.accumulate("services", "lock=true");
+            vehicle.accumulate("services", "engine=true");
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+
+        JSONArray jsonArray = new JSONArray();
+
+        jsonArray.put(users);
+        jsonArray.put(vehicle);
+        return jsonArray;
     }
 }
