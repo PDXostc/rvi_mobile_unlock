@@ -1,9 +1,14 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
+import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Typeface;
 import android.net.http.HttpResponseCache;
+import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -37,38 +42,111 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
-public class LoginActivity extends ActionBarActivity{
 
-    private Button login;
-    public EditText userName;
-    public EditText password;
+public class LoginActivity extends ActionBarActivity implements LoginActivityFragment.LoginFragmentButtonListener{
+
     private static final String TAG = "RVI";
     private String status = "false";
     private Boolean auth = Boolean.FALSE;
+    private RviService rviService = null;
+    private LoginActivityFragment login_fragment = null;
+    private boolean bound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login2);
-        Typeface fontawesome = Typeface.createFromAsset(getAssets(), "fonts/fontawesome-webfont.ttf");
-        login = (Button)findViewById(R.id.loginBtn);
-        login.setTypeface(fontawesome);
-        userName = (EditText) findViewById(R.id.username);
-        password = (EditText) findViewById(R.id.password);
+        handleExtra(getIntent());
+        login_fragment = (LoginActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlogin);
 
-        login.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                submit(v);
-            }
-        });
+        doBindService();
     }
+
+    @Override
+    public void onDestroy() {
+        Log.i(TAG, "onDestroy() Activity");
+        doUnbindService();
+
+        super.onDestroy();
+        //For testing cleanup
+        //Intent i = new Intent(this, RviService.class);
+        //stopService(i);
+    }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            //mService = new Messenger(service);
+
+            rviService = ((RviService.RviBinder)service).getService();
+
+            rviService.servicesAvailable().
+                    subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Observer<String>() {
+                        @Override
+                        public void onCompleted() {
+
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+
+                        }
+
+                        @Override
+                        public void onNext(String s) {
+                            Log.i(TAG, "X: "+s);
+                            login_fragment.onNewServiceDiscovered(s);
+                            //Toast.makeText(LockActivity.this, "X: "+s, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+            // Tell the user about this for our demo.
+            Toast.makeText(LoginActivity.this, "RVI service connected",
+                    Toast.LENGTH_SHORT).show();
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            rviService = null;
+            Toast.makeText(LoginActivity.this, "RVI service disconnected",
+                    Toast.LENGTH_SHORT).show();
+        }
+    };
+
+
+    @Override
+    public void onButtonCommand(View v) {
+        submit(v);
+    }
+
+    void doBindService() {
+        // Establish a connection with the service.  We use an explicit
+        // class name because we want a specific service implementation that
+        // we know will be running in our own process (and thus won't be
+        // supporting component replacement by other applications).
+        bindService(new Intent(LoginActivity.this,
+                RviService.class), mConnection, Context.BIND_AUTO_CREATE);
+        bound = true;
+    }
+
+    void doUnbindService() {
+        if (bound) {
+            // Detach our existing connection.
+            unbindService(mConnection);
+            bound = false;
+        }
+    }
+
+
 
     public void submit(View v){
         BKTask task = new BKTask(this);
-        task.setUser(userName.getEditableText().toString());
-        task.setpWd(password.getEditableText().toString());
+        task.setUser(login_fragment.userName.getEditableText().toString());
+        task.setpWd(login_fragment.password.getEditableText().toString());
         task.execute(new String[]{"http://ec2-54-172-25-254.compute-1.amazonaws.com:8000/token/new.json"});
     }
 
@@ -110,9 +188,36 @@ public class LoginActivity extends ActionBarActivity{
             startActivity(intent);
         }
         else{
-            userName.setText("");
-            password.setText("");
+            login_fragment.userName.setText("");
+            login_fragment.password.setText("");
             Toast.makeText(LoginActivity.this,"username and password don't match",Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void onNewServiceDiscovered(String... service) {
+        for(String s:service)
+            Log.e(TAG, "Service = " + s);
+    }
+
+    private void handleExtra(Intent intent) {
+        Bundle extras = intent.getExtras();
+        if( extras != null && extras.size() > 0 ) {
+            for(String k : extras.keySet()) {
+                Log.i(TAG, "k = " + k+" : "+extras.getString(k));
+            }
+        }
+        if( extras != null && "dialog".equals(extras.get("_extra1")) ) {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setTitle("" + extras.get("_extra2"));
+            alertDialogBuilder
+                    .setMessage(""+extras.get("_extra3"))
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+            alertDialogBuilder.create().show();
         }
     }
 }

@@ -41,7 +41,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
     private RviService rviService = null;
 
-    LockActivityFragment fragment = null;
+    LockActivityFragment lock_fragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,8 +51,8 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         handleExtra(getIntent());
 
         setContentView(R.layout.activity_lock);
-        fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragment);
-        doBindService();
+        lock_fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlock);
+        //doBindService();
     }
 
     @Override
@@ -87,7 +87,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     public void onDestroy() {
         Log.i(TAG, "onDestroy() Activity");
-        doUnbindService();
+        //doUnbindService();
 
         super.onDestroy();
         //For testing cleanup
@@ -122,64 +122,6 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private ServiceConnection mConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            //mService = new Messenger(service);
-
-            rviService = ((RviService.RviBinder)service).getService();
-
-            rviService.servicesAvailable().
-                    subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Observer<String>() {
-                        @Override
-                        public void onCompleted() {
-
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-
-                        }
-
-                        @Override
-                        public void onNext(String s) {
-                            Log.i(TAG, "X: "+s);
-                            fragment.onNewServiceDiscovered(s);
-                            //Toast.makeText(LockActivity.this, "X: "+s, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
-            // Tell the user about this for our demo.
-            Toast.makeText(LockActivity.this, "RVI service connected",
-                    Toast.LENGTH_SHORT).show();
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            rviService = null;
-            Toast.makeText(LockActivity.this, "RVI service disconnected",
-                    Toast.LENGTH_SHORT).show();
-        }
-    };
-
-    void doBindService() {
-        // Establish a connection with the service.  We use an explicit
-        // class name because we want a specific service implementation that
-        // we know will be running in our own process (and thus won't be
-        // supporting component replacement by other applications).
-        bindService(new Intent(LockActivity.this,
-                RviService.class), mConnection, Context.BIND_AUTO_CREATE);
-        bound = true;
-    }
-
-    void doUnbindService() {
-        if (bound) {
-            // Detach our existing connection.
-            unbindService(mConnection);
-            bound = false;
-        }
     }
 
     @Override
