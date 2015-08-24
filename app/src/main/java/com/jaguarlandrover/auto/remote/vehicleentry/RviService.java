@@ -225,9 +225,11 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         String jwt = p2.getString("certificate");
                         Log.i(TAG, "Received from Cloud Cert ID: " + certId);
                         Log.i(TAG, "JWT = " + jwt);
-                        //Log.i(TAG, "User Data:"+p3.toString());
+                        Log.i(TAG, "User Data:"+p3);
                        // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
-
+                        SharedPreferences.Editor e = prefs.edit();
+                        e.putString("Userdata",p3.toString());
+                        e.commit();
 
                         certs.put(certId, jwt);
                         //Debug

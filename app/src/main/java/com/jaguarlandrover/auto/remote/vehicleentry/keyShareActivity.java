@@ -5,6 +5,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
@@ -48,7 +49,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class keyShareActivity extends ActionBarActivity {
+public class keyShareActivity extends ActionBarActivity implements keyShareActivityFragment.ShareFragmentButtonListener {
     String TAG = "JSON DATA:";
     int year_x, month_x, day_x, hour_x, min_x;
     String am_pm;
@@ -66,35 +67,34 @@ public class keyShareActivity extends ActionBarActivity {
     R.drawable.llesavre,
     R.drawable.arodriguez,
     R.drawable.dthiriez};
+
     int[] vehicles = {R.drawable.sciontc};
+    keyShareActivityFragment share_fragment = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        handleExtra(getIntent());
+
         setContentView(R.layout.activity_key_share);
+
+        share_fragment = (keyShareActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentshare);
+
         ArrayList<String> userList = new ArrayList<String>();
         ArrayList<String> vehicleList = new ArrayList<String>();
         //userList = rcvDataList(dummyData(), getResources().getString(R.string.USERNAME));
         //vehicleList = rcvDataList(dummyData(), getResources().getString(R.string.VEHICLE));
-        Log.i(TAG, dummyData().toString());
+        //Log.i(TAG, dummyData().toString());
 
-        //setUserImage(userList);
+         //setUserImage(userList);
         //setVehicleImage(vehicleList);
-        //showSelect();
-        showDialog();
-
-        shareKeyBtn = (Button) findViewById(R.id.ShareBtn);
-        lock_unlock = (Switch) findViewById(R.id.lock_unlock);
-        enginestart = (Switch) findViewById(R.id.engine);
-
-        shareKeyBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
+        share_fragment.showSelect();
+        share_fragment.showDialog();
                 //String selectedUser = getResources().getString(users[userPages.getCurrentItem()]);
                 //Toast.makeText(keyShareActivity.this, selectedUser, Toast.LENGTH_LONG).show();
-            }
-        });
     }
 
     public void alertMessage(){
@@ -114,138 +114,15 @@ public class keyShareActivity extends ActionBarActivity {
                 .setPositiveButton("Share Key", dialogClickListener)
                 .setNegativeButton("Cancel", dialogClickListener).show();
     }
-    public void showSelect(){
-
-        ScrollPageAdapter userPageAdapter = new ScrollPageAdapter(this, users);
-        userPages = (ViewPager) findViewById(R.id.userscroll);
-        userPages.setOffscreenPageLimit(2);
-        userPages.setPageMargin(-500);
-        userPages.setHorizontalFadingEdgeEnabled(true);
-        userPages.setFadingEdgeLength(50);
-        userPages.setAdapter(userPageAdapter);
-
-        ScrollPageAdapter carPageAdapter = new ScrollPageAdapter(this, vehicles);
-        carPages = (ViewPager) findViewById(R.id.vehiclescroll);
-        userPages.setOffscreenPageLimit(2);
-        carPages.setPageMargin(-500);
-        carPages.setHorizontalFadingEdgeEnabled(true);
-        carPages.setFadingEdgeLength(50);
-        carPages.setAdapter(carPageAdapter);
-
-    }
-
-    public void showDialog(){
-        final Calendar cal = Calendar.getInstance();
-        year_x = cal.get(Calendar.YEAR);
-        month_x = cal.get(Calendar.MONTH);
-        month_x = month_x+1;
-        day_x = cal.get(Calendar.DAY_OF_MONTH);
-
-        startdate = new TextView(this);
-        enddate = new TextView(this);
-        starttime = new TextView(this);
-        endtime = new TextView(this);
-
-        startdate =(TextView)findViewById(R.id.startlblDate);
-        enddate = (TextView) findViewById(R.id.endlblDate);
-        starttime = (TextView) findViewById(R.id.starttimeLbl);
-        endtime = (TextView) findViewById(R.id.endtimeLbl);
-
-        startdate.setText(month_x+"/"+day_x+"/"+year_x);
-        enddate.setText(month_x + "/" + day_x + "/" + year_x);
-
-        startdate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                activeDialog = startdate;
-                showDialog(dateDialog);
-            }
-        });
-
-        enddate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                activeDialog = enddate;
-                showDialog(dateDialog);
-            }
-        });
-
-        starttime.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                activeTime = starttime;
-                showDialog(timeDialog);
-            }
-        });
-        endtime.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                activeTime = endtime;
-                showDialog(timeDialog);
-            }
-        });
-
-    }
-    private void updateDisplay(TextView dateDisplay) {
-        dateDisplay.setText(month_x+"/"+day_x+"/"+year_x);
-    }
-    private void updateTime(TextView timeDisplay){
-        String newMin;
-        newMin = String.valueOf(min_x);
-        if (min_x <10)
-        {
-            newMin = "0"+String.valueOf(min_x);
-        }
-        timeDisplay.setText(hour_x+":"+newMin+""+am_pm);
-    }
 
     @Override
     protected Dialog onCreateDialog(int id){
         if(id == dateDialog)
-            return new DatePickerDialog(this, dpickerListener , year_x, month_x-1, day_x);
+            return new DatePickerDialog(this, share_fragment.getdplistener() , year_x, month_x-1, day_x);
         if(id == timeDialog)
-            return  new TimePickerDialog(this, tpickerListener, hour_x, min_x, false);
+            return  new TimePickerDialog(this, share_fragment.gettplistener(), hour_x, min_x, false);
         return null;
     }
-
-    private DatePickerDialog.OnDateSetListener dpickerListener
-            =new DatePickerDialog.OnDateSetListener(){
-        @Override
-        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayofMonth){
-            year_x = year;
-            month_x = monthOfYear+1;
-            day_x = dayofMonth;
-            updateDisplay(activeDialog);
-
-        }
-    };
-
-    private TimePickerDialog.OnTimeSetListener tpickerListener = new TimePickerDialog.OnTimeSetListener(){
-        @Override
-        public void onTimeSet(TimePicker view,int hourOfDay, int minute ){
-            am_pm = "AM";
-            hour_x = hourOfDay;
-
-            if(hourOfDay > 11)
-            {
-                am_pm = "PM";
-                if(hourOfDay == 12)
-                {}
-                else {
-                    hour_x = hourOfDay - 12;
-                }
-            }
-            if(hourOfDay == 0)
-            {
-                hour_x=hourOfDay+12;
-            }
-
-            min_x = minute;
-
-            updateTime(activeTime);
-        }
-    };
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -269,6 +146,44 @@ public class keyShareActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void handleExtra(Intent intent) {
+        Bundle extras = intent.getExtras();
+        if( extras != null && extras.size() > 0 ) {
+            for(String k : extras.keySet()) {
+                Log.i(TAG, "k = " + k+" : "+extras.getString(k));
+            }
+        }
+        if( extras != null && "dialog".equals(extras.get("_extra1")) ) {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setTitle(""+extras.get("_extra2"));
+            alertDialogBuilder
+                    .setMessage(""+extras.get("_extra3"))
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+            alertDialogBuilder.create().show();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i(TAG, "onDestroy() Activity");
+        //doUnbindService();
+
+        super.onDestroy();
+        //For testing cleanup
+        //Intent i = new Intent(this, RviService.class);
+        //stopService(i);
+    }
+
+    @Override
+    public void onButtonCommand(View v) {
+        Log.i(TAG,"BUTTON CLICKED"+v.toString());
+    }
+
     public void setUserImage(ArrayList<String> userList){
 
         for(int i=0; i<userList.size();i++){
@@ -285,19 +200,26 @@ public class keyShareActivity extends ActionBarActivity {
     public ArrayList<String> rcvDataList(JSONArray data, String datatype){
         JSONObject object = new JSONObject();
         ArrayList<String> item = new ArrayList<String>();
-        List<String> oldData = new ArrayList<String>();
         int repeatcount =0;
-        for(int i=0; i <data.length();i++){
+        try {
+            object = data.getJSONObject(1);
+            for(int i=0; i<object.length();i++){
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        /*for(int i=0; i <data.length();i++){
             try{
-                    item.add(object.getString(datatype));
+                object = data.getJSONObject(i);
+                item.add(object.getString());
             }catch(JSONException e){
                 e.printStackTrace();
             }
-        }
+        }*/
         return item;
     }
 
-    public JSONArray dummyData(){
+  /*  public JSONArray dummyData(){
         JSONObject users = new JSONObject();
         JSONObject vehicle = new JSONObject();
         try{
@@ -310,8 +232,8 @@ public class keyShareActivity extends ActionBarActivity {
         }
 
         try{
-            vehicle.accumulate("vehicle", "sciontc");
-            vehicle.accumulate("vehicle", "hasdjklhfsdjhf");
+            vehicle.accumulate("vehiclename", "sciontc");
+            vehicle.accumulate("vehiclename", "hasdjklhfsdjhf");
             vehicle.accumulate("services", "lock=true");
             vehicle.accumulate("services", "engine=true");
         }catch (JSONException e){
@@ -323,5 +245,5 @@ public class keyShareActivity extends ActionBarActivity {
         jsonArray.put(users);
         jsonArray.put(vehicle);
         return jsonArray;
-    }
+    }*/
 }
