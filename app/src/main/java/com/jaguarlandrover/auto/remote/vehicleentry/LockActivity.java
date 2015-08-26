@@ -190,9 +190,6 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                 intent.setClass(LockActivity.this, keyChangeActivity.class);
                 startActivityForResult(intent, 0);
                 break;
-            case "demo":
-                showMessage();
-                break;
         }
     }
 }
