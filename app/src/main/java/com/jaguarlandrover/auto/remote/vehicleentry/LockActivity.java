@@ -24,8 +24,14 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
@@ -55,12 +61,25 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         //doBindService();
     }
 
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         handleExtra(intent);
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        SharedPreferences sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor e = sharedpref.edit();
+        if(sharedpref.getString("newdata","nothing").equals("true")){
+            keyUpdate();
+            e.putString("newdata","false");
+            e.commit();
+        }
+
+    }
     private void handleExtra(Intent intent) {
         Bundle extras = intent.getExtras();
         if( extras != null && extras.size() > 0 ) {
@@ -70,7 +89,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         }
         if( extras != null && "dialog".equals(extras.get("_extra1")) ) {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-            alertDialogBuilder.setTitle(""+extras.get("_extra2"));
+            alertDialogBuilder.setTitle("" + extras.get("_extra2"));
             alertDialogBuilder
                     .setMessage(""+extras.get("_extra3"))
                     .setCancelable(false)
@@ -130,6 +149,35 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         rviService.service(cmd);
     }
 
+    public void keyUpdate(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
+        builder.setInverseBackgroundForced(true);
+        builder.setMessage("Updates have been made").setCancelable(false).setPositiveButton("OK",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = getIntent();
+                        finish();
+                        startActivity(intent);
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    public void showMessage(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
+        builder.setInverseBackgroundForced(true);
+        builder.setMessage("Matt has unlocked your car").setCancelable(false).setPositiveButton("OK",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
     @Override
     public void keyShareCommand(String key){
         Intent intent = new Intent();
@@ -141,6 +189,9 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             case "keychange":
                 intent.setClass(LockActivity.this, keyChangeActivity.class);
                 startActivityForResult(intent, 0);
+                break;
+            case "demo":
+                showMessage();
                 break;
         }
     }
