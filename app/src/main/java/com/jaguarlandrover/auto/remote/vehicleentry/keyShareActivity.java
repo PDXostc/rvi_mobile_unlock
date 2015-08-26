@@ -67,10 +67,9 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
     int[] users={R.drawable.bjamal,
     R.drawable.llesavre,
     R.drawable.dthiriez,
-    R.drawable.mbontrager,
     R.drawable.arodriguez};
 
-    int[] vehicles = {R.drawable.ftype};
+    int[] vehicles = {R.drawable.sciontc};
     keyShareActivityFragment share_fragment = null;
 
 
