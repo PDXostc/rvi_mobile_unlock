@@ -26,7 +26,6 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
@@ -172,11 +171,12 @@ public class RviService extends Service /* implements BeaconConsumer */{
     }
 
     private void _connectConnect() {
-        String rviServer = prefs.getString("pref_rvi_server","rvi-test1.nginfotpdx.net");
+        String rviServer = prefs.getString("pref_rvi_server", "rvi-test1.nginfotpdx.net");
         int rviPort = Integer.parseInt(prefs.getString("pref_rvi_server_port","8807"));
 
         //Create service vector
         final String certProv = "jlr.com/mobile/" + tm.getDeviceId() + "/dm/cert_provision";
+        final String certRsp = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_response";
         final String[] ss = {certProv};
 
         final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
@@ -206,7 +206,6 @@ public class RviService extends Service /* implements BeaconConsumer */{
                 try {
                     String cmd = s.getString("cmd");
                     cmd.toLowerCase().trim();
-
                     //TODO here add Cert validation!
 
                     if ("rcv".equals(cmd)) {
@@ -232,10 +231,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
                        // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
                         SharedPreferences.Editor e = prefs.edit();
                         e.putString("Userdata",p3.toString());
-                        e.putString("newdata", "true");
+                        e.putString("newdate","true");
                         e.commit();
-
-
 
                         certs.put(certId, jwt);
                         //Debug
