@@ -9,6 +9,8 @@
 
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -16,6 +18,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
@@ -23,6 +26,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
@@ -59,7 +63,6 @@ public class RviService extends Service /* implements BeaconConsumer */{
     private ConnectivityManager cm;
     private TelephonyManager tm;
     private ConcurrentHashMap<String,Long> visible = new ConcurrentHashMap<String, Long>();
-
 
     //private int timeoutSec = 10; //If beacon did not report in 10 sec then remove
 
@@ -225,11 +228,14 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         String jwt = p2.getString("certificate");
                         Log.i(TAG, "Received from Cloud Cert ID: " + certId);
                         Log.i(TAG, "JWT = " + jwt);
-                        Log.i(TAG, "User Data:"+p3);
+                        Log.i(TAG, "User Data:" + p3);
                        // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
                         SharedPreferences.Editor e = prefs.edit();
                         e.putString("Userdata",p3.toString());
+                        e.putString("newdata", "true");
                         e.commit();
+
+
 
                         certs.put(certId, jwt);
                         //Debug

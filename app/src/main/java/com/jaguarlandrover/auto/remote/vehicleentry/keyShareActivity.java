@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.locks.Lock;
 
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -65,10 +66,11 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
     ViewPager carPages;
     int[] users={R.drawable.bjamal,
     R.drawable.llesavre,
-    R.drawable.arodriguez,
-    R.drawable.dthiriez};
+    R.drawable.dthiriez,
+    R.drawable.mbontrager,
+    R.drawable.arodriguez};
 
-    int[] vehicles = {R.drawable.sciontc};
+    int[] vehicles = {R.drawable.ftype};
     keyShareActivityFragment share_fragment = null;
 
 
@@ -96,6 +98,14 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
                 //String selectedUser = getResources().getString(users[userPages.getCurrentItem()]);
                 //Toast.makeText(keyShareActivity.this, selectedUser, Toast.LENGTH_LONG).show();
     }
+    @Override
+    protected Dialog onCreateDialog(int id){
+        if(id == dateDialog)
+            return new DatePickerDialog(this,share_fragment.getdplistener(), share_fragment.getyear(), share_fragment.getmonth()-1, share_fragment.getday());
+        if(id == timeDialog)
+            return  new TimePickerDialog(this, share_fragment.gettplistener(), share_fragment.gethour(), share_fragment.getmin(), false);
+        return null;
+    }
 
     public void alertMessage(){
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener(){
@@ -113,15 +123,6 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
         builder.setMessage("Are you sure?")
                 .setPositiveButton("Share Key", dialogClickListener)
                 .setNegativeButton("Cancel", dialogClickListener).show();
-    }
-
-    @Override
-    protected Dialog onCreateDialog(int id){
-        if(id == dateDialog)
-            return new DatePickerDialog(this, share_fragment.getdplistener() , year_x, month_x-1, day_x);
-        if(id == timeDialog)
-            return  new TimePickerDialog(this, share_fragment.gettplistener(), hour_x, min_x, false);
-        return null;
     }
 
     @Override
@@ -181,6 +182,7 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
 
     @Override
     public void onButtonCommand(View v) {
+        finish();
         Log.i(TAG,"BUTTON CLICKED"+v.toString());
     }
 
