@@ -51,6 +51,7 @@ public abstract class RviProtocol {
         return auth;
     }
 
+
     //{"tid":1,"cmd":"rcv","mod":"proto_json_rpc","data":"eyJzZXJ2aWNlIjoiamxyLmNvbS9idC9zdG9mZmUvbG9jayIsInRpbWVvdXQiOjE
     //0MzQwNTMyNTkwMDAsInBhcmFtZXRlcnMiOlt7ImEiOiJiIn1dLCJzaWduYXR1cmUiOiJzaWduYXR1cmUiLCJjZXJ0aWZpY2F
     //0ZSI6ImNlcnRpZmljYXRlIn0="}

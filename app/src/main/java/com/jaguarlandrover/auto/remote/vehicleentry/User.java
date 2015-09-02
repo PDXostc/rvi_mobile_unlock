@@ -45,7 +45,7 @@ public class User {
         }
     }
 
-    public static ArrayList<User> fromJson(JSONArray jsonobjects){//,LinearLayout layout, keyChangeActivity activity){
+    public static ArrayList<User> fromJson(JSONArray jsonobjects){//,LinearLayout layout, keyRevokeActivity activity){
         ArrayList<User> users = new ArrayList<User>();
         for(int i=0; i <jsonobjects.length();i++){
             try{

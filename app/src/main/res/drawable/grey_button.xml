@@ -50,10 +50,10 @@
                 android:radius="14dp"/>
             <gradient
                 android:angle="90"
-                android:centerColor="#1A1A24"
+                android:centerColor="#ff757575"
                 android:centerX="50%"
-                android:startColor="#636363"
-                android:endColor="#636363"/>
+                android:startColor="#ffc6c6c6"
+                android:endColor="#ffc6c6c6"/>
             <stroke
                 android:color="#878787"
                 android:width="3dp" />

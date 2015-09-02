@@ -22,6 +22,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
+import android.nfc.Tag;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -169,7 +170,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
         return mBinder;
     }
-
+    private static final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
     private void _connectConnect() {
         String rviServer = prefs.getString("pref_rvi_server", "rvi-test1.nginfotpdx.net");
         int rviPort = Integer.parseInt(prefs.getString("pref_rvi_server_port","8807"));
@@ -179,7 +180,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
         final String certRsp = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_response";
         final String[] ss = {certProv};
 
-        final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
+        //final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
 
         Observable<JSONObject> obs = connectCloud(ss, rviServer, rviPort , cm, cloudSender);
 
@@ -228,10 +229,10 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         Log.i(TAG, "Received from Cloud Cert ID: " + certId);
                         Log.i(TAG, "JWT = " + jwt);
                         Log.i(TAG, "User Data:" + p3);
-                       // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
+                        // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
                         SharedPreferences.Editor e = prefs.edit();
-                        e.putString("Userdata",p3.toString());
-                        e.putString("newdate","true");
+                        e.putString("Userdata", p3.toString());
+                        e.putString("newdata", "true");
                         e.commit();
 
                         certs.put(certId, jwt);
@@ -330,9 +331,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
         public void onNext(final RangeObject ro) {
             //Log.w(TAG, "Beacon Ranger Object : " + ro);
 
-            final int unlockDistance = Integer.parseInt(prefs.getString("pref_auto_unlock_dist", "1"));
-            final int connectDistance = Integer.parseInt(prefs.getString("pref_auto_conn_dist", "3"));
-            final int lockDistance = Integer.parseInt(prefs.getString("pref_auto_lock_dist", "10"));
+            final double unlockDistance = Integer.parseInt(prefs.getString("pref_auto_unlock_dist", "1"));
+            final double connectDistance = Integer.parseInt(prefs.getString("pref_auto_conn_dist", "3"));
+            final double lockDistance = Integer.parseInt(prefs.getString("pref_auto_lock_dist", "10"));
 
             Log.d(TAG,"distance:"+ro.distance+", lockDistance:"+lockDistance+", unlockDistance:"+unlockDistance+", connectDistance:"+connectDistance);
             Log.d(TAG,"connected:"+connected+", connecting:"+connecting+", unlocked:"+unlocked);
@@ -812,4 +813,16 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
     }
 
+    public static void sendaKey(JSONArray json){
+        JSONObject send;
+        try{
+            send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_create",json,"","");
+            Log.d(TAG,"Successfully sent"+send.toString());
+            cloudSender.onNext(send);
+        }catch(Exception e) {
+            e.printStackTrace();
+            cloudSender.onError(e);
+        }
+
+    }
 }
