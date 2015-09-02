@@ -10,32 +10,16 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.Messenger;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.HorizontalScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-
-import rx.Observer;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 
 public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener {
@@ -182,15 +166,12 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     public void keyShareCommand(String key){
         Intent intent = new Intent();
         switch(key) {
-            case "demo":
-                showMessage();
-                break;
             case "keyshare":
             intent.setClass(LockActivity.this, keyShareActivity.class);
             startActivityForResult(intent, 0);
                 break;
             case "keychange":
-                intent.setClass(LockActivity.this, keyChangeActivity.class);
+                intent.setClass(LockActivity.this, keyRevokeActivity.class);
                 startActivityForResult(intent, 0);
                 break;
         }

@@ -52,31 +52,16 @@ import org.json.JSONObject;
 
 public class keyShareActivity extends ActionBarActivity implements keyShareActivityFragment.ShareFragmentButtonListener {
     String TAG = "JSON DATA:";
-    int year_x, month_x, day_x, hour_x, min_x;
-    String am_pm;
-    TextView startdate, enddate, starttime, endtime;
     static final int dateDialog = 0;
     static final int timeDialog=1;
-    private TextView activeDialog;
-    private TextView activeTime;
-    private Button shareKeyBtn;
-    private Switch lock_unlock;
-    private Switch enginestart;
-    ViewPager userPages;
-    ViewPager carPages;
-    int[] users={R.drawable.bjamal,
-    R.drawable.llesavre,
-    R.drawable.dthiriez,
-    R.drawable.arodriguez};
 
-    int[] vehicles = {R.drawable.sciontc};
-    keyShareActivityFragment share_fragment = null;
+    keyShareActivityFragment share_fragment;
 
+    private RviService rviservice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
 
         handleExtra(getIntent());
 
@@ -92,7 +77,8 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
 
          //setUserImage(userList);
         //setVehicleImage(vehicleList);
-        share_fragment.showSelect();
+        share_fragment.showUserSelect();
+        share_fragment.showCarSelect();
         share_fragment.showDialog();
                 //String selectedUser = getResources().getString(users[userPages.getCurrentItem()]);
                 //Toast.makeText(keyShareActivity.this, selectedUser, Toast.LENGTH_LONG).show();
@@ -111,6 +97,13 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
             public void onClick(DialogInterface dialog, int which){
                 switch(which){
                     case DialogInterface.BUTTON_POSITIVE:
+                        rviservice.sendaKey(dummyData());
+                        try{
+                            Log.d("Form", share_fragment.getFormData().toString());
+                        }catch (Exception e){
+
+                        }
+                        finish();
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
 
@@ -180,71 +173,46 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
     }
 
     @Override
-    public void onButtonCommand(View v) {
-        finish();
-        Log.i(TAG,"BUTTON CLICKED"+v.toString());
-    }
-
-    public void setUserImage(ArrayList<String> userList){
-
-        for(int i=0; i<userList.size();i++){
-            users[i]= getResources().getIdentifier(userList.get(i),"drawable", getPackageName());
+    public void onButtonCommand(String cmd) {
+        Intent intent = new Intent();
+        switch (cmd) {
+            case "share":
+                alertMessage();
+                break;
         }
     }
 
-    public void setVehicleImage(ArrayList<String> carList){
+    public JSONArray dummyData(){
+        JSONObject user = new JSONObject();
+        JSONObject authServices = new JSONObject();
 
-        for(int i=0; i<carList.size();i++){
-            vehicles[i]= getResources().getIdentifier(carList.get(i),"drawable", getPackageName());
-        }
-    }
-    public ArrayList<String> rcvDataList(JSONArray data, String datatype){
-        JSONObject object = new JSONObject();
-        ArrayList<String> item = new ArrayList<String>();
-        int repeatcount =0;
-        try {
-            object = data.getJSONObject(1);
-            for(int i=0; i<object.length();i++){
-            }
+        try{
+            authServices.put("lock","true");
+            authServices.put("start","true");
+            authServices.put("trunk","false");
+            authServices.put("windows","false");
+            authServices.put("lights","false");
+            authServices.put("hazard","false");
+            authServices.put("horn","false");
+
         }catch (Exception e){
             e.printStackTrace();
         }
-        /*for(int i=0; i <data.length();i++){
-            try{
-                object = data.getJSONObject(i);
-                item.add(object.getString());
-            }catch(JSONException e){
-                e.printStackTrace();
-            }
-        }*/
-        return item;
-    }
-
-  /*  public JSONArray dummyData(){
-        JSONObject users = new JSONObject();
-        JSONObject vehicle = new JSONObject();
         try{
-            users.accumulate("user", "arodriguez");
-            users.accumulate("user", "dthiriez");
-            users.accumulate("user", "llesavre");
-            users.accumulate("user", "bjamal");
-        }catch (JSONException e){
-            e.printStackTrace();
-        }
+            user.put("username", "arodriguez");
+            user.put("validTo", "2015-09-30T08:01:09.000Z");
+            user.put("validFrom", "2015-08-21T23:31:59.000Z");
+            user.put("vehicleVIN", "1234567890ABCDEFG");
+            user.put("authorizedServices", authServices);
 
-        try{
-            vehicle.accumulate("vehiclename", "sciontc");
-            vehicle.accumulate("vehiclename", "hasdjklhfsdjhf");
-            vehicle.accumulate("services", "lock=true");
-            vehicle.accumulate("services", "engine=true");
+
         }catch (JSONException e){
             e.printStackTrace();
         }
 
         JSONArray jsonArray = new JSONArray();
 
-        jsonArray.put(users);
-        jsonArray.put(vehicle);
+        jsonArray.put(user);
         return jsonArray;
-    }*/
+    }
 }
