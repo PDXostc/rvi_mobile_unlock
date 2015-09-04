@@ -79,6 +79,26 @@ public abstract class RviProtocol {
         return rcvData;
     }
 
+    public static JSONObject createRequestData(int tid, String service, JSONObject params, String cert, String sig) throws JSONException {
+        JSONObject payload = new JSONObject();
+        payload.put("service", service);
+        payload.put("timeout", 1433266704); //TODO
+        payload.put("parameters", params);
+        payload.put("certificate", cert);
+        payload.put("signature", sig);
+
+        JSONObject rcvData = new JSONObject();
+        rcvData.put("tid", tid);
+        rcvData.put("cmd", "rcv");
+
+        rcvData.put("mod", "proto_json_rpc");
+        String enc = Base64.encodeToString(payload.toString().getBytes(), 0);
+        rcvData.put("data", enc);
+
+        Log.d(TAG, "rcv : " + rcvData.toString());
+        return rcvData;
+    }
+
 
     //{"sign": "","cmd": "sa","tid": 1,"svcs": ["jlr.com\/bt\/stoffe\/unlock","jlr.com\/bt\/stoffe\/unlock:lock"],"stat": "av"}
     public static JSONObject createServiceAnnouncement(int tid, String[] services, String stat, String cert, String sig) throws JSONException {

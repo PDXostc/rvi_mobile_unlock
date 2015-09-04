@@ -21,6 +21,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener {
     private static final String TAG = "RVI";
@@ -53,29 +57,30 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         SharedPreferences sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor e = sharedpref.edit();
-        if(sharedpref.getString("newdata","nothing").equals("true")){
+        if (sharedpref.getString("newdata", "nothing").equals("true")) {
             keyUpdate();
-            e.putString("newdata","false");
+            e.putString("newdata", "false");
             e.commit();
         }
 
     }
+
     private void handleExtra(Intent intent) {
         Bundle extras = intent.getExtras();
-        if( extras != null && extras.size() > 0 ) {
-            for(String k : extras.keySet()) {
-                Log.i(TAG, "k = " + k+" : "+extras.getString(k));
+        if (extras != null && extras.size() > 0) {
+            for (String k : extras.keySet()) {
+                Log.i(TAG, "k = " + k + " : " + extras.getString(k));
             }
         }
-        if( extras != null && "dialog".equals(extras.get("_extra1")) ) {
+        if (extras != null && "dialog".equals(extras.get("_extra1"))) {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setTitle("" + extras.get("_extra2"));
             alertDialogBuilder
-                    .setMessage(""+extras.get("_extra3"))
+                    .setMessage("" + extras.get("_extra3"))
                     .setCancelable(false)
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
@@ -114,11 +119,11 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             intent.setClass(LockActivity.this, AdvancedPreferenceActivity.class);
             startActivityForResult(intent, 0);
             return true;
-        } else if( id == R.id.action_reset) {
+        } else if (id == R.id.action_reset) {
             PreferenceManager.getDefaultSharedPreferences(this).edit().clear().apply(); //reset
             PreferenceManager.setDefaultValues(this, R.xml.advanced, true);
             return true;
-        } else if(id == R.id.action_quit) {
+        } else if (id == R.id.action_quit) {
             Intent i = new Intent(this, RviService.class);
             stopService(i);
             finish();
@@ -133,7 +138,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         rviService.service(cmd);
     }
 
-    public void keyUpdate(){
+    public void keyUpdate() {
         AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
         builder.setInverseBackgroundForced(true);
         builder.setMessage("Updates have been made").setCancelable(false).setPositiveButton("OK",
@@ -149,7 +154,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         alert.show();
     }
 
-    public void showMessage(){
+    public void showMessage() {
         AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
         builder.setInverseBackgroundForced(true);
         builder.setMessage("Matt has unlocked your car").setCancelable(false).setPositiveButton("OK",
@@ -162,18 +167,34 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         AlertDialog alert = builder.create();
         alert.show();
     }
+
     @Override
-    public void keyShareCommand(String key){
+    public void keyShareCommand(String key) {
         Intent intent = new Intent();
-        switch(key) {
+        switch (key) {
             case "keyshare":
-            intent.setClass(LockActivity.this, keyShareActivity.class);
-            startActivityForResult(intent, 0);
+                intent.setClass(LockActivity.this, keyShareActivity.class);
+                startActivityForResult(intent, 0);
                 break;
             case "keychange":
+                try {
+                    rviService.requestAll(fakeRequest());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
                 intent.setClass(LockActivity.this, keyRevokeActivity.class);
                 startActivityForResult(intent, 0);
                 break;
         }
     }
+    public JSONArray fakeRequest() throws JSONException {
+        JSONObject request = new JSONObject();
+        request.put("vehicleVIN", "1234567890ABCDEFG");
+
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(request);
+        return jsonArray;
+    }
+
 }
