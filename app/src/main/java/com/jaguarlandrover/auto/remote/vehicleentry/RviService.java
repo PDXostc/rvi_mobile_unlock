@@ -61,7 +61,7 @@ import rx.subjects.PublishSubject;
 public class RviService extends Service /* implements BeaconConsumer */{
     private static final String TAG = "RVI";
     private ConnectivityManager cm;
-    private TelephonyManager tm;
+    private static TelephonyManager tm;
     private ConcurrentHashMap<String,Long> visible = new ConcurrentHashMap<String, Long>();
 
     //private int timeoutSec = 10; //If beacon did not report in 10 sec then remove
@@ -178,7 +178,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
         //Create service vector
         final String certProv = "jlr.com/mobile/" + tm.getDeviceId() + "/dm/cert_provision";
         final String certRsp = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_response";
-        final String[] ss = {certProv};
+        final String[] ss = {certProv, certRsp};
 
         //final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
 
@@ -216,32 +216,63 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         }
                         JSONObject data = RviProtocol.parseData(s.getString("data"));
                         String servicePtr = data.getString("service");
+                        //ADD SERVICE HERE----*************
+
                         Log.i(TAG, "Received Service : " + servicePtr);
                         //Log.i(TAG, "Received Service : " + data);
                         //CERT SERVICE
-                        JSONArray params = data.getJSONArray("parameters");
-                        //Log.i(TAG, "Received Cert Params : " + params);
-                        JSONObject p1 = params.getJSONObject(0);
-                        JSONObject p2 = params.getJSONObject(1);
-                        JSONObject p3 = params.getJSONObject(2);
-                        String certId = p1.getString("certid");
-                        String jwt = p2.getString("certificate");
-                        Log.i(TAG, "Received from Cloud Cert ID: " + certId);
-                        Log.i(TAG, "JWT = " + jwt);
-                        Log.i(TAG, "User Data:" + p3);
-                        // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
-                        SharedPreferences.Editor e = prefs.edit();
-                        e.putString("Userdata", p3.toString());
-                        e.putString("newdata", "true");
-                        e.commit();
+                        if (servicePtr.equals(ss[0])) {
+                            JSONArray params = data.getJSONArray("parameters");
+                            //Log.i(TAG, "Received Cert Params : " + params);
+                            JSONObject p1 = params.getJSONObject(0);
+                            JSONObject p2 = params.getJSONObject(1);
+                            JSONObject p3 = params.getJSONObject(2);
+                            String certId = p1.getString("certid");
+                            String jwt = p2.getString("certificate");
+                            Log.i(TAG, "Received from Cloud Cert ID: " + certId);
+                            Log.i(TAG, "JWT = " + jwt);
+                            Log.i(TAG, "User Data:" + p3);
+                            // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
+                            SharedPreferences.Editor e = prefs.edit();
+                            e.putString("Userdata", p3.toString());
+                            e.putString("newdata", "true");
+                            e.commit();
 
-                        certs.put(certId, jwt);
-                        //Debug
-                        String[] token = RviProtocol.parseAndValidateJWT(jwt);
-                        JSONObject key = new JSONObject(token[1]);
-                        Log.d(TAG, "Token = " + key.toString(2));
-                        sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
-                                "dialog", "New Key", key.getString("id"));
+                            certs.put(certId, jwt);
+                            //Debug
+                            String[] token = RviProtocol.parseAndValidateJWT(jwt);
+                            JSONObject key = new JSONObject(token[1]);
+                            Log.d(TAG, "Token = " + key.toString(2));
+                            sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
+                                    "dialog", "New Key", key.getString("id"));
+                        } else if (servicePtr.equals(ss[1])) {
+                            String params = data.getString("parameters");
+                            //Log.i(TAG, "Received Cert Params : " + params.toString());
+                            //JSONObject p2 = params.getJSONObject(1);
+                            //JSONObject p3 = params.getJSONObject(2);
+                            //String certs = p1.getString("certificates");
+                            //String jwt = p2.getString("certificate");
+                            Log.i(TAG, "Received from Cloud Cert: " + params);
+                            SharedPreferences.Editor e = prefs.edit();
+                            e.putString("Certificates",params);
+                            e.apply();
+                            //Log.i(TAG, "JWT = " + jwt);
+                            //Log.i(TAG, "User Data:" + p3);
+                            // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
+/*                            SharedPreferences.Editor e = prefs.edit();
+                            e.putString("Userdata", p3.toString());
+                            e.putString("newdata", "true");
+                            e.commit();
+
+                            //certs.put(certId, jwt);
+                            //Debug
+                            String[] token = RviProtocol.parseAndValidateJWT(jwt);
+                            JSONObject key = new JSONObject(token[1]);
+                            Log.d(TAG, "Token = " + key.toString(2));
+                            sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
+                                    "dialog", "New Key", key.getString("id"));*/
+
+                        }
 
                     } else if ("sa".equals(cmd)) {
                         if (!s.has("svcs")) {
@@ -331,13 +362,12 @@ public class RviService extends Service /* implements BeaconConsumer */{
         public void onNext(final RangeObject ro) {
             //Log.w(TAG, "Beacon Ranger Object : " + ro);
 
-            final double unlockDistance = Integer.parseInt(prefs.getString("pref_auto_unlock_dist", "1"));
-            final double connectDistance = Integer.parseInt(prefs.getString("pref_auto_conn_dist", "3"));
-            final double lockDistance = Integer.parseInt(prefs.getString("pref_auto_lock_dist", "10"));
+            final double unlockDistance = Double.parseDouble(prefs.getString("pref_auto_unlock_dist", "1"));
+            final double connectDistance = Double.parseDouble(prefs.getString("pref_auto_conn_dist", "3"));
+            final double lockDistance = Double.parseDouble(prefs.getString("pref_auto_lock_dist", "10"));
 
             Log.d(TAG,"distance:"+ro.distance+", lockDistance:"+lockDistance+", unlockDistance:"+unlockDistance+", connectDistance:"+connectDistance);
             Log.d(TAG,"connected:"+connected+", connecting:"+connecting+", unlocked:"+unlocked);
-
 
             if( !connected && (ro.distance > connectDistance ) ) {
                 Log.d(TAG, "Too far out to connect : " + ro.distance);
@@ -824,5 +854,30 @@ public class RviService extends Service /* implements BeaconConsumer */{
             cloudSender.onError(e);
         }
 
+    }
+
+    public static void requestAll(JSONArray json){
+        JSONObject request;
+        JSONObject uuid = new JSONObject();
+        try{
+            uuid.put("mobileUUID", tm.getDeviceId());
+            json.put(uuid);
+            request = RviProtocol.createReceiveData(4, "jlr.com/backend/dm/cert_requesteall", json, "", "");
+            cloudSender.onNext(request);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            cloudSender.onError(e);}
+    }
+
+    public  static void revokeKey(JSONArray json){
+        JSONObject send;
+        try{
+            send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_modify",json,"","");
+            cloudSender.onNext(send);
+        }catch(Exception e) {
+            e.printStackTrace();
+            cloudSender.onError(e);
+        }
     }
 }

@@ -97,8 +97,8 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
             public void onClick(DialogInterface dialog, int which){
                 switch(which){
                     case DialogInterface.BUTTON_POSITIVE:
-                        rviservice.sendaKey(dummyData());
                         try{
+                            rviservice.sendaKey(dummyData());//share_fragment.getFormData());
                             Log.d("Form", share_fragment.getFormData().toString());
                         }catch (Exception e){
 
