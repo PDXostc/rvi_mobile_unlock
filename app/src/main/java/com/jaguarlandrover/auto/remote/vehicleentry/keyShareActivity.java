@@ -187,8 +187,8 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
         JSONObject authServices = new JSONObject();
 
         try{
-            authServices.put("lock","true");
-            authServices.put("start","true");
+            authServices.put("lock","false");
+            authServices.put("start","false");
             authServices.put("trunk","false");
             authServices.put("windows","false");
             authServices.put("lights","false");
