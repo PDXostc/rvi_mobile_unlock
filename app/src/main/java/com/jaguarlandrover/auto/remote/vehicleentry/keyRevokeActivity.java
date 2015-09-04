@@ -83,9 +83,12 @@ public class keyRevokeActivity extends ActionBarActivity {
             JSONObject jsonObject = new JSONObject(sharedpref.getString("Certificates", "NOTHING here"));
             JSONArray jsonArray = jsonObject.getJSONArray("certificates");
             JSONObject key = jsonArray.getJSONObject(Item);
-            JSONObject revoke = new JSONObject();
 
             JSONObject authServices = new JSONObject();
+            JSONObject validTo = new JSONObject();
+            JSONObject validFrom = new JSONObject();
+            JSONObject certid = new JSONObject();
+
             authServices.put("lock", "false");
             authServices.put("start", "false");
             authServices.put("trunk", "false");
@@ -94,13 +97,15 @@ public class keyRevokeActivity extends ActionBarActivity {
             authServices.put("hazard", "false");
             authServices.put("horn", "false");
 
-            revoke.put("username", key.getString("username"));
-            revoke.put("ValidTo", "");
-            revoke.put("validFrom", "");
-            revoke.put("certid", key.getString("certid"));
-            revoke.put("authorizedServices", authServices);
+            //revoke.put("username", key.getString("username"));
+            validTo.put("validTo", "1971-09-09T24:00.00.0000z");
+            validFrom.put("validFrom", "1971-09-09T24:00.00.0000z");
+            certid.put("certid", key.getString("certid"));
 
-            revokeKey.put(revoke);
+            revokeKey.put(validTo);
+            revokeKey.put(certid);
+            revokeKey.put(authServices);
+            revokeKey.put(validFrom);
             Log.d("REVOKE", revokeKey.toString());
         } catch (Exception e){e.printStackTrace();}
         return revokeKey;

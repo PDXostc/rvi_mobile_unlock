@@ -135,7 +135,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     public void onButtonCommand(String cmd) {
         //TODO send to RVI service
-        rviService.service(cmd);
+        rviService.service(cmd, LockActivity.this);
     }
 
     public void keyUpdate() {
