@@ -21,9 +21,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.nfc.Tag;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
@@ -63,7 +67,10 @@ public class RviService extends Service /* implements BeaconConsumer */{
     private ConnectivityManager cm;
     private static TelephonyManager tm;
     private ConcurrentHashMap<String,Long> visible = new ConcurrentHashMap<String, Long>();
-
+    private static double latit =0;
+    private static double longi=0;
+    private static Location location;
+    LocationManager locationManager;
     //private int timeoutSec = 10; //If beacon did not report in 10 sec then remove
 
     private BluetoothAdapter bluetoothAdapter;
@@ -99,6 +106,35 @@ public class RviService extends Service /* implements BeaconConsumer */{
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate Service");
+        locationManager=    (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        LocationListener locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                latit = location.getLatitude();
+                longi = location.getLongitude();
+
+                String myLocation = "Latitude = " + latit + " Longitude = " + longi;
+
+                //I make a log to see the results
+                Log.e("MY CURRENT LOCATION", myLocation);
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        };
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60, 1, locationListener);
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         /*SharedPreferences.Editor editor = prefs.edit();
@@ -831,8 +867,13 @@ public class RviService extends Service /* implements BeaconConsumer */{
         if( btSender != null && btSender.hasObservers() ) {
             Log.i(TAG, "Invoking service : "+service+" on car, we have a BT socket");
             try {
+                JSONArray locationData = new JSONArray("[{\"O\":\"K\"}]");
+                JSONObject location = new JSONObject();
+                location.put("Latitude", latit);
+                location.put("Longitude",longi);
+                locationData.put(location);
                 JSONObject rcv = RviProtocol.createReceiveData(2, "jlr.com/bt/stoffe/" + service,
-                        new JSONArray("[{\"O\":\"K\"}]"), cert, "");
+                       locationData, cert, "");
 
                 btSender.onNext(rcv);
             } catch (JSONException e) {
