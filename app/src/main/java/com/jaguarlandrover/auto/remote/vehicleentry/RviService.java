@@ -405,40 +405,45 @@ public class RviService extends Service /* implements BeaconConsumer */{
             Log.d(TAG,"distance:"+ro.distance+", lockDistance:"+lockDistance+", unlockDistance:"+unlockDistance+", connectDistance:"+connectDistance);
             Log.d(TAG,"connected:"+connected+", connecting:"+connecting+", unlocked:"+unlocked);
 
-            if( !connected && (ro.distance > connectDistance ) ) {
-                Log.d(TAG, "Too far out to connect : " + ro.distance);
-                return;
-            }
+            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            String userType = JSONParser(prefs.getString("Userdata", "Nothing there!!"), "userType");
+            if(userType.equals("guest")){
+                
+            }else {
+                if (!connected && (ro.distance > connectDistance)) {
+                    Log.d(TAG, "Too far out to connect : " + ro.distance);
+                    return;
+                }
 
-            if( connected && (!unlocked) && (ro.distance > unlockDistance ) ) {
-                Log.d(TAG, "Too far out unlock : " + ro.distance);
-                return;
-            }
+                if (connected && (!unlocked) && (ro.distance > unlockDistance)) {
+                    Log.d(TAG, "Too far out unlock : " + ro.distance);
+                    return;
+                }
 
-            if (connected && (!unlocked) && ro.distance <= unlockDistance) {
-                unlocked = true;
-                RviService.service("unlock");
-                sendNotification(RviService.this, getResources().getString(R.string.not_auto_unlock));
-                return;
-            }
+                if (connected && (!unlocked) && ro.distance <= unlockDistance) {
+                    unlocked = true;
+                    RviService.service("unlock");
+                    sendNotification(RviService.this, getResources().getString(R.string.not_auto_unlock));
+                    return;
+                }
 
-            if (connected && unlocked && ro.distance >= lockDistance) {
-                unlocked = false;
-                RviService.service("lock");
-                sendNotification(RviService.this, getResources().getString(R.string.not_auto_lock));
-                return;
-            }
+                if (connected && unlocked && ro.distance >= lockDistance) {
+                    unlocked = false;
+                    RviService.service("lock");
+                    sendNotification(RviService.this, getResources().getString(R.string.not_auto_lock));
+                    return;
+                }
 
-            if(connecting) {
-                Log.i(TAG, "Already connecting to BT endpoint.");
-                return;
-            }
+                if (connecting) {
+                    Log.i(TAG, "Already connecting to BT endpoint.");
+                    return;
+                }
 
-            if( connected ) {
-                //br.stop(); //stop reporting
-                return;
+                if (connected) {
+                    //br.stop(); //stop reporting
+                    return;
+                }
             }
-
             //br.stop();
             //connected = true;
             connecting = true;
@@ -920,5 +925,16 @@ public class RviService extends Service /* implements BeaconConsumer */{
             e.printStackTrace();
             cloudSender.onError(e);
         }
+    }
+    public String JSONParser(String jsonString, String RqstData)
+    {
+        try {
+            JSONObject json = new JSONObject(jsonString);
+            String parameterVal = json.getString(RqstData);
+            return parameterVal;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return "0";
     }
 }
