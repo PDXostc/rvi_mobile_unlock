@@ -78,35 +78,33 @@ public class keyRevokeActivity extends ActionBarActivity {
     }
 
     public JSONArray selectKey(){
+        JSONArray revokeKeyOuter = new JSONArray();
         JSONArray revokeKey = new JSONArray();
+
         try {
             JSONObject jsonObject = new JSONObject(sharedpref.getString("Certificates", "NOTHING here"));
             JSONArray jsonArray = jsonObject.getJSONArray("certificates");
             JSONObject key = jsonArray.getJSONObject(Item);
 
-            JSONObject authServices = new JSONObject();
-            JSONObject validTo = new JSONObject();
-            JSONObject validFrom = new JSONObject();
-            JSONObject certid = new JSONObject();
+            JSONObject payload = new JSONObject();
+            JSONArray authServices = new JSONArray();
 
-            authServices.put("lock", "false");
-            authServices.put("start", "false");
-            authServices.put("trunk", "false");
-            authServices.put("windows", "false");
-            authServices.put("lights", "false");
-            authServices.put("hazard", "false");
-            authServices.put("horn", "false");
+            authServices.put(new JSONObject().put("lock", "false"));
+            authServices.put(new JSONObject().put("start", "false"));
+            authServices.put(new JSONObject().put("trunk", "false"));
+            authServices.put(new JSONObject().put("windows", "false"));
+            authServices.put(new JSONObject().put("lights", "false"));
+            authServices.put(new JSONObject().put("hazard", "false"));
+            authServices.put(new JSONObject().put("horn", "false"));
 
-            //revoke.put("username", key.getString("username"));
-            validTo.put("validTo", "1971-09-09T24:00.00.0000z");
-            validFrom.put("validFrom", "1971-09-09T24:00.00.0000z");
-            certid.put("certid", key.getString("certid"));
+            payload.put("authorizedServices", authServices);
+            payload.put("validTo", "1971-09-09T23:00:00.000Z");
+            payload.put("validFrom", "1971-09-09T22:00:00.000Z");
+            payload.put("certid", key.getString("certid"));
 
-            revokeKey.put(validTo);
-            revokeKey.put(certid);
-            revokeKey.put(authServices);
-            revokeKey.put(validFrom);
-            Log.d("REVOKE", revokeKey.toString());
+            revokeKey.put(payload);
+            revokeKeyOuter.put(revokeKey);
+            Log.d("REVOKE", revokeKeyOuter.toString());
         } catch (Exception e){e.printStackTrace();}
         return revokeKey;
     }
