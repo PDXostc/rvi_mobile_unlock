@@ -426,14 +426,14 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
                     if (connected && (!unlocked) && ro.distance <= unlockDistance) {
                         unlocked = true;
-                        RviService.service("unlock", RviService.this);
+                        RviService.service("auto_unlock", RviService.this);
                         sendNotification(RviService.this, getResources().getString(R.string.not_auto_unlock));
                         return;
                     }
 
                     if (connected && unlocked && ro.distance >= lockDistance) {
                         unlocked = false;
-                        RviService.service("lock", RviService.this);
+                        RviService.service("auto_lock", RviService.this);
                         sendNotification(RviService.this, getResources().getString(R.string.not_auto_lock));
                         return;
                     }
@@ -884,8 +884,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
                 JSONObject location = new JSONObject();
                 location.put("username", user);
                 location.put("vehicleVIN", vehicle);
-                location.put("Latitude", latit);
-                location.put("Longitude",longi);
+                location.put("latitude", latit);
+                location.put("longitude",longi);
                 locationData.put(location);
                 JSONObject rcv = RviProtocol.createReceiveData(2, "jlr.com/bt/stoffe/" + service,
                 locationData, cert, "");
@@ -918,7 +918,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
         try{
             uuid.put("mobileUUID", tm.getDeviceId());
             json.put(uuid);
-            request = RviProtocol.createReceiveData(4, "jlr.com/backend/dm/cert_requesteall", json, "", "");
+            request = RviProtocol.createReceiveData(4, "jlr.com/backend/dm/cert_requestall", json, "", "");
             cloudSender.onNext(request);
 
         }catch (Exception e){
