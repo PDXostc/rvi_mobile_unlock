@@ -291,6 +291,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             Log.i(TAG, "Received from Cloud Cert: " + params);
                             SharedPreferences.Editor e = prefs.edit();
                             e.putString("Certificates",params);
+                            e.putString("newKeyList", "true");
                             e.apply();
                             //Log.i(TAG, "JWT = " + jwt);
                             //Log.i(TAG, "User Data:" + p3);
