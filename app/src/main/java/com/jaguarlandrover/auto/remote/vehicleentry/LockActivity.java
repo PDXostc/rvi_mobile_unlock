@@ -14,6 +14,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -32,9 +33,9 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     private String username;
     private TextView userHeader;
     //private Messenger service = null;
-
+    private Handler keyCheck;
     private RviService rviService = null;
-
+    private Handler request;
     LockActivityFragment lock_fragment = null;
 
     @Override
@@ -44,11 +45,40 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
         handleExtra(getIntent());
 
+        keyCheck = new Handler();
+        request = new Handler();
+
         setContentView(R.layout.activity_lock);
         lock_fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlock);
+        startRepeatingTask();
         //doBindService();
     }
 
+    Runnable StatusCheck = new Runnable() {
+        @Override
+        public void run() {
+            checkforKeys();
+            keyCheck.postDelayed(StatusCheck, 5000);
+        }
+    };
+
+    Runnable requestCheck = new Runnable() {
+        @Override
+        public void run() {
+            requestComplete();
+            request.postDelayed(requestCheck, 500);
+        }
+    };
+
+    void startRequest(){
+        requestCheck.run();
+    }
+    void done(){
+        request.removeCallbacks(requestCheck);
+    }
+    void startRepeatingTask(){
+        StatusCheck.run();
+    }
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -57,17 +87,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        SharedPreferences sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor e = sharedpref.edit();
-        if (sharedpref.getString("newdata", "nothing").equals("true")) {
-            keyUpdate();
-            e.putString("newdata", "false");
-            e.commit();
-        }
-
-    }
+    public void onResume() {super.onResume();}
 
     private void handleExtra(Intent intent) {
         Bundle extras = intent.getExtras();
@@ -138,30 +158,14 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         rviService.service(cmd, LockActivity.this);
     }
 
-    public void keyUpdate() {
+    public void keyUpdate(final String authServ, final String userType) {
         AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
         builder.setInverseBackgroundForced(true);
         builder.setMessage("Updates have been made").setCancelable(false).setPositiveButton("OK",
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = getIntent();
-                        finish();
-                        startActivity(intent);
-                    }
-                });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
-
-    public void showMessage() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
-        builder.setInverseBackgroundForced(true);
-        builder.setMessage("Matt has unlocked your car").setCancelable(false).setPositiveButton("OK",
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
+                        lock_fragment.setButtons(authServ, userType);
                     }
                 });
         AlertDialog alert = builder.create();
@@ -178,17 +182,15 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                 break;
             case "keychange":
                 try {
-                    rviService.requestAll(fakeRequest());
+                    rviService.requestAll(Request());
+                    startRequest();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
-                intent.setClass(LockActivity.this, keyRevokeActivity.class);
-                startActivityForResult(intent, 0);
                 break;
         }
     }
-    public JSONArray fakeRequest() throws JSONException {
+    public JSONArray Request() throws JSONException {
         JSONObject request = new JSONObject();
         request.put("vehicleVIN", "1234567890ABCDEFG");
 
@@ -197,4 +199,29 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         return jsonArray;
     }
 
+    public void checkforKeys(){
+        SharedPreferences sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor e = sharedpref.edit();
+        String showme = lock_fragment.JSONParser(sharedpref.getString("Userdata", "Nothing There!!"), "authorizedServices");
+        String userType = lock_fragment.JSONParser(sharedpref.getString("Userdata", "Nothing there!!"), "userType");
+        if (sharedpref.getString("newdata", "nothing").equals("true")) {
+            keyUpdate(showme, userType);
+            e.putString("newdata", "false");
+            e.commit();
+        }
+    }
+
+    public void requestComplete(){
+        SharedPreferences sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor e = sharedpref.edit();
+        String newRequest = sharedpref.getString("newKeyList", "nothing");
+        if(newRequest.equals("true")){
+            done();
+            e.putString("newKeyList", "false");
+            e.commit();
+            Intent intent = new Intent();
+            intent.setClass(LockActivity.this, keyRevokeActivity.class);
+            startActivityForResult(intent, 0);
+        }
+    }
 }
