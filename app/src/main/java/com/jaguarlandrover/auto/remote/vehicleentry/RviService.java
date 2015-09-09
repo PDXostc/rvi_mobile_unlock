@@ -112,7 +112,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
             public void onLocationChanged(Location location) {
                 latit = location.getLatitude();
                 longi = location.getLongitude();
-
+                SharedPreferences.Editor e = prefs.edit();
+                e.putString("moving", "true");
+                e.commit();
                 String myLocation = "Latitude = " + latit + " Longitude = " + longi;
 
                 //I make a log to see the results
@@ -429,38 +431,43 @@ public class RviService extends Service /* implements BeaconConsumer */{
                 if(userType.equals("guest")&& services.getString("lock").equals("false")){
 
                 }else {
-                    if (!connected && (ro.distance > connectDistance)) {
-                        Log.d(TAG, "Too far out to connect : " + ro.distance);
-                        return;
-                    }
+                    if(prefs.getString("moving", "nothing").equals(true)){
+                        if (!connected && (ro.distance > connectDistance)) {
+                            Log.d(TAG, "Too far out to connect : " + ro.distance);
+                            return;
+                        }
 
-                    if (connected && (!unlocked) && (ro.distance > unlockDistance)) {
-                        Log.d(TAG, "Too far out unlock : " + ro.distance);
-                        return;
-                    }
+                        if (connected && (!unlocked) && (ro.distance > unlockDistance)) {
+                            Log.d(TAG, "Too far out unlock : " + ro.distance);
+                            return;
+                        }
 
-                    if (connected && (!unlocked) && ro.distance <= unlockDistance) {
-                        unlocked = true;
-                        RviService.service("auto_unlock", RviService.this);
-                        sendNotification(RviService.this, getResources().getString(R.string.not_auto_unlock));
-                        return;
-                    }
+                        if (connected && (!unlocked) && ro.distance <= unlockDistance) {
+                            unlocked = true;
+                            RviService.service("auto_unlock", RviService.this);
+                            sendNotification(RviService.this, getResources().getString(R.string.not_auto_unlock));
+                            return;
+                        }
 
-                    if (connected && unlocked && ro.distance >= lockDistance) {
-                        unlocked = false;
-                        RviService.service("auto_lock", RviService.this);
-                        sendNotification(RviService.this, getResources().getString(R.string.not_auto_lock));
-                        return;
-                    }
+                        if (connected && unlocked && ro.distance >= lockDistance) {
+                            unlocked = false;
+                            RviService.service("auto_lock", RviService.this);
+                            sendNotification(RviService.this, getResources().getString(R.string.not_auto_lock));
+                            return;
+                        }
 
-                    if (connecting) {
-                        Log.i(TAG, "Already connecting to BT endpoint.");
-                        return;
-                    }
+                        if (connecting) {
+                            Log.i(TAG, "Already connecting to BT endpoint.");
+                            return;
+                        }
 
-                    if (connected) {
-                        //br.stop(); //stop reporting
-                        return;
+                        if (connected) {
+                            //br.stop(); //stop reporting
+                            return;
+                        }
+                        SharedPreferences.Editor e = prefs.edit();
+                        e.putString("moving","false");
+                        e.commit();
                     }
                 }
             }catch(Exception e){e.printStackTrace();}
