@@ -214,7 +214,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
         //Create service vector
         final String certProv = "jlr.com/mobile/" + tm.getDeviceId() + "/dm/cert_provision";
         final String certRsp = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_response";
-        final String[] ss = {certProv, certRsp};
+        final String certAccountDetails = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_accountdetails";
+        final String[] ss = {certProv, certRsp, certAccountDetails};
 
         //final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
 
@@ -262,25 +263,27 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             //Log.i(TAG, "Received Cert Params : " + params);
                             JSONObject p1 = params.getJSONObject(0);
                             JSONObject p2 = params.getJSONObject(1);
-                            JSONObject p3 = params.getJSONObject(2);
+                            //JSONObject p3 = params.getJSONObject(2);
                             String certId = p1.getString("certid");
                             String jwt = p2.getString("certificate");
                             Log.i(TAG, "Received from Cloud Cert ID: " + certId);
                             Log.i(TAG, "JWT = " + jwt);
-                            Log.i(TAG, "User Data:" + p3);
+                            //Log.i(TAG, "User Data:" + p3);
                             // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
-                            SharedPreferences.Editor e = prefs.edit();
-                            e.putString("Userdata", p3.toString());
-                            e.putString("newdata", "true");
-                            e.commit();
+                            //SharedPreferences.Editor e = prefs.edit();
+                            //e.putString("Userdata", p3.toString());
+                            //e.putString("newdata", "true");
+                            //e.commit();
 
                             certs.put(certId, jwt);
                             //Debug
                             String[] token = RviProtocol.parseAndValidateJWT(jwt);
                             JSONObject key = new JSONObject(token[1]);
                             Log.d(TAG, "Token = " + key.toString(2));
+                        /*
                             sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
                                     "dialog", "New Key", key.getString("id"));
+                        */
                         } else if (servicePtr.equals(ss[1])) {
                             String params = data.getString("parameters");
                             //Log.i(TAG, "Received Cert Params : " + params.toString());
@@ -290,7 +293,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             //String jwt = p2.getString("certificate");
                             Log.i(TAG, "Received from Cloud Cert: " + params);
                             SharedPreferences.Editor e = prefs.edit();
-                            e.putString("Certificates",params);
+                            e.putString("Certificates", params);
                             e.putString("newKeyList", "true");
                             e.apply();
                             //Log.i(TAG, "JWT = " + jwt);
@@ -309,6 +312,17 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
                                     "dialog", "New Key", key.getString("id"));*/
 
+                        } else if (servicePtr.equals(ss[2])) {
+                            JSONArray params = data.getJSONArray("parameters");
+                            //Log.i(TAG, "Received Cert Params : " + params);
+                            JSONObject p1 = params.getJSONObject(0);
+
+                            Log.i(TAG, "User Data:" + p1);
+                            // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
+                            SharedPreferences.Editor e = prefs.edit();
+                            e.putString("Userdata", p1.toString());
+                            e.putString("newdata", "true");
+                            e.commit();
                         }
 
                     } else if ("sa".equals(cmd)) {
@@ -783,10 +797,19 @@ public class RviService extends Service /* implements BeaconConsumer */{
                                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                 Log.i(TAG, "Sent to socket - ready : " + input.available());
                                 int open = input.read();
+
                                 if (open != '{') {
-                                    running = false;
+                                    //running = false;
                                     Log.i(TAG, "First char did not match : " + open);
-                                    break;
+                                    while (input.available() > 0) {
+                                        int tmp = input.read();
+                                        baos.write(tmp);
+                                    }
+                                    baos.flush();
+                                    String toparse = baos.toString();
+                                    Log.i(TAG, "BAD DATA Received from Cloud : " + toparse);
+                                    baos.reset();
+                                    // break;
                                 }
                                 cnt++;
                                 baos.write(open); //Wait for the first then go
