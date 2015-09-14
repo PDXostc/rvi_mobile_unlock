@@ -437,7 +437,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
                 }else {
                     // No longer using auto lock/unlock for demo, commenting out
-                    //if(prefs.getString("moving", "nothing").equals(true)){
+                    //if(prefs.getString("autounlock", "nothing").equals("true")){
                         if (!connected && (ro.distance > connectDistance)) {
                             Log.d(TAG, "Too far out to connect : " + ro.distance);
                             return;
