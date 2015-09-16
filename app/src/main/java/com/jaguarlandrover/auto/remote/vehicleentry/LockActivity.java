@@ -10,6 +10,7 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -37,6 +38,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     private RviService rviService = null;
     private Handler request;
     LockActivityFragment lock_fragment = null;
+    ProgressDialog requestProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -183,6 +185,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             case "keychange":
                 try {
                     rviService.requestAll(Request());
+                    requestProgress = ProgressDialog.show(LockActivity.this, "","Retrieving keys...",true);
                     startRequest();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -220,6 +223,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             done();
             e.putString("newKeyList", "false");
             e.commit();
+            requestProgress.dismiss();
             Intent intent = new Intent();
             intent.setClass(LockActivity.this, keyRevokeActivity.class);
             startActivityForResult(intent, 0);
