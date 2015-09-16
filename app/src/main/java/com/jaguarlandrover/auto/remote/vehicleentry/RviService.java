@@ -30,6 +30,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
@@ -217,7 +218,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
         final String certProv = "jlr.com/mobile/" + tm.getDeviceId() + "/dm/cert_provision";
         final String certRsp = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_response";
         final String certAccountDetails = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_accountdetails";
-        final String[] ss = {certProv, certRsp, certAccountDetails};
+        final String serviceInvokedByGuest = "jlr.com/mobile/"+tm.getDeviceId()+"/report/serviceinvokedbyguest";
+        final String[] ss = {certProv, certRsp, certAccountDetails, serviceInvokedByGuest};
 
         //final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
 
@@ -279,9 +281,11 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
                             certs.put(certId, jwt);
                             //Debug
-                            String[] token = RviProtocol.parseAndValidateJWT(jwt);
-                            JSONObject key = new JSONObject(token[1]);
-                            Log.d(TAG, "Token = " + key.toString(2));
+                            // Errors seen here on parseAndValidateJWT. Should be getting Base64
+                            // from backend, but sometimes getting errors that it's not.
+                            //String[] token = RviProtocol.parseAndValidateJWT(jwt);
+                            //JSONObject key = new JSONObject(token[1]);
+                            //Log.d(TAG, "Token = " + key.toString(2));
                         /*
                             sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
                                     "dialog", "New Key", key.getString("id"));
@@ -325,6 +329,21 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             e.putString("Userdata", p1.toString());
                             e.putString("newdata", "true");
                             e.commit();
+
+                        } else if (servicePtr.equals(ss[3])) {
+                            JSONArray params = data.getJSONArray("parameters");
+                            JSONObject p1 = params.getJSONObject(0);
+
+                            Log.i(TAG, "Service Invoked by Guest:" + p1);
+
+                            // TODO Antonio add Sharepreferences need for Alert Dialog to show up
+                            // and inform owner that guest invoked a service
+                            /*
+                            SharedPreferences.Editor e = prefs.edit();
+                            e.putString("...", p1.toString());
+                            e.putString("newdata", "true");
+                            e.commit();
+                            */
                         }
 
                     } else if ("sa".equals(cmd)) {
@@ -350,6 +369,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
                         JSONObject saData = RviProtocol.createServiceAnnouncement(
                                 1, ss, "av", "", "");
+                        // THZ: My mistake, this cloudSender.onNext is being used for service announce
+                        // https://github.com/PDXostc/rvi_mobile_unlock/issues/5
                         cloudSender.onNext(saData);
 
 
@@ -431,7 +452,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
                 if(userType.equals("guest")&& services.getString("lock").equals("false")){
 
                 }else {
-                    if(prefs.getString("moving", "nothing").equals(true)){
+                    // No longer using auto lock/unlock for demo, commenting out
+                    //if(prefs.getString("autounlock", "nothing").equals("true")){
                         if (!connected && (ro.distance > connectDistance)) {
                             Log.d(TAG, "Too far out to connect : " + ro.distance);
                             return;
@@ -444,14 +466,16 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
                         if (connected && (!unlocked) && ro.distance <= unlockDistance) {
                             unlocked = true;
-                            RviService.service("auto_unlock", RviService.this);
+                            //changing back to normal unlock instead of auto_*
+                            RviService.service("unlock", RviService.this);
                             sendNotification(RviService.this, getResources().getString(R.string.not_auto_unlock));
                             return;
                         }
 
                         if (connected && unlocked && ro.distance >= lockDistance) {
                             unlocked = false;
-                            RviService.service("auto_lock", RviService.this);
+                            //changing back to normal lock instead of auto_*
+                            RviService.service("lock", RviService.this);
                             sendNotification(RviService.this, getResources().getString(R.string.not_auto_lock));
                             return;
                         }
@@ -468,7 +492,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         SharedPreferences.Editor e = prefs.edit();
                         e.putString("moving","false");
                         e.commit();
-                    }
+                    //}
                 }
             }catch(Exception e){e.printStackTrace();}
 
@@ -614,6 +638,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         //Config
                         int btChannel = Integer.parseInt(prefs.getString("pref_bt_channel","1"));
 
+                        // Commented out as part of BT reset connection issue. See,
+                        // https://github.com/PDXostc/rvi_mobile_unlock/issues/4
+                        /*
                         try {
                             sock = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB".toLowerCase())); //SerialPortServiceClass
                             //00001105-0000-1000-8000-00805f9b34fb //OBEXObjectPushServiceClass
@@ -624,22 +651,28 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             //0000111f-0000-1000-8000-00805f9b34fb //HandsfreeAudioGatewayServiceClass
                             //00000000-0000-1000-8000-00805f9b34fb
                             //BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
-//
-                            device.createBond();
-                            //Log.i(TAG,"3 "+socket+" : "/*device.createBond()*/);
+                            //device.createBond();
+                            //Log.i(TAG,"3 "+socket+" : "device.createBond()");
                             sock.connect();
                         } catch (IOException e) {
+
                             Log.d(TAG, "Excepption:" + e.getLocalizedMessage());
+*/
                             try {
                                 Method m = device.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
                                 sock = (BluetoothSocket) m.invoke(device, btChannel);
+
+                                // Added as part of BT reset connection issue. See,
+                                // https://github.com/PDXostc/rvi_mobile_unlock/issues/4
+                                BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
+
                                 sock.connect();
                             } catch (InvocationTargetException ite) {
-                                e.printStackTrace();
+                                ite.printStackTrace();
                             } catch (NoSuchMethodException ne) {
-                                e.printStackTrace();
+                                ne.printStackTrace();
                             } catch (IllegalAccessException ie) {
-                                e.printStackTrace();
+                                ie.printStackTrace();
                             } catch (IOException e1) {
                                 e1.printStackTrace();
                             }
@@ -652,7 +685,14 @@ public class RviService extends Service /* implements BeaconConsumer */{
                                 final String cert = (certs.size() > 0)?certs.values().iterator().next():"";
                                 JSONObject auth = RviProtocol.createAuth(1, device.getAddress(), 1, cert, "");
                                 final OutputStream out = sock.getOutputStream();
-                                out.write(auth.toString().getBytes());
+
+                                // Added as part of BT reset connection issue. See,
+                                // https://github.com/PDXostc/rvi_mobile_unlock/issues/4
+                                SystemClock.sleep(500);
+                                Log.i(TAG, "BT reset - getState()" + BluetoothAdapter.getDefaultAdapter().getState());
+                                Log.i(TAG, "BT reset - isConnected()" + sock.isConnected());
+                                //out.write(auth.toString().getBytes());
+
                                 out.flush();
 
                                 connected = true;
@@ -740,7 +780,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         }
                         //return;
                     }
-                }
+                //}
         );
 
         return myObservable;
@@ -822,7 +862,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
                                 baos.write(open); //Wait for the first then go
                                 Log.i(TAG, "Sent to socket - ready : " + input.available() + " open = " + open);
 
-                                while (input.available() > 0) {
+                                // Added "|| cnt > 0" for truncated data issue. See,
+                                // https://github.com/PDXostc/rvi_mobile_unlock/issues/3
+                                while (input.available() > 0 || cnt > 0) {
                                     try {
                                         int tmp = input.read();
                                         baos.write(tmp);
