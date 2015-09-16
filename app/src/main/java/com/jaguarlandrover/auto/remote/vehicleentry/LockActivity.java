@@ -193,7 +193,6 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                 break;
         }
     }
-
     public JSONArray Request() throws JSONException {
         JSONObject request = new JSONObject();
         request.put("vehicleVIN", "1234567890ABCDEFG");
