@@ -218,7 +218,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
         final String certProv = "jlr.com/mobile/" + tm.getDeviceId() + "/dm/cert_provision";
         final String certRsp = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_response";
         final String certAccountDetails = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_accountdetails";
-        final String[] ss = {certProv, certRsp, certAccountDetails};
+        final String serviceInvokedByGuest = "jlr.com/mobile/"+tm.getDeviceId()+"/report/serviceinvokedbyguest";
+        final String[] ss = {certProv, certRsp, certAccountDetails, serviceInvokedByGuest};
 
         //final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
 
@@ -328,6 +329,21 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             e.putString("Userdata", p1.toString());
                             e.putString("newdata", "true");
                             e.commit();
+
+                        } else if (servicePtr.equals(ss[3])) {
+                            JSONArray params = data.getJSONArray("parameters");
+                            JSONObject p1 = params.getJSONObject(0);
+
+                            Log.i(TAG, "Service Invoked by Guest:" + p1);
+
+                            // TODO Antonio add Sharepreferences need for Alert Dialog to show up
+                            // and inform owner that guest invoked a service
+                            /*
+                            SharedPreferences.Editor e = prefs.edit();
+                            e.putString("...", p1.toString());
+                            e.putString("newdata", "true");
+                            e.commit();
+                            */
                         }
 
                     } else if ("sa".equals(cmd)) {
@@ -353,9 +369,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
                         JSONObject saData = RviProtocol.createServiceAnnouncement(
                                 1, ss, "av", "", "");
-                        // This is a dupe cloudSender.onNext. See,
+                        // THZ: My mistake, this cloudSender.onNext is being used for service announce
                         // https://github.com/PDXostc/rvi_mobile_unlock/issues/5
-                        //cloudSender.onNext(saData);
+                        cloudSender.onNext(saData);
 
 
                     } else if ("ping".equals(cmd)) { //NOOP
