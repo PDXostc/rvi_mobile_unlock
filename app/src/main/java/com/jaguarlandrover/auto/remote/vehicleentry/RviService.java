@@ -113,6 +113,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                 latit = location.getLatitude();
                 longi = location.getLongitude();
                 SharedPreferences.Editor e = prefs.edit();
+                e.putString("moving", "true");
                 e.commit();
                 String myLocation = "Latitude = " + latit + " Longitude = " + longi;
 
@@ -430,7 +431,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                 if(userType.equals("guest")&& services.getString("lock").equals("false")){
 
                 }else {
-                    if(prefs.getString("autounlock", "nothing").equals("true")){
+                    if(prefs.getString("moving", "nothing").equals(true)){
                         if (!connected && (ro.distance > connectDistance)) {
                             Log.d(TAG, "Too far out to connect : " + ro.distance);
                             return;
