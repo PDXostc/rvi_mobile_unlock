@@ -976,6 +976,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
         JSONObject send;
         try{
             send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_create",json,"","");
+            // Testing for dupe service invokes
+            //send = RviProtocol.createRequestData(3, "jlr.com/backend/dm/cert_create", json.getJSONObject(0), "", "");
             Log.d(TAG,"Successfully sent"+send.toString());
             cloudSender.onNext(send);
         }catch(Exception e) {
@@ -992,6 +994,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
             uuid.put("mobileUUID", tm.getDeviceId());
             json.put(uuid);
             request = RviProtocol.createReceiveData(4, "jlr.com/backend/dm/cert_requestall", json, "", "");
+            // Testing for dupe service invokes
+            //request = RviProtocol.createRequestData(4, "jlr.com/backend/dm/cert_requestall", json.getJSONObject(0), "", "");
             cloudSender.onNext(request);
 
         }catch (Exception e){
@@ -1003,6 +1007,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
         JSONObject send;
         try{
             send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_modify",json,"","");
+            // Testing for dupe service invokes
+            //send = RviProtocol.createRequestData(3, "jlr.com/backend/dm/cert_modify", json.getJSONObject(0), "", "");
             cloudSender.onNext(send);
         }catch(Exception e) {
             e.printStackTrace();
