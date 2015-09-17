@@ -228,7 +228,7 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
             }
         };
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Key Successfully Shared")
+        builder.setMessage("Key successfully shared")
                 .setPositiveButton("Ok", dialogClickListener).show();
 
     }

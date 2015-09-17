@@ -1002,7 +1002,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
     public  static void revokeKey(JSONArray json){
         JSONObject send;
         try{
-            send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_create",json,"","");
+            send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_modify",json,"","");
             cloudSender.onNext(send);
         }catch(Exception e) {
             e.printStackTrace();

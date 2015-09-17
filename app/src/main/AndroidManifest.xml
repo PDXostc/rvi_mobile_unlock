@@ -58,7 +58,7 @@
 
         <activity
             android:name=".keyShareActivity"
-            android:label="@string/title_activity_key_share"
+            android:label="@string/app_name"
             android:screenOrientation="portrait">
         </activity>
         <activity
@@ -73,7 +73,7 @@
         </activity>
         <activity
             android:name=".keyRevokeActivity"
-            android:label="@string/title_activity_key_change"
+            android:label="@string/app_name"
             android:screenOrientation="portrait">
         </activity>
     </application>
