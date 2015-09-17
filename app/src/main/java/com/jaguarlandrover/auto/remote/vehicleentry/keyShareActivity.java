@@ -99,11 +99,11 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
                     case DialogInterface.BUTTON_POSITIVE:
                         try{
                             rviservice.sendaKey(share_fragment.getFormData());
+                            confirmationMessage();
                             Log.d("Form", share_fragment.getFormData().toString());
                         }catch (Exception e){
 
                         }
-                        finish();
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
 
@@ -215,4 +215,22 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
         jsonArray.put(user);
         return jsonArray;
     }
+
+
+    public void confirmationMessage(){
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog, int which){
+                switch(which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        finish();
+                        break;
+                }
+            }
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Key successfully shared")
+                .setPositiveButton("Ok", dialogClickListener).show();
+
+    }
+
 }

@@ -10,6 +10,7 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,6 +21,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -37,11 +39,15 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     private RviService rviService = null;
     private Handler request;
     LockActivityFragment lock_fragment = null;
+    ProgressDialog requestProgress;
+    private SharedPreferences sharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate() Activity");
+
+//        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
         handleExtra(getIntent());
 
@@ -151,6 +157,13 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
         return super.onOptionsItemSelected(item);
     }
+    
+//    public void clickedStart(View v){
+//        SharedPreferences.Editor ed = sharedPref.edit();
+//        ed.putBoolean(LockActivityFragment.STOPPED_LBL, true);
+//        rviService.service("start", LockActivity.this);
+//        ed.commit();
+//    }
 
     @Override
     public void onButtonCommand(String cmd) {
@@ -161,7 +174,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     public void keyUpdate(final String authServ, final String userType) {
         AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
         builder.setInverseBackgroundForced(true);
-        builder.setMessage("Updates have been made").setCancelable(false).setPositiveButton("OK",
+        builder.setMessage("Key updates have been made").setCancelable(false).setPositiveButton("OK",
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -183,6 +196,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             case "keychange":
                 try {
                     rviService.requestAll(Request());
+                    requestProgress = ProgressDialog.show(LockActivity.this, "","Retrieving keys...",true);
                     startRequest();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -219,6 +233,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             done();
             e.putString("newKeyList", "false");
             e.commit();
+            requestProgress.dismiss();
             Intent intent = new Intent();
             intent.setClass(LockActivity.this, keyRevokeActivity.class);
             startActivityForResult(intent, 0);
