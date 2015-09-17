@@ -163,7 +163,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     public void keyUpdate(final String authServ, final String userType) {
         AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
         builder.setInverseBackgroundForced(true);
-        builder.setMessage("Updates have been made").setCancelable(false).setPositiveButton("OK",
+        builder.setMessage("Key updates have been made").setCancelable(false).setPositiveButton("OK",
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
