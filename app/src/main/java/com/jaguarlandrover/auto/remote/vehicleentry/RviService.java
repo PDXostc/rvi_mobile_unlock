@@ -211,7 +211,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
     }
     private static final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
     private void _connectConnect() {
-        String rviServer = prefs.getString("pref_rvi_server", "rvi-test1.nginfotpdx.net");
+        String rviServer = prefs.getString("pref_rvi_server", "54.172.25.254");
         int rviPort = Integer.parseInt(prefs.getString("pref_rvi_server_port","8807"));
 
         //Create service vector
