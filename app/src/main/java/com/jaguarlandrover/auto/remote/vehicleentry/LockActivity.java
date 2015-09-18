@@ -38,6 +38,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     private Handler keyCheck;
     private RviService rviService = null;
     private Handler request;
+    private Handler guestServiceCheck;
     LockActivityFragment lock_fragment = null;
     ProgressDialog requestProgress;
     private SharedPreferences sharedPref;
@@ -53,6 +54,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
         keyCheck = new Handler();
         request = new Handler();
+        guestServiceCheck = new Handler();
 
         setContentView(R.layout.activity_lock);
         lock_fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlock);
@@ -68,11 +70,19 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         }
     };
 
+    Runnable guestCheck = new Runnable() {
+        @Override
+        public void run() {
+            checkforGuestActivity();
+            guestServiceCheck.postDelayed(guestCheck, 10000);
+        }
+    };
+
     Runnable requestCheck = new Runnable() {
         @Override
         public void run() {
             requestComplete();
-            request.postDelayed(requestCheck, 500);
+            request.postDelayed(requestCheck, 750);
         }
     };
 
@@ -84,6 +94,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     }
     void startRepeatingTask(){
         StatusCheck.run();
+        guestCheck.run();
     }
 
     @Override
@@ -185,6 +196,21 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         alert.show();
     }
 
+    public void notififyGuestUsedKey(final String guestUser, final String guestService) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
+        builder.setInverseBackgroundForced(true);
+        builder.setMessage("Remote key used by "+ guestUser + "!")
+                .setCancelable(true)
+                .setPositiveButton("OK", new
+                        DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
     @Override
     public void keyShareCommand(String key) {
         Intent intent = new Intent();
@@ -221,6 +247,18 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         if (sharedpref.getString("newdata", "nothing").equals("true")) {
             keyUpdate(showme, userType);
             e.putString("newdata", "false");
+            e.commit();
+        }
+    }
+
+    public void checkforGuestActivity(){
+        SharedPreferences sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor e = sharedpref.edit();
+        String guestUser = lock_fragment.JSONParser(sharedpref.getString("guestInvokedService", "Nothing there!!"), "username");
+        String guestService = lock_fragment.JSONParser(sharedpref.getString("guestInvokedService", "Nothing there!!"), "service");
+        if (sharedpref.getString("newguestactivity", "nothing").equals("true")) {
+            notififyGuestUsedKey(guestUser, guestService);
+            e.putString("newguestactivity", "false");
             e.commit();
         }
     }
