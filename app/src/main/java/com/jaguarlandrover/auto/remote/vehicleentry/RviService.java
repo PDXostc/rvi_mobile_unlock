@@ -336,14 +336,14 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
                             Log.i(TAG, "Service Invoked by Guest:" + p1);
 
-                            // TODO Antonio add Sharepreferences need for Alert Dialog to show up
+                            // TODO add Sharepreferences need for Alert Dialog to show up
                             // and inform owner that guest invoked a service
-                            /*
+
                             SharedPreferences.Editor e = prefs.edit();
-                            e.putString("...", p1.toString());
-                            e.putString("newdata", "true");
+                            e.putString("guestInvokedService", p1.toString());
+                            e.putString("newguestactivity", "true");
                             e.commit();
-                            */
+
                         }
 
                     } else if ("sa".equals(cmd)) {
@@ -979,6 +979,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
             // Testing for dupe service invokes
             //send = RviProtocol.createRequestData(3, "jlr.com/backend/dm/cert_create", json.getJSONObject(0), "", "");
             Log.d(TAG,"Successfully sent"+send.toString());
+            // Testing for dupe service invokes
+            Log.d("stack cloud send: ", Thread.currentThread().getStackTrace().toString());
+            Thread.currentThread().getStackTrace();
             cloudSender.onNext(send);
         }catch(Exception e) {
             e.printStackTrace();
@@ -995,6 +998,10 @@ public class RviService extends Service /* implements BeaconConsumer */{
             json.put(uuid);
             request = RviProtocol.createReceiveData(4, "jlr.com/backend/dm/cert_requestall", json, "", "");
             // Testing for dupe service invokes
+            Log.d(TAG, "Successfully sent" + request.toString());
+            Log.d("stack cloud send: ", Thread.currentThread().getStackTrace().toString());
+            Thread.currentThread().getStackTrace();
+            // Testing for dupe service invokes
             //request = RviProtocol.createRequestData(4, "jlr.com/backend/dm/cert_requestall", json.getJSONObject(0), "", "");
             cloudSender.onNext(request);
 
@@ -1009,6 +1016,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
             send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_modify",json,"","");
             // Testing for dupe service invokes
             //send = RviProtocol.createRequestData(3, "jlr.com/backend/dm/cert_modify", json.getJSONObject(0), "", "");
+            Log.d(TAG, "Successfully sent" + send.toString());
+            Log.d("stack cloud send: ", Thread.currentThread().getStackTrace().toString());
+            Thread.currentThread().getStackTrace();
             cloudSender.onNext(send);
         }catch(Exception e) {
             e.printStackTrace();
