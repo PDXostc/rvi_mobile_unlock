@@ -41,7 +41,7 @@ public class User {
         try{
             this.username = object.getString("username");
             String start = object.getString("validFrom").substring(0,23);
-            String stop = object.getString("ValidTo").substring(0,23);
+            String stop = object.getString("validTo").substring(0,23);
             try {
                 SimpleDateFormat inputformat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
                 SimpleDateFormat outputformat = new SimpleDateFormat("MM/dd/yyyy HH:mm");

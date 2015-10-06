@@ -264,67 +264,40 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         //CERT SERVICE
                         if (servicePtr.equals(ss[0])) {
                             JSONArray params = data.getJSONArray("parameters");
-                            //Log.i(TAG, "Received Cert Params : " + params);
+                            Log.i(TAG, "Received Cert Params : " + params);
                             JSONObject p1 = params.getJSONObject(0);
                             JSONObject p2 = params.getJSONObject(1);
-                            //JSONObject p3 = params.getJSONObject(2);
                             String certId = p1.getString("certid");
                             String jwt = p2.getString("certificate");
                             Log.i(TAG, "Received from Cloud Cert ID: " + certId);
                             Log.i(TAG, "JWT = " + jwt);
-                            //Log.i(TAG, "User Data:" + p3);
-                            // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
-                            //SharedPreferences.Editor e = prefs.edit();
-                            //e.putString("Userdata", p3.toString());
-                            //e.putString("newdata", "true");
-                            //e.commit();
 
                             certs.put(certId, jwt);
                             //Debug
                             // Errors seen here on parseAndValidateJWT. Should be getting Base64
                             // from backend, but sometimes getting errors that it's not.
-                            //String[] token = RviProtocol.parseAndValidateJWT(jwt);
-                            //JSONObject key = new JSONObject(token[1]);
-                            //Log.d(TAG, "Token = " + key.toString(2));
-                        /*
-                            sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
-                                    "dialog", "New Key", key.getString("id"));
-                        */
-                        } else if (servicePtr.equals(ss[1])) {
-                            String params = data.getString("parameters");
-                            //Log.i(TAG, "Received Cert Params : " + params.toString());
-                            //JSONObject p2 = params.getJSONObject(1);
-                            //JSONObject p3 = params.getJSONObject(2);
-                            //String certs = p1.getString("certificates");
-                            //String jwt = p2.getString("certificate");
-                            Log.i(TAG, "Received from Cloud Cert: " + params);
-                            SharedPreferences.Editor e = prefs.edit();
-                            e.putString("Certificates", params);
-                            e.putString("newKeyList", "true");
-                            e.apply();
-                            //Log.i(TAG, "JWT = " + jwt);
-                            //Log.i(TAG, "User Data:" + p3);
-                            // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
-/*                            SharedPreferences.Editor e = prefs.edit();
-                            e.putString("Userdata", p3.toString());
-                            e.putString("newdata", "true");
-                            e.commit();
-
-                            //certs.put(certId, jwt);
-                            //Debug
+                            // Should be fixed now, backend is sending URL safe Base64,
+                            // parseAndValidateJWT now using Base64.URL_SAFE
                             String[] token = RviProtocol.parseAndValidateJWT(jwt);
                             JSONObject key = new JSONObject(token[1]);
                             Log.d(TAG, "Token = " + key.toString(2));
                             sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
-                                    "dialog", "New Key", key.getString("id"));*/
+                                    "dialog", "New Key", key.getString("id"));
+
+                        } else if (servicePtr.equals(ss[1])) {
+                            String params = data.getString("parameters");
+                            Log.i(TAG, "Received from Cloud Cert: " + params);
+
+                            SharedPreferences.Editor e = prefs.edit();
+                            e.putString("Certificates", params);
+                            e.putString("newKeyList", "true");
+                            e.apply();
 
                         } else if (servicePtr.equals(ss[2])) {
                             JSONArray params = data.getJSONArray("parameters");
-                            //Log.i(TAG, "Received Cert Params : " + params);
                             JSONObject p1 = params.getJSONObject(0);
-
                             Log.i(TAG, "User Data:" + p1);
-                            // Log.i(TAG, "Vehicle=>" + p3.getString(getResources().getString(R.string.VEHICLE)));
+
                             SharedPreferences.Editor e = prefs.edit();
                             e.putString("Userdata", p1.toString());
                             e.putString("newdata", "true");
@@ -333,11 +306,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         } else if (servicePtr.equals(ss[3])) {
                             JSONArray params = data.getJSONArray("parameters");
                             JSONObject p1 = params.getJSONObject(0);
-
                             Log.i(TAG, "Service Invoked by Guest:" + p1);
-
-                            // TODO add Sharepreferences need for Alert Dialog to show up
-                            // and inform owner that guest invoked a service
 
                             SharedPreferences.Editor e = prefs.edit();
                             e.putString("guestInvokedService", p1.toString());
@@ -369,8 +338,6 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
                         JSONObject saData = RviProtocol.createServiceAnnouncement(
                                 1, ss, "av", "", "");
-                        // THZ: My mistake, this cloudSender.onNext is being used for service announce
-                        // https://github.com/PDXostc/rvi_mobile_unlock/issues/5
                         cloudSender.onNext(saData);
 
 
@@ -951,18 +918,24 @@ public class RviService extends Service /* implements BeaconConsumer */{
         //final String cert = (certs.size() > 0)?certs.values().iterator().next():"";
         final String cert = "";
         if( btSender != null && btSender.hasObservers() ) {
-            Log.i(TAG, "Invoking service : "+service+" on car, we have a BT socket");
+            Log.i(TAG, "Invoking service : " + service + " on car, we have a BT socket");
             try {
                 JSONArray locationData = new JSONArray();
                 JSONObject location = new JSONObject();
                 location.put("username", user);
                 location.put("vehicleVIN", vehicle);
                 location.put("latitude", latit);
-                location.put("longitude",longi);
+                location.put("longitude", longi);
                 locationData.put(location);
                 JSONObject rcv = RviProtocol.createReceiveData(2, "jlr.com/bt/stoffe/" + service,
                 locationData, cert, "");
-
+                /*
+                try{
+                    Thread.sleep(100);
+                }catch(InterruptedException e){
+                    System.out.println("got interrupted!");
+                }
+                */
                 btSender.onNext(rcv);
             } catch (JSONException e) {
                 btSender.onError(e);
