@@ -123,9 +123,9 @@ public abstract class RviProtocol {
         String[] result = new String[3];
 
         String [] jwtParts = encToken.split("\\.");
-        if( jwtParts[0] != null ) result[0] = new String(Base64.decode(jwtParts[0],Base64.DEFAULT));
-        if( jwtParts[1] != null ) result[1] = new String(Base64.decode(jwtParts[1],Base64.DEFAULT));
-        if( jwtParts[2] != null ) result[2] = new String(Base64.decode(jwtParts[2],Base64.DEFAULT));
+        if( jwtParts[0] != null ) result[0] = new String(Base64.decode(jwtParts[0],Base64.URL_SAFE));
+        if( jwtParts[1] != null ) result[1] = new String(Base64.decode(jwtParts[1],Base64.URL_SAFE));
+        if( jwtParts[2] != null ) result[2] = new String(Base64.decode(jwtParts[2],Base64.URL_SAFE));
 
         //TODO validate, maybe also just return JSONObject?
 

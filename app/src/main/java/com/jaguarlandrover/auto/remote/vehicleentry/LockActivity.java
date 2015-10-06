@@ -65,7 +65,12 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     Runnable StatusCheck = new Runnable() {
         @Override
         public void run() {
-            checkforKeys();
+            try{
+                checkforKeys();
+            } catch (Exception e1) {
+                Log.w(TAG,"EXCEPTION Check for Key Status: "+e1.toString());
+            }
+
             keyCheck.postDelayed(StatusCheck, 5000);
         }
     };
@@ -73,7 +78,12 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     Runnable guestCheck = new Runnable() {
         @Override
         public void run() {
-            checkforGuestActivity();
+            try {
+                checkforGuestActivity();
+            } catch (Exception e1) {
+                Log.w(TAG,"JCheck for Guest Activity: "+e1.toString());
+            }
+
             guestServiceCheck.postDelayed(guestCheck, 10000);
         }
     };
@@ -206,7 +216,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();
                             }
-        });
+                        });
         AlertDialog alert = builder.create();
         alert.show();
     }
