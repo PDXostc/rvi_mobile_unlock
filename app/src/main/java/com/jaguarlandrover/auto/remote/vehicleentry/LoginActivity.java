@@ -147,6 +147,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         BKTask task = new BKTask(this);
         task.setUser(login_fragment.userName.getEditableText().toString());
         task.setpWd(login_fragment.password.getEditableText().toString());
+        // TODO log in is currently hardcoded to a test instance of rvi_backend
         task.execute(new String[]{"http://ec2-54-172-25-254.compute-1.amazonaws.com:8000/token/new.json"});
     }
 
