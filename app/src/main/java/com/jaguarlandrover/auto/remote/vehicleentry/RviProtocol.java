@@ -51,6 +51,7 @@ public abstract class RviProtocol {
         return auth;
     }
 
+
     //{"tid":1,"cmd":"rcv","mod":"proto_json_rpc","data":"eyJzZXJ2aWNlIjoiamxyLmNvbS9idC9zdG9mZmUvbG9jayIsInRpbWVvdXQiOjE
     //0MzQwNTMyNTkwMDAsInBhcmFtZXRlcnMiOlt7ImEiOiJiIn1dLCJzaWduYXR1cmUiOiJzaWduYXR1cmUiLCJjZXJ0aWZpY2F
     //0ZSI6ImNlcnRpZmljYXRlIn0="}
@@ -59,6 +60,26 @@ public abstract class RviProtocol {
     // {"service":"jlr.com/bt/stoffe/lock","timeout":1434053259000,"parameters":[{"a":"b"}],"signature":"signature","certificate":"certificate"}
 
     public static JSONObject createReceiveData(int tid, String service, JSONArray params, String cert, String sig) throws JSONException {
+        JSONObject payload = new JSONObject();
+        payload.put("service", service);
+        payload.put("timeout", 1433266704); //TODO
+        payload.put("parameters", params);
+        payload.put("certificate", cert);
+        payload.put("signature", sig);
+
+        JSONObject rcvData = new JSONObject();
+        rcvData.put("tid", tid);
+        rcvData.put("cmd", "rcv");
+
+        rcvData.put("mod", "proto_json_rpc");
+        String enc = Base64.encodeToString(payload.toString().getBytes(), 0);
+        rcvData.put("data", enc);
+
+        Log.d(TAG, "rcv : " + rcvData.toString());
+        return rcvData;
+    }
+
+    public static JSONObject createRequestData(int tid, String service, JSONObject params, String cert, String sig) throws JSONException {
         JSONObject payload = new JSONObject();
         payload.put("service", service);
         payload.put("timeout", 1433266704); //TODO
@@ -102,9 +123,9 @@ public abstract class RviProtocol {
         String[] result = new String[3];
 
         String [] jwtParts = encToken.split("\\.");
-        if( jwtParts[0] != null ) result[0] = new String(Base64.decode(jwtParts[0],Base64.DEFAULT));
-        if( jwtParts[1] != null ) result[1] = new String(Base64.decode(jwtParts[1],Base64.DEFAULT));
-        if( jwtParts[2] != null ) result[2] = new String(Base64.decode(jwtParts[2],Base64.DEFAULT));
+        if( jwtParts[0] != null ) result[0] = new String(Base64.decode(jwtParts[0],Base64.URL_SAFE));
+        if( jwtParts[1] != null ) result[1] = new String(Base64.decode(jwtParts[1],Base64.URL_SAFE));
+        if( jwtParts[2] != null ) result[2] = new String(Base64.decode(jwtParts[2],Base64.URL_SAFE));
 
         //TODO validate, maybe also just return JSONObject?
 

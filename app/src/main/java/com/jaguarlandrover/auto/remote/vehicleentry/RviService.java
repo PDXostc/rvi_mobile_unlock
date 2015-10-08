@@ -9,6 +9,8 @@
 
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -16,17 +18,25 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
+import android.nfc.Tag;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.TabHost;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,6 +48,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -54,9 +66,12 @@ import rx.subjects.PublishSubject;
 public class RviService extends Service /* implements BeaconConsumer */{
     private static final String TAG = "RVI";
     private ConnectivityManager cm;
-    private TelephonyManager tm;
+    private static TelephonyManager tm;
     private ConcurrentHashMap<String,Long> visible = new ConcurrentHashMap<String, Long>();
-
+    private static double latit =0;
+    private static double longi=0;
+    private static Location location;
+    LocationManager locationManager;
     //private int timeoutSec = 10; //If beacon did not report in 10 sec then remove
 
     private BluetoothAdapter bluetoothAdapter;
@@ -92,8 +107,58 @@ public class RviService extends Service /* implements BeaconConsumer */{
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate Service");
+        locationManager=    (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        LocationListener locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                latit = location.getLatitude();
+                longi = location.getLongitude();
+                SharedPreferences.Editor e = prefs.edit();
+                e.putString("moving", "true");
+                e.commit();
+                String myLocation = "Latitude = " + latit + " Longitude = " + longi;
+
+                //I make a log to see the results
+                Log.e("MY CURRENT LOCATION", myLocation);
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        };
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60, 1, locationListener);
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        /*SharedPreferences.Editor editor = prefs.edit();
+
+        Set<String> userData = prefs.getStringSet("userData", new HashSet<String>());
+        Set<String> services = prefs.getStringSet("services", new HashSet<String>());
+
+        userData.add(getResources().getString(R.string.USERNAME));
+        userData.add(getResources().getString(R.string.VEHICLE));
+        userData.add(getResources().getString(R.string.USERTYPE));
+
+        services.add(getResources().getString(R.string.LOCK));
+        services.add(getResources().getString(R.string.ENGINE));
+
+        editor.putStringSet("userData", userData);
+        editor.putStringSet("services", services);
+        editor.commit();
+*/
+
+
+
         //TODO base on VIN instead
 
         cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -144,16 +209,19 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
         return mBinder;
     }
-
+    private static final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
     private void _connectConnect() {
-        String rviServer = prefs.getString("pref_rvi_server","rvi-test1.nginfotpdx.net");
+        String rviServer = prefs.getString("pref_rvi_server", "54.172.25.254");
         int rviPort = Integer.parseInt(prefs.getString("pref_rvi_server_port","8807"));
 
         //Create service vector
         final String certProv = "jlr.com/mobile/" + tm.getDeviceId() + "/dm/cert_provision";
-        final String[] ss = {certProv};
+        final String certRsp = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_response";
+        final String certAccountDetails = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_accountdetails";
+        final String serviceInvokedByGuest = "jlr.com/mobile/"+tm.getDeviceId()+"/report/serviceinvokedbyguest";
+        final String[] ss = {certProv, certRsp, certAccountDetails, serviceInvokedByGuest};
 
-        final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
+        //final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
 
         Observable<JSONObject> obs = connectCloud(ss, rviServer, rviPort , cm, cloudSender);
 
@@ -172,7 +240,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
             @Override
             public void onNext(JSONObject s) {
                 //Log.i(TAG, "Received from Cloud JSON: " + s.toString());
-                if( !s.has("cmd") ) {
+                if (!s.has("cmd")) {
                     Log.w(TAG, "CMD is missing!");
                     return; //Very strange
                 }
@@ -180,7 +248,6 @@ public class RviService extends Service /* implements BeaconConsumer */{
                 try {
                     String cmd = s.getString("cmd");
                     cmd.toLowerCase().trim();
-
                     //TODO here add Cert validation!
 
                     if ("rcv".equals(cmd)) {
@@ -190,24 +257,63 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         }
                         JSONObject data = RviProtocol.parseData(s.getString("data"));
                         String servicePtr = data.getString("service");
+                        //ADD SERVICE HERE----*************
+
                         Log.i(TAG, "Received Service : " + servicePtr);
                         //Log.i(TAG, "Received Service : " + data);
                         //CERT SERVICE
-                        JSONArray params = data.getJSONArray("parameters");
-                        //Log.i(TAG, "Received Cert Params : " + params);
-                        JSONObject p1 = params.getJSONObject(0);
-                        JSONObject p2 = params.getJSONObject(1);
-                        String certId = p1.getString("certid");
-                        String jwt = p2.getString("certificate");
-                        Log.i(TAG, "Received from Cloud Cert ID: " + certId);
-                        Log.i(TAG, "JWT = " + jwt);
-                        certs.put(certId, jwt);
-                        //Debug
-                        String[] token = RviProtocol.parseAndValidateJWT(jwt);
-                        JSONObject key = new JSONObject(token[1]);
-                        Log.d(TAG, "Token = "+ key.toString(2));
-                        sendNotification(RviService.this, getResources().getString(R.string.not_new_key)+" : "+key.getString("id"),
-                                "dialog", "New Key", key.getString("id"));
+                        if (servicePtr.equals(ss[0])) {
+                            JSONArray params = data.getJSONArray("parameters");
+                            Log.i(TAG, "Received Cert Params : " + params);
+                            JSONObject p1 = params.getJSONObject(0);
+                            JSONObject p2 = params.getJSONObject(1);
+                            String certId = p1.getString("certid");
+                            String jwt = p2.getString("certificate");
+                            Log.i(TAG, "Received from Cloud Cert ID: " + certId);
+                            Log.i(TAG, "JWT = " + jwt);
+
+                            certs.put(certId, jwt);
+                            //Debug
+                            // Errors seen here on parseAndValidateJWT. Should be getting Base64
+                            // from backend, but sometimes getting errors that it's not.
+                            // Should be fixed now, backend is sending URL safe Base64,
+                            // parseAndValidateJWT now using Base64.URL_SAFE
+                            String[] token = RviProtocol.parseAndValidateJWT(jwt);
+                            JSONObject key = new JSONObject(token[1]);
+                            Log.d(TAG, "Token = " + key.toString(2));
+                            sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
+                                    "dialog", "New Key", key.getString("id"));
+
+                        } else if (servicePtr.equals(ss[1])) {
+                            String params = data.getString("parameters");
+                            Log.i(TAG, "Received from Cloud Cert: " + params);
+
+                            SharedPreferences.Editor e = prefs.edit();
+                            e.putString("Certificates", params);
+                            e.putString("newKeyList", "true");
+                            e.apply();
+
+                        } else if (servicePtr.equals(ss[2])) {
+                            JSONArray params = data.getJSONArray("parameters");
+                            JSONObject p1 = params.getJSONObject(0);
+                            Log.i(TAG, "User Data:" + p1);
+
+                            SharedPreferences.Editor e = prefs.edit();
+                            e.putString("Userdata", p1.toString());
+                            e.putString("newdata", "true");
+                            e.commit();
+
+                        } else if (servicePtr.equals(ss[3])) {
+                            JSONArray params = data.getJSONArray("parameters");
+                            JSONObject p1 = params.getJSONObject(0);
+                            Log.i(TAG, "Service Invoked by Guest:" + p1);
+
+                            SharedPreferences.Editor e = prefs.edit();
+                            e.putString("guestInvokedService", p1.toString());
+                            e.putString("newguestactivity", "true");
+                            e.commit();
+
+                        }
 
                     } else if ("sa".equals(cmd)) {
                         if (!s.has("svcs")) {
@@ -216,23 +322,23 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         }
                         JSONArray svcs = s.getJSONArray("svcs");
                         String[] services = new String[svcs.length()];
-                        for ( int i = 0 ; i < services.length  ; i++ ) {
+                        for (int i = 0; i < services.length; i++) {
                             services[i] = svcs.getString(i);
                         }
                         //Just print
-                        for(String s1 : services) {
-                            Log.d(TAG,"Found service : "+s1);
+                        for (String s1 : services) {
+                            Log.d(TAG, "Found service : " + s1);
                         }
 
 
                     } else if ("au".equals(cmd)) {
                         String addr = s.getString("addr");
                         int port = s.getInt("port");
-                        Log.d(TAG,"Authentication from server "+addr+" : "+port);
+                        Log.d(TAG, "Authentication from server " + addr + " : " + port);
 
                         JSONObject saData = RviProtocol.createServiceAnnouncement(
                                 1, ss, "av", "", "");
-                        cloudSender.onNext( saData );
+                        cloudSender.onNext(saData);
 
 
                     } else if ("ping".equals(cmd)) { //NOOP
@@ -240,7 +346,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         Log.w(TAG, "Unknown command received - " + cmd);
                     }
                 } catch (JSONException e) {
-                    Log.e(TAG,"",e);
+                    Log.e(TAG, "", e);
                 }
             }
         });
@@ -297,47 +403,65 @@ public class RviService extends Service /* implements BeaconConsumer */{
         public void onNext(final RangeObject ro) {
             //Log.w(TAG, "Beacon Ranger Object : " + ro);
 
-            final int unlockDistance = Integer.parseInt(prefs.getString("pref_auto_unlock_dist", "1"));
-            final int connectDistance = Integer.parseInt(prefs.getString("pref_auto_conn_dist", "3"));
-            final int lockDistance = Integer.parseInt(prefs.getString("pref_auto_lock_dist", "10"));
+            final double unlockDistance = Double.parseDouble(prefs.getString("pref_auto_unlock_dist", "1"));
+            final double connectDistance = Double.parseDouble(prefs.getString("pref_auto_conn_dist", "3"));
+            final double lockDistance = Double.parseDouble(prefs.getString("pref_auto_lock_dist", "10"));
 
             Log.d(TAG,"distance:"+ro.distance+", lockDistance:"+lockDistance+", unlockDistance:"+unlockDistance+", connectDistance:"+connectDistance);
             Log.d(TAG,"connected:"+connected+", connecting:"+connecting+", unlocked:"+unlocked);
 
+            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            String userType = JSONParser(prefs.getString("Userdata", "Nothing there!!"), "userType");
+            String showme = JSONParser(prefs.getString("Userdata", "Nothing There!!"), "authorizedServices");
+            JSONObject services = null;
+            try{
+                services = new JSONObject(showme);
+                if(userType.equals("guest")&& services.getString("lock").equals("false")){
 
-            if( !connected && (ro.distance > connectDistance ) ) {
-                Log.d(TAG, "Too far out to connect : " + ro.distance);
-                return;
-            }
+                }else {
+                    // No longer using auto lock/unlock for demo, commenting out
+                    //if(prefs.getString("autounlock", "nothing").equals("true")){
+                        if (!connected && (ro.distance > connectDistance)) {
+                            Log.d(TAG, "Too far out to connect : " + ro.distance);
+                            return;
+                        }
 
-            if( connected && (!unlocked) && (ro.distance > unlockDistance ) ) {
-                Log.d(TAG, "Too far out unlock : " + ro.distance);
-                return;
-            }
+                        if (connected && (!unlocked) && (ro.distance > unlockDistance)) {
+                            Log.d(TAG, "Too far out unlock : " + ro.distance);
+                            return;
+                        }
 
-            if (connected && (!unlocked) && ro.distance <= unlockDistance) {
-                unlocked = true;
-                RviService.service("unlock");
-                sendNotification(RviService.this, getResources().getString(R.string.not_auto_unlock));
-                return;
-            }
+                        if (connected && (!unlocked) && ro.distance <= unlockDistance) {
+                            unlocked = true;
+                            //changing back to normal unlock instead of auto_*
+                            RviService.service("unlock", RviService.this);
+                            sendNotification(RviService.this, getResources().getString(R.string.not_auto_unlock));
+                            return;
+                        }
 
-            if (connected && unlocked && ro.distance >= lockDistance) {
-                unlocked = false;
-                RviService.service("lock");
-                sendNotification(RviService.this, getResources().getString(R.string.not_auto_lock));
-                return;
-            }
+                        if (connected && unlocked && ro.distance >= lockDistance) {
+                            unlocked = false;
+                            //changing back to normal lock instead of auto_*
+                            RviService.service("lock", RviService.this);
+                            sendNotification(RviService.this, getResources().getString(R.string.not_auto_lock));
+                            return;
+                        }
 
-            if(connecting) {
-                Log.i(TAG, "Already connecting to BT endpoint.");
-                return;
-            }
+                        if (connecting) {
+                            Log.i(TAG, "Already connecting to BT endpoint.");
+                            return;
+                        }
 
-            if( connected ) {
-                //br.stop(); //stop reporting
-                return;
-            }
+                        if (connected) {
+                            //br.stop(); //stop reporting
+                            return;
+                        }
+                        SharedPreferences.Editor e = prefs.edit();
+                        e.putString("moving","false");
+                        e.commit();
+                    //}
+                }
+            }catch(Exception e){e.printStackTrace();}
 
             //br.stop();
             //connected = true;
@@ -385,7 +509,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                                         @Override
                                         public void call(Long l) {
                                             Log.d(TAG, "Ping :" + l);
-                                            service("ping");
+                                            service("ping", RviService.this);
                                         }
                                     });
                                 }
@@ -481,6 +605,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         //Config
                         int btChannel = Integer.parseInt(prefs.getString("pref_bt_channel","1"));
 
+                        // Commented out as part of BT reset connection issue. See,
+                        // https://github.com/PDXostc/rvi_mobile_unlock/issues/4
+                        /*
                         try {
                             sock = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB".toLowerCase())); //SerialPortServiceClass
                             //00001105-0000-1000-8000-00805f9b34fb //OBEXObjectPushServiceClass
@@ -491,22 +618,28 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             //0000111f-0000-1000-8000-00805f9b34fb //HandsfreeAudioGatewayServiceClass
                             //00000000-0000-1000-8000-00805f9b34fb
                             //BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
-//
-                            device.createBond();
-                            //Log.i(TAG,"3 "+socket+" : "/*device.createBond()*/);
+                            //device.createBond();
+                            //Log.i(TAG,"3 "+socket+" : "device.createBond()");
                             sock.connect();
                         } catch (IOException e) {
+
                             Log.d(TAG, "Excepption:" + e.getLocalizedMessage());
+*/
                             try {
                                 Method m = device.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
                                 sock = (BluetoothSocket) m.invoke(device, btChannel);
+
+                                // Added as part of BT reset connection issue. See,
+                                // https://github.com/PDXostc/rvi_mobile_unlock/issues/4
+                                BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
+
                                 sock.connect();
                             } catch (InvocationTargetException ite) {
-                                e.printStackTrace();
+                                ite.printStackTrace();
                             } catch (NoSuchMethodException ne) {
-                                e.printStackTrace();
+                                ne.printStackTrace();
                             } catch (IllegalAccessException ie) {
-                                e.printStackTrace();
+                                ie.printStackTrace();
                             } catch (IOException e1) {
                                 e1.printStackTrace();
                             }
@@ -519,7 +652,14 @@ public class RviService extends Service /* implements BeaconConsumer */{
                                 final String cert = (certs.size() > 0)?certs.values().iterator().next():"";
                                 JSONObject auth = RviProtocol.createAuth(1, device.getAddress(), 1, cert, "");
                                 final OutputStream out = sock.getOutputStream();
-                                out.write(auth.toString().getBytes());
+
+                                // Added as part of BT reset connection issue. See,
+                                // https://github.com/PDXostc/rvi_mobile_unlock/issues/4
+                                SystemClock.sleep(500);
+                                Log.i(TAG, "BT reset - getState()" + BluetoothAdapter.getDefaultAdapter().getState());
+                                Log.i(TAG, "BT reset - isConnected()" + sock.isConnected());
+                                //out.write(auth.toString().getBytes());
+
                                 out.flush();
 
                                 connected = true;
@@ -607,7 +747,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         }
                         //return;
                     }
-                }
+                //}
         );
 
         return myObservable;
@@ -671,16 +811,27 @@ public class RviService extends Service /* implements BeaconConsumer */{
                                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                 Log.i(TAG, "Sent to socket - ready : " + input.available());
                                 int open = input.read();
+
                                 if (open != '{') {
-                                    running = false;
+                                    //running = false;
                                     Log.i(TAG, "First char did not match : " + open);
-                                    break;
+                                    while (input.available() > 0) {
+                                        int tmp = input.read();
+                                        baos.write(tmp);
+                                    }
+                                    baos.flush();
+                                    String toparse = baos.toString();
+                                    Log.i(TAG, "BAD DATA Received from Cloud : " + toparse);
+                                    baos.reset();
+                                    // break;
                                 }
                                 cnt++;
                                 baos.write(open); //Wait for the first then go
                                 Log.i(TAG, "Sent to socket - ready : " + input.available() + " open = " + open);
 
-                                while (input.available() > 0) {
+                                // Added "|| cnt > 0" for truncated data issue. See,
+                                // https://github.com/PDXostc/rvi_mobile_unlock/issues/3
+                                while (input.available() > 0 || cnt > 0) {
                                     try {
                                         int tmp = input.read();
                                         baos.write(tmp);
@@ -759,17 +910,32 @@ public class RviService extends Service /* implements BeaconConsumer */{
         nm.notify(0, builder.build());
     }
 
-    public static void service(String service) {
+    public static void service(String service, Context ctx) {
         Log.i(TAG, "Invoking service : "+service+" the car, conn = " + btSender);
-
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        String user = JSONParser(prefs.getString("Userdata", "Nothing There!!"), "username");
+        String vehicle = JSONParser(prefs.getString("Userdata", "Nothing There!!"), "vehicleVIN");
         //final String cert = (certs.size() > 0)?certs.values().iterator().next():"";
         final String cert = "";
         if( btSender != null && btSender.hasObservers() ) {
-            Log.i(TAG, "Invoking service : "+service+" on car, we have a BT socket");
+            Log.i(TAG, "Invoking service : " + service + " on car, we have a BT socket");
             try {
+                JSONArray locationData = new JSONArray();
+                JSONObject location = new JSONObject();
+                location.put("username", user);
+                location.put("vehicleVIN", vehicle);
+                location.put("latitude", latit);
+                location.put("longitude", longi);
+                locationData.put(location);
                 JSONObject rcv = RviProtocol.createReceiveData(2, "jlr.com/bt/stoffe/" + service,
-                        new JSONArray("[{\"O\":\"K\"}]"), cert, "");
-
+                locationData, cert, "");
+                /*
+                try{
+                    Thread.sleep(100);
+                }catch(InterruptedException e){
+                    System.out.println("got interrupted!");
+                }
+                */
                 btSender.onNext(rcv);
             } catch (JSONException e) {
                 btSender.onError(e);
@@ -779,4 +945,68 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
     }
 
+    public static void sendaKey(JSONArray json){
+        JSONObject send;
+        try{
+            send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_create",json,"","");
+            // Testing for dupe service invokes
+            //send = RviProtocol.createRequestData(3, "jlr.com/backend/dm/cert_create", json.getJSONObject(0), "", "");
+            Log.d(TAG,"Successfully sent"+send.toString());
+            // Testing for dupe service invokes
+            Log.d("stack cloud send: ", Thread.currentThread().getStackTrace().toString());
+            Thread.currentThread().getStackTrace();
+            cloudSender.onNext(send);
+        }catch(Exception e) {
+            e.printStackTrace();
+            cloudSender.onError(e);
+        }
+
+    }
+
+    public static void requestAll(JSONArray json){
+        JSONObject request;
+        JSONObject uuid = new JSONObject();
+        try{
+            uuid.put("mobileUUID", tm.getDeviceId());
+            json.put(uuid);
+            request = RviProtocol.createReceiveData(4, "jlr.com/backend/dm/cert_requestall", json, "", "");
+            // Testing for dupe service invokes
+            Log.d(TAG, "Successfully sent" + request.toString());
+            Log.d("stack cloud send: ", Thread.currentThread().getStackTrace().toString());
+            Thread.currentThread().getStackTrace();
+            // Testing for dupe service invokes
+            //request = RviProtocol.createRequestData(4, "jlr.com/backend/dm/cert_requestall", json.getJSONObject(0), "", "");
+            cloudSender.onNext(request);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            cloudSender.onError(e);}
+    }
+
+    public  static void revokeKey(JSONArray json){
+        JSONObject send;
+        try{
+            send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_modify",json,"","");
+            // Testing for dupe service invokes
+            //send = RviProtocol.createRequestData(3, "jlr.com/backend/dm/cert_modify", json.getJSONObject(0), "", "");
+            Log.d(TAG, "Successfully sent" + send.toString());
+            Log.d("stack cloud send: ", Thread.currentThread().getStackTrace().toString());
+            Thread.currentThread().getStackTrace();
+            cloudSender.onNext(send);
+        }catch(Exception e) {
+            e.printStackTrace();
+            cloudSender.onError(e);
+        }
+    }
+    public static String JSONParser(String jsonString, String RqstData)
+    {
+        try {
+            JSONObject json = new JSONObject(jsonString);
+            String parameterVal = json.getString(RqstData);
+            return parameterVal;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return "0";
+    }
 }

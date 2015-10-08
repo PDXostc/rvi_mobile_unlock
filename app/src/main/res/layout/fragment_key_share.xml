@@ -1,0 +1,226 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background"
+    android:columnCount="2"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:rowCount="4"
+    android:weightSum="1"
+    tools:context="com.jaguarlandrover.auto.remote.vehicleentry.keyShareActivityFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/background"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+
+        <TextView
+            android:id="@+id/user"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="25dp"
+            android:layout_weight="1"
+            android:textColor="@color/white"
+            android:textSize="20dp" />
+<!--
+        <ImageView
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@drawable/vehicle_icon" />
+-->
+    </LinearLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="15dp"
+        android:background="@android:color/white" />
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/userscroll"
+        android:layout_width="fill_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_height="100dp"
+        android:layout_marginBottom="10dp">
+
+    </android.support.v4.view.ViewPager>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vehiclescroll"
+        android:layout_width="fill_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_height="100dp"
+        android:layout_marginBottom="10dp">
+
+    </android.support.v4.view.ViewPager>
+    <!--    <HorizontalScrollView
+            android:id="@+id/userscroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/userlayout">
+
+            </LinearLayout>
+        </HorizontalScrollView>
+        <HorizontalScrollView
+            android:id="@+id/vehiclescroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/vehiclelayout">
+
+            </LinearLayout>
+
+        </HorizontalScrollView>-->
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="10dp"
+        android:background="@android:color/white" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:columnCount="3"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:orientation="horizontal"
+        android:rowCount="2">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_marginRight="15dp"
+            android:layout_row="0"
+            android:text="Valid From:"
+            android:textColor="@color/white"
+            android:textSize="20dp" />
+
+        <TextView
+            android:id="@+id/startlblDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_marginRight="15dp"
+            android:layout_row="0"
+            android:textColor="@color/white"
+            android:textSize="20dp" />
+
+        <TextView
+            android:id="@+id/starttimeLbl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="2"
+            android:layout_row="0"
+            android:text="12:00 am"
+            android:textColor="@color/white"
+            android:textSize="20dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_marginRight="15dp"
+            android:layout_row="1"
+            android:text="Valid To:"
+            android:textColor="@color/white"
+            android:textSize="20dp" />
+
+        <TextView
+            android:id="@+id/endlblDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_marginRight="15dp"
+            android:layout_row="1"
+            android:textColor="@color/white"
+            android:textSize="20dp" />
+
+        <TextView
+            android:id="@+id/endtimeLbl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="2"
+            android:layout_row="1"
+            android:text="12:00 am"
+            android:textColor="@color/white"
+            android:textSize="20dp" />
+    </GridLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="10dp"
+        android:background="@android:color/white" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:columnCount="2"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:orientation="horizontal"
+        android:rowCount="2">
+
+        <TextView
+            android:id="@+id/LockswitchLbl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_marginRight="15dp"
+            android:layout_row="0"
+            android:text="Lock/Unlock"
+            android:textColor="#ffff" />
+
+        <TextView
+            android:id="@+id/engineswitchLbl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="1"
+            android:text="Engine Start"
+            android:textColor="#ffff" />
+
+        <Switch
+            android:id="@+id/lock_unlock"
+            android:layout_column="1"
+            android:layout_marginEnd="15dp"
+            android:layout_row="0"
+            android:textOff="OFF"
+            android:textOn="ON" />
+
+        <Switch
+            android:id="@+id/engine"
+            android:layout_column="1"
+            android:layout_marginEnd="15dp"
+            android:layout_row="1"
+            android:textOff="OFF"
+            android:textOn="ON" />
+
+    </GridLayout>
+
+    <Button
+        android:id="@+id/ShareBtn"
+        android:layout_width="140dp"
+        android:layout_height="60dp"
+        android:clickable="true"
+        android:text="Share Key"/>
+</LinearLayout>
