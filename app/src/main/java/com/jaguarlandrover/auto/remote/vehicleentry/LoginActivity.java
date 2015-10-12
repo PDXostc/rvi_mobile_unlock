@@ -143,6 +143,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     public void submit(View v){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);;
 
+
+
         BKTask task = new BKTask(this);
         task.setUser(login_fragment.userName.getEditableText().toString());
         task.setpWd(login_fragment.password.getEditableText().toString());

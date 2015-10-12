@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,6 +53,14 @@ public class LoginActivityFragment extends Fragment {
         userName = (MaterialEditText) view.findViewById(R.id.username);
         password = (MaterialEditText) view.findViewById(R.id.password);
 
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
+        userName.setText(sharedPref.getString("savedUserName", ""));
+        password.setText(sharedPref.getString("savedPassword", ""));
+
+        userName.setCursorVisible(true);
+        password.setCursorVisible(true);
+
         login.setOnClickListener(l);
             /*@Override
             public void onClick(View v) {
@@ -66,7 +75,13 @@ public class LoginActivityFragment extends Fragment {
     private View.OnClickListener l = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            //SharedPreferences.Editor ed = sharedPref.edit();
+            SharedPreferences.Editor ed = sharedPref.edit();
+
+            ed.putString("savedUserName", userName.getText().toString());
+            ed.putString("savedPassword", password.getText().toString());
+
+            ed.commit();
+
             switch(v.getId()) {
                 case R.id.loginBtn:
                     Log.i("RVI", "LockBtn");
