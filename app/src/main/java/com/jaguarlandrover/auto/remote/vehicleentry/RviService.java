@@ -501,14 +501,18 @@ public class RviService extends Service /* implements BeaconConsumer */{
                                 Method m = device.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
                                 sock = (BluetoothSocket) m.invoke(device, btChannel);
                                 sock.connect();
-                            } catch (InvocationTargetException ite) {
-                                e.printStackTrace();
-                            } catch (NoSuchMethodException ne) {
-                                e.printStackTrace();
-                            } catch (IllegalAccessException ie) {
-                                e.printStackTrace();
-                            } catch (IOException e1) {
+                            } catch (Exception e1) {//InvocationTargetException ite) {
+//                                e.printStackTrace();
+//                            } catch (NoSuchMethodException ne) {
+//                                e.printStackTrace();
+//                            } catch (IllegalAccessException ie) {
+//                                e.printStackTrace();
+//                            } catch (IOException e1) {
                                 e1.printStackTrace();
+
+                                connecting = false;
+                                return;
+
                             }
                             Subscription sendersub = null;
                             try {
@@ -767,7 +771,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
         if( btSender != null && btSender.hasObservers() ) {
             Log.i(TAG, "Invoking service : "+service+" on car, we have a BT socket");
             try {
-                JSONObject rcv = RviProtocol.createReceiveData(2, "jlr.com/bt/stoffe/" + service,
+                JSONObject rcv = RviProtocol.createReceiveData(2, "jlr.com/vin/stoffe/" + service,
                         new JSONArray("[{\"O\":\"K\"}]"), cert, "");
 
                 btSender.onNext(rcv);
