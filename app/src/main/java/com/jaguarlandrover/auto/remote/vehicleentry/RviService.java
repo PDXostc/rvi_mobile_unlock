@@ -634,14 +634,18 @@ public class RviService extends Service /* implements BeaconConsumer */{
                                 BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
 
                                 sock.connect();
-                            } catch (InvocationTargetException ite) {
-                                ite.printStackTrace();
-                            } catch (NoSuchMethodException ne) {
-                                ne.printStackTrace();
-                            } catch (IllegalAccessException ie) {
-                                ie.printStackTrace();
-                            } catch (IOException e1) {
+                            } catch (Exception e1) {//InvocationTargetException ite) {
+//                                e.printStackTrace();
+//                            } catch (NoSuchMethodException ne) {
+//                                e.printStackTrace();
+//                            } catch (IllegalAccessException ie) {
+//                                e.printStackTrace();
+//                            } catch (IOException e1) {
                                 e1.printStackTrace();
+
+                                connecting = false;
+                                return;
+
                             }
                             Subscription sendersub = null;
                             try {
@@ -927,7 +931,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                 location.put("latitude", latit);
                 location.put("longitude", longi);
                 locationData.put(location);
-                JSONObject rcv = RviProtocol.createReceiveData(2, "jlr.com/bt/stoffe/" + service,
+                JSONObject rcv = RviProtocol.createReceiveData(2, "jlr.com/vin/stoffe/" + service,
                 locationData, cert, "");
                 /*
                 try{
