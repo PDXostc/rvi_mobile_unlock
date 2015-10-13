@@ -598,6 +598,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                     BluetoothSocket sock = null;
                     @Override
                     public void call(Subscriber<? super JSONObject> sub) {
+                        if (connected == true) return;
 
                         connected = false;
                         unlocked = false;
@@ -634,18 +635,14 @@ public class RviService extends Service /* implements BeaconConsumer */{
                                 BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
 
                                 sock.connect();
-                            } catch (Exception e1) {//InvocationTargetException ite) {
-//                                e.printStackTrace();
-//                            } catch (NoSuchMethodException ne) {
-//                                e.printStackTrace();
-//                            } catch (IllegalAccessException ie) {
-//                                e.printStackTrace();
-//                            } catch (IOException e1) {
+                            } catch (InvocationTargetException ite) {
+                                ite.printStackTrace();
+                            } catch (NoSuchMethodException ne) {
+                                ne.printStackTrace();
+                            } catch (IllegalAccessException ie) {
+                                ie.printStackTrace();
+                            } catch (IOException e1) {
                                 e1.printStackTrace();
-
-                                connecting = false;
-                                return;
-
                             }
                             Subscription sendersub = null;
                             try {
@@ -1009,7 +1006,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
             String parameterVal = json.getString(RqstData);
             return parameterVal;
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         return "0";
     }
