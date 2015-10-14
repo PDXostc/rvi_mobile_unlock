@@ -14,15 +14,15 @@
     android:layout_height="match_parent"
     android:background="@drawable/background"
     android:orientation="vertical"
-    android:weightSum="1"
     tools:context=".MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:background="@drawable/background"
         android:orientation="horizontal"
-        android:padding="10dp">
+        android:padding="10dp"
+        android:layout_weight="30">
 
         <TextView
             android:id="@+id/userheader"
@@ -49,85 +49,225 @@
 
     <View
         android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/white" />
+        android:layout_height="0dp"
+        android:background="@android:color/white"
+        android:layout_weight="1"/>
+
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="300">
 
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="10dp">
+    <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center">
 
-        <Button
-            android:layout_width="100sp"
-            android:layout_height="175sp"
-            android:layout_column="0"
-            android:layout_marginRight="15dp"
-            android:layout_row="0"
-            android:background="@drawable/grey_button"
-            android:id="@+id/unlock"
-            android:text="Unlock"
-            android:textColor="#000"
-            android:textSize="15dp"
-            android:visibility="visible" />
+            <ImageView
+                    android:id="@+id/fob_background"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:layout_centerInParent="true"
+                    android:src="@drawable/fob_background"/>
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:orientation="vertical">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:layout_centerInParent="true"
+                android:layout_alignTop="@+id/fob_background"
+                android:layout_alignBottom="@+id/fob_background"
+                android:layout_alignStart="@+id/fob_background"
+                android:layout_alignEnd="@+id/fob_background">
 
-            <Button
-                android:id="@+id/start"
-                android:layout_width="100sp"
-                android:layout_height="100sp"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="0dp"
-                android:background="@drawable/red_button"
-                android:paddingTop="15dp"
-                android:text="Start"
-                android:textColor="#000"
-                android:textSize="20sp"
-                android:visibility="visible" />
+            <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="42"/>
+            <!--android:background="#ff0000"-->
 
-            <Button
-                android:id="@+id/stop"
-                android:layout_width="100sp"
-                android:layout_height="100sp"
-                android:layout_column="1"
-                android:layout_marginTop="0dp"
-                android:layout_row="1"
-                android:background="@drawable/red_button"
-                android:paddingTop="15dp"
-                android:text="Stop"
-                android:textColor="#000"
-                android:textSize="20sp"
-                android:visibility="visible" />
+            <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="302">
+                <!--android:background="#00ff00"-->
+
+
+                <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="121"/>
+                <!--android:background="#ffff00"-->
+
+                <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="159">
+
+                    <ImageButton
+                            android:background="#00000000"
+                            android:id="@+id/unlock"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="131"
+                            android:paddingTop="22dp"
+                            android:paddingBottom="15dp"
+                            android:paddingLeft="15dp"
+                            android:paddingStart="15dp"
+                            android:paddingRight="20dp"
+                            android:paddingEnd="20dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/unlock"
+                            android:contentDescription="@string/unlock"/>
+
+                    <View
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="40"/>
+
+                    <ImageButton
+                            android:background="#00000000"
+                            android:id="@+id/lock"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="131"
+                            android:paddingTop="22dp"
+                            android:paddingBottom="15dp"
+                            android:paddingLeft="20dp"
+                            android:paddingStart="20dp"
+                            android:paddingRight="15dp"
+                            android:paddingEnd="15dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/lock"
+                            android:contentDescription="@string/lock"/>
+
+                </LinearLayout>
+
+                <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="41"/>
+                <!--android:background="#ff00ff"-->
+
+                <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="159">
+
+                    <ImageButton
+                            android:background="#00000000"
+                            android:id="@+id/find"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="132"
+                            android:paddingTop="22dp"
+                            android:paddingBottom="15dp"
+                            android:paddingLeft="15dp"
+                            android:paddingStart="15dp"
+                            android:paddingRight="20dp"
+                            android:paddingEnd="20dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/unlock"
+                            android:contentDescription="@string/find"/>
+
+                    <View
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="38"/>
+
+                    <ImageButton
+                            android:background="#00000000"
+                            android:id="@+id/trunk"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="132"
+                            android:paddingTop="22dp"
+                            android:paddingBottom="15dp"
+                            android:paddingLeft="20dp"
+                            android:paddingStart="20dp"
+                            android:paddingRight="15dp"
+                            android:paddingEnd="15dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/lock"
+                            android:contentDescription="@string/trunk"/>
+
+
+                </LinearLayout>
+
+                <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="42"/>
+                <!--android:background="#00ffff"-->
+
+                <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="167">
+
+                    <View
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="65"/>
+
+                    <ImageButton
+                            android:background="#00000000"
+                            android:id="@+id/panic"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="171"
+                            android:paddingTop="22dp"
+                            android:paddingBottom="15dp"
+                            android:paddingLeft="20dp"
+                            android:paddingStart="20dp"
+                            android:paddingRight="20dp"
+                            android:paddingEnd="20dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/lock"
+                            android:contentDescription="@string/panic"/>
+
+                    <View
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="65"/>
+
+                </LinearLayout>
+
+                <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="111"/>
+                <!--android:background="#ffff99"-->
+
+            </LinearLayout>
+
+            <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="98"
+                    android:contentDescription="@string/keyfob_logo"/>
+            <!--android:background="#0000ff"-->
         </LinearLayout>
 
-        <Button
-            android:id="@+id/lock"
-            android:layout_width="100sp"
-            android:layout_height="175sp"
-            android:layout_column="2"
-            android:layout_gravity="center_horizontal"
-            android:layout_row="0"
-            android:background="@drawable/grey_button"
-            android:text="Lock"
-            android:textColor="#000"
-            android:textSize="15dp"
-            android:visibility="visible" />
-    </LinearLayout>
+
+    </RelativeLayout>
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:background="@drawable/background"
         android:orientation="horizontal"
-        android:padding="10dp"
-        android:layout_marginTop="70dp">
+        android:padding="5dp"
+        android:layout_marginTop="10dp"
+        android:layout_weight="30">
 
         <TextView
             android:id="@+id/keysharelbl"
@@ -138,29 +278,31 @@
             android:textColor="@color/white"
             android:textSize="20dp" />
 
-
     </LinearLayout>
 
     <View
         android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/white" />
+        android:layout_height="0dp"
+        android:background="@android:color/white"
+        android:layout_weight="1"/>
 
     <LinearLayout
         android:id="@+id/bottomlayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"
         android:orientation="horizontal"
-        android:background="@drawable/background">
+        android:background="@drawable/background"
+        android:layout_weight="80"
+        android:visibility="gone">
 
         <Button
             android:id="@+id/share"
             android:layout_column="2"
             android:layout_row="8"
             android:layout_width="115sp"
-            android:layout_height="115sp"
+            android:layout_height="match_parent"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
             android:layout_marginRight="100dp"
@@ -175,7 +317,7 @@
             android:layout_column="0"
             android:layout_row="8"
             android:layout_width="115sp"
-            android:layout_height="115sp"
+            android:layout_height="match_parent"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
             android:text="@string/change"
@@ -188,59 +330,75 @@
     <TextView
         android:id="@+id/guestvalidDate"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:gravity="center"
-        android:textSize="40dp"
+        android:textSize="18dp"
         android:textColor="@color/white"
-        android:visibility="gone" />
+        android:visibility="visible"
+        android:text="@string/abc_action_bar_home_description"
+        android:layout_weight="25"/>
 
     <TextView
         android:id="@+id/guestvalidTime"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:gravity="center"
+        android:textSize="18dp"
         android:textColor="@color/white"
-        android:visibility="gone" />
+        android:visibility="visible"
+        android:text="@string/abc_action_bar_home_description"
+        android:layout_weight="25"/>
 
-    <Button
-        android:id="@+id/trunk"
-        style="@style/black_button_text"
-        android:layout_width="90sp"
-        android:layout_height="wrap_content"
-        android:layout_column="1"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="20dp"
-        android:layout_row="1"
-        android:background="@drawable/black_button"
-        android:text="@string/share"
-        android:textAllCaps="false"
-        android:visibility="gone" />
+    <!--<FrameLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="0dp"-->
+            <!--android:layout_weight="0">-->
 
-    <Button
-        android:id="@+id/panic"
-        android:layout_width="115sp"
-        android:layout_height="115sp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="20dp"
-        android:background="@drawable/red_button"
-        android:onClick="sendPanic"
-        android:text="@string/panic_icon"
-        android:textColor="#fff"
-        android:textSize="90sp"
-        android:visibility="gone" />
+    <!--<Button-->
+        <!--android:id="@+id/start"-->
+        <!--style="@style/black_button_text"-->
+        <!--android:layout_width="90sp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_column="1"-->
+        <!--android:layout_gravity="center_horizontal"-->
+        <!--android:layout_marginTop="20dp"-->
+        <!--android:layout_row="1"-->
+        <!--android:background="@drawable/black_button"-->
+        <!--android:text="@string/share"-->
+        <!--android:textAllCaps="false"-->
+        <!--android:visibility="gone" />-->
 
-    <Button
-        android:id="@+id/panicOn"
-        android:layout_width="115sp"
-        android:layout_height="115sp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="20dp"
-        android:background="@drawable/red_button"
-        android:onClick="sendPanicOff"
-        android:text="@string/panic_stop_icon"
-        android:textColor="#fff"
-        android:textSize="90sp"
-        android:visibility="gone" />
+    <!--<Button-->
+        <!--android:id="@+id/stop"-->
+        <!--android:layout_width="115sp"-->
+        <!--android:layout_height="115sp"-->
+        <!--android:layout_gravity="center_horizontal"-->
+        <!--android:layout_marginTop="20dp"-->
+        <!--android:background="@drawable/red_button"-->
+        <!--android:onClick="sendPanic"-->
+        <!--android:text="@string/panic_icon"-->
+        <!--android:textColor="#fff"-->
+        <!--android:textSize="90sp"-->
+        <!--android:visibility="gone" />-->
+
+    <!--<Button-->
+        <!--android:id="@+id/panicOn"-->
+        <!--android:layout_width="115sp"-->
+        <!--android:layout_height="115sp"-->
+        <!--android:layout_gravity="center_horizontal"-->
+        <!--android:layout_marginTop="20dp"-->
+        <!--android:background="@drawable/red_button"-->
+        <!--android:onClick="sendPanicOff"-->
+        <!--android:text="@string/panic_stop_icon"-->
+        <!--android:textColor="#fff"-->
+        <!--android:textSize="90sp"-->
+        <!--android:visibility="gone" />-->
+
+    <!--</FrameLayout>-->
+
+
+    <!-- ################################################################################ -->
+
     <!--<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
                       xmlns:tools="http://schemas.android.com/tools"
                       android:id="@+id/GridLayout1"

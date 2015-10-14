@@ -26,10 +26,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.*;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,13 +46,13 @@ public class LockActivityFragment extends Fragment {
 
     private boolean revokeCheckStarted = false;
 
-    private Button lock;
-    private Button unlock;
-    private Button start;
-    private Button stop;
-    private Button trunk;
-    private Button panic;
-    private Button panicOn;
+    private ImageButton lock;
+    private ImageButton unlock;
+//    private Button start;
+//    private Button stop;
+    private ImageButton trunk;
+    private ImageButton panic;
+//    private Button panicOn;
     private Button share;
     private Button change;
     private TextView keylbl;
@@ -79,13 +76,13 @@ public class LockActivityFragment extends Fragment {
 
         Typeface fontawesome = Typeface.createFromAsset(getActivity().getAssets(), "fonts/fontawesome-webfont.ttf");
 
-        lock = (Button) view.findViewById(R.id.lock);
-        unlock = (Button) view.findViewById(R.id.unlock);
-        start = (Button) view.findViewById(R.id.start);
-        stop = (Button) view.findViewById(R.id.stop);
-        trunk = (Button) view.findViewById(R.id.trunk);
-        panic = (Button) view.findViewById(R.id.panic);
-        panicOn = (Button) view.findViewById(R.id.panicOn);
+        lock = (ImageButton) view.findViewById(R.id.lock);
+        unlock = (ImageButton) view.findViewById(R.id.unlock);
+//        start = (Button) view.findViewById(R.id.start);
+//        stop = (Button) view.findViewById(R.id.stop);
+        trunk = (ImageButton) view.findViewById(R.id.trunk);
+        panic = (ImageButton) view.findViewById(R.id.panic);
+//        panicOn = (Button) view.findViewById(R.id.panicOn);
         share = (Button) view.findViewById(R.id.share);
         change = (Button) view.findViewById(R.id.change);
         keylbl = (TextView) view.findViewById(R.id.keysharelbl);
@@ -106,19 +103,19 @@ public class LockActivityFragment extends Fragment {
 //        lock.setTypeface(fontawesome);
 //        start.setTypeface(fontawesome);
 //        stop.setTypeface(fontawesome);
-        trunk.setTypeface(fontawesome);
-        panic.setTypeface(fontawesome);
-        panicOn.setTypeface(fontawesome);
+//        trunk.setTypeface(fontawesome);
+//        panic.setTypeface(fontawesome);
+//        panicOn.setTypeface(fontawesome);
 //        share.setTypeface(fontawesome);
 //        change.setTypeface(fontawesome);
 
         lock.setOnClickListener(l);
         unlock.setOnClickListener(l);
-        start.setOnClickListener(l);
-        stop.setOnClickListener(l);
+//        start.setOnClickListener(l);
+//        stop.setOnClickListener(l);
         trunk.setOnClickListener(l);
         panic.setOnClickListener(l);
-        panicOn.setOnClickListener(l);
+//        panicOn.setOnClickListener(l);
         share.setOnClickListener(l);
         change.setOnClickListener(l);
         buttonListener = (LockFragmentButtonListener) getActivity();
@@ -188,16 +185,16 @@ public class LockActivityFragment extends Fragment {
                     ed.putBoolean(LOCKED_LBL, false);
                     buttonListener.onButtonCommand("unlock");
                     break;
-                case R.id.start:
-                    Log.i(TAG,"StartBtn");
-                    ed.putBoolean(STOPPED_LBL, true);
-                    buttonListener.onButtonCommand("start");
-                    break;
-                case R.id.stop:
-                    Log.i(TAG,"StopBtn");
-                    ed.putBoolean(STOPPED_LBL, false);
-                    buttonListener.onButtonCommand("stop");
-                    break;
+//                case R.id.start:
+//                    Log.i(TAG,"StartBtn");
+//                    ed.putBoolean(STOPPED_LBL, true);
+//                    buttonListener.onButtonCommand("start");
+//                    break;
+//                case R.id.stop:
+//                    Log.i(TAG,"StopBtn");
+//                    ed.putBoolean(STOPPED_LBL, false);
+//                    buttonListener.onButtonCommand("stop");
+//                    break;
                 case R.id.share:
                     Log.i(TAG, "ShareBtn");
                     buttonListener.keyShareCommand("keyshare");
@@ -212,7 +209,7 @@ public class LockActivityFragment extends Fragment {
                     break;
                 case R.id.panic:
                     Log.i(TAG, "PanicBtn");
-                    panicOn.setVisibility(View.VISIBLE);
+//                    panicOn.setVisibility(View.VISIBLE);
                     panic.setVisibility(View.GONE);
                     buttonListener.onButtonCommand("panic");
                     Log.i(TAG, "PanicBtn swap 1 ");
@@ -220,12 +217,12 @@ public class LockActivityFragment extends Fragment {
                     handler.postDelayed(new Runnable() {
                         public void run() {
                             panic.setVisibility(View.VISIBLE);
-                            panicOn.setVisibility(View.GONE);
+//                            panicOn.setVisibility(View.GONE);
                             Log.i(TAG, "PanicBtn swap 2 ");
                         }
                     }, 5000);
                     break;
-                case R.id.panicOn:Log.i(TAG,"PanicOnBtn");break;
+//                case R.id.panicOn:Log.i(TAG,"PanicOnBtn");break;
             }
 
             Log.i(TAG, "Before commit");
@@ -287,8 +284,8 @@ public class LockActivityFragment extends Fragment {
                 share.setVisibility(View.GONE);
                 change.setVisibility(View.GONE);
                 keylbl.setText("Key Valid To:");
-                start.setEnabled(json.getBoolean("engine"));
-                stop.setEnabled(json.getBoolean("engine"));
+//                start.setEnabled(json.getBoolean("engine"));
+//                stop.setEnabled(json.getBoolean("engine"));
                 lock.setEnabled(json.getBoolean("lock"));
                 unlock.setEnabled(json.getBoolean("lock"));
 
@@ -310,8 +307,8 @@ public class LockActivityFragment extends Fragment {
                 validDate.setVisibility(View.GONE);
                 share.setVisibility(View.VISIBLE);
                 change.setVisibility(View.VISIBLE);
-                start.setEnabled(true);
-                stop.setEnabled(true);
+//                start.setEnabled(true);
+//                stop.setEnabled(true);
                 lock.setEnabled(true);
                 unlock.setEnabled(true);
             }
