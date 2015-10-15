@@ -276,8 +276,8 @@ public class LockActivityFragment extends Fragment {
         SharedPreferences.Editor ed = sharedPref.edit();
         ed.putString("user", username);
         ed.commit();
-        userHeader.setText(username);
-        vehicleHeader.setText(vehicle);
+        userHeader.setText("User: " + username);
+        vehicleHeader.setText("Vehicle: " + vehicle);
 
         try {
             JSONObject json = new JSONObject(showme);
