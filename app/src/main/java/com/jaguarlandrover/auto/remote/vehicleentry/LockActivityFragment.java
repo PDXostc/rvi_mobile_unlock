@@ -49,13 +49,13 @@ public class LockActivityFragment extends Fragment {
 
     private ImageButton                lock;
     private ImageButton                unlock;
-    //    private Button start;
-    //    private Button stop;
     private ImageButton                trunk;
+    private ImageButton                find;
+    private ImageButton                start;
+    private ImageButton                stop;
     private ImageButton                panic;
-    //    private Button panicOn;
-    private ImageButton                share;
     private ImageButton                change;
+    private ImageButton                share;
     private TextView                   keylbl;
     private TextView                   validDate;
     private TextView                   validTime;
@@ -63,8 +63,12 @@ public class LockActivityFragment extends Fragment {
     private TextView                   vehicleHeader;
     private LockFragmentButtonListener buttonListener;
     private Handler                    buttonSet;
+
     //Temp button press storage
     private SharedPreferences          sharedPref;
+
+    //    private Button panicOn;
+
 
     public LockActivityFragment() {
     }
@@ -79,11 +83,11 @@ public class LockActivityFragment extends Fragment {
 
         lock = (ImageButton) view.findViewById(R.id.lock);
         unlock = (ImageButton) view.findViewById(R.id.unlock);
-//        start = (Button) view.findViewById(R.id.start);
-//        stop = (Button) view.findViewById(R.id.stop);
         trunk = (ImageButton) view.findViewById(R.id.trunk);
+        find = (ImageButton) view.findViewById(R.id.find);
+        start = (ImageButton) view.findViewById(R.id.start);
+        stop = (ImageButton) view.findViewById(R.id.stop);
         panic = (ImageButton) view.findViewById(R.id.panic);
-//        panicOn = (Button) view.findViewById(R.id.panicOn);
         share = (ImageButton) view.findViewById(R.id.share);
         change = (ImageButton) view.findViewById(R.id.change);
         keylbl = (TextView) view.findViewById(R.id.keysharelbl);
@@ -91,6 +95,8 @@ public class LockActivityFragment extends Fragment {
         validTime = (TextView) view.findViewById(R.id.guestvalidTime);
         userHeader = (TextView)view.findViewById(R.id.userheader);
         vehicleHeader = (TextView) view.findViewById(R.id.vehicleheader);
+//        panicOn = (Button) view.findViewById(R.id.panicOn);
+
 
         String showme = JSONParser(sharedPref.getString("Userdata", "Nothing There!!"), "authorizedServices");
         String userType = JSONParser(sharedPref.getString("Userdata","Nothing there!!"), "userType");
@@ -100,25 +106,17 @@ public class LockActivityFragment extends Fragment {
         buttonSet = new Handler();
         startRepeatingTask();
 
-//        unlock.setTypeface(fontawesome);
-//        lock.setTypeface(fontawesome);
-//        start.setTypeface(fontawesome);
-//        stop.setTypeface(fontawesome);
-//        trunk.setTypeface(fontawesome);
-//        panic.setTypeface(fontawesome);
-//        panicOn.setTypeface(fontawesome);
-//        share.setTypeface(fontawesome);
-//        change.setTypeface(fontawesome);
-
         lock.setOnClickListener(l);
         unlock.setOnClickListener(l);
-//        start.setOnClickListener(l);
-//        stop.setOnClickListener(l);
         trunk.setOnClickListener(l);
+        find.setOnClickListener(l);
+        start.setOnClickListener(l);
+        stop.setOnClickListener(l);
         panic.setOnClickListener(l);
-//        panicOn.setOnClickListener(l);
         share.setOnClickListener(l);
         change.setOnClickListener(l);
+//        panicOn.setOnClickListener(l);
+
         buttonListener = (LockFragmentButtonListener) getActivity();
         return view;
     }
@@ -187,24 +185,6 @@ public class LockActivityFragment extends Fragment {
                     ed.putBoolean(LOCKED_LBL, false);
                     buttonListener.onButtonCommand("unlock");
                     break;
-//                case R.id.start:
-//                    Log.i(TAG,"StartBtn");
-//                    ed.putBoolean(STOPPED_LBL, true);
-//                    buttonListener.onButtonCommand("start");
-//                    break;
-//                case R.id.stop:
-//                    Log.i(TAG,"StopBtn");
-//                    ed.putBoolean(STOPPED_LBL, false);
-//                    buttonListener.onButtonCommand("stop");
-//                    break;
-                case R.id.share:
-                    Log.i(TAG, "ShareBtn");
-                    buttonListener.keyShareCommand("keyshare");
-                    break;
-                case R.id.change:
-                    Log.i(TAG, "ChangeBtn");
-                    buttonListener.keyShareCommand("keychange");
-                    break;
                 case R.id.trunk:
                     Log.i(TAG, "TrunkBtn");
                     ed.putBoolean("Gruka", false);
@@ -213,25 +193,44 @@ public class LockActivityFragment extends Fragment {
                 case R.id.find:
                     Log.i(TAG, "FindBtn");
                     ed.putBoolean("Gruka", false);
-                    buttonListener.onButtonCommand("trunk");
+                    buttonListener.onButtonCommand("lights");
+                    break;
+                case R.id.start:
+                    Log.i(TAG, "StartBtn");
+                    ed.putBoolean(STOPPED_LBL, true);
+                    buttonListener.onButtonCommand("start");
+                    break;
+                case R.id.stop:
+                    Log.i(TAG, "StopBtn");
+                    ed.putBoolean(STOPPED_LBL, false);
+                    buttonListener.onButtonCommand("stop");
+                    break;
+                case R.id.share:
+                    Log.i(TAG, "ShareBtn");
+                    buttonListener.keyShareCommand("keyshare");
+                    break;
+                case R.id.change:
+                    Log.i(TAG, "ChangeBtn");
+                    buttonListener.keyShareCommand("keychange");
                     break;
                 case R.id.panic:
                     Log.i(TAG, "PanicBtn");
-//                    panicOn.setVisibility(View.VISIBLE);
-                    panic.setVisibility(View.GONE);
-                    buttonListener.onButtonCommand("panic");
-                    Log.i(TAG, "PanicBtn swap 1 ");
-                    Handler handler = new Handler(Looper.getMainLooper());
-                    handler.postDelayed(new Runnable()
-                    {
-                        public void run() {
-                            panic.setVisibility(View.VISIBLE);
-//                            panicOn.setVisibility(View.GONE);
-                            Log.i(TAG, "PanicBtn swap 2 ");
-                        }
-                    }, 5000);
+
+//                    if (isPanic) {
+//                        panic.setSelected(false);
+//                        isPanic = false;
+//
+//                    }
+//                    buttonListener.onButtonCommand("panic");
+//                    Log.i(TAG, "PanicBtn swap 1 ");
+//                    Handler handler = new Handler(Looper.getMainLooper());
+//                    handler.postDelayed(new Runnable()
+//                    {
+//                        public void run() {
+//                            panic.setSelected(!panic.isSelected());
+//                        }
+//                    }, 5000);
                     break;
-//                case R.id.panicOn:Log.i(TAG,"PanicOnBtn");break;
             }
 
             Log.i(TAG, "Before commit");
@@ -261,7 +260,7 @@ public class LockActivityFragment extends Fragment {
         //start.setVisibility(stopped?View.GONE:View.VISIBLE);
         //stop.setVisibility(stopped?View.VISIBLE:View.GONE);
 
-        trunk.setEnabled(true);
+        //trunk.setEnabled(true);
     }
 
     public void onNewServiceDiscovered(String... service) {
@@ -293,10 +292,12 @@ public class LockActivityFragment extends Fragment {
                 share.setVisibility(View.GONE);
                 change.setVisibility(View.GONE);
                 keylbl.setText("Key Valid To:");
-//                start.setEnabled(json.getBoolean("engine"));
-//                stop.setEnabled(json.getBoolean("engine"));
                 lock.setEnabled(json.getBoolean("lock"));
                 unlock.setEnabled(json.getBoolean("lock"));
+                trunk.setEnabled(json.getBoolean("trunk"));
+                find.setEnabled(json.getBoolean("lights"));
+                start.setEnabled(json.getBoolean("engine"));
+                stop.setEnabled(json.getBoolean("engine"));
 
                 if (json.getBoolean("engine") == false) {
                     if (json.getBoolean("lock") == false) {
@@ -304,22 +305,27 @@ public class LockActivityFragment extends Fragment {
                     }
                 }
 
-                if (json.getBoolean("engine") == false) {
-//                    start.setTextColor(Color.parseColor("#ff757575"));
-//                    stop.setTextColor(Color.parseColor("#ff757575"));
-                }
-                if (json.getBoolean("lock") == false) {
-//                    lock.setTextColor(Color.parseColor("#ff757575"));
-//                    unlock.setTextColor(Color.parseColor("#ff757575"));
-                }
             } else if (userType.equals("owner")) {
                 validDate.setVisibility(View.GONE);
                 share.setVisibility(View.VISIBLE);
                 change.setVisibility(View.VISIBLE);
-//                start.setEnabled(true);
-//                stop.setEnabled(true);
                 lock.setEnabled(true);
                 unlock.setEnabled(true);
+                trunk.setEnabled(true);
+                find.setEnabled(true);
+                start.setEnabled(true);
+                stop.setEnabled(true);
+
+            } else {
+                validDate.setVisibility(View.GONE);
+                share.setVisibility(View.GONE);
+                change.setVisibility(View.GONE);
+                lock.setEnabled(false);
+                unlock.setEnabled(false);
+                trunk.setEnabled(false);
+                find.setEnabled(false);
+                start.setEnabled(false);
+                stop.setEnabled(false);
             }
 
         }

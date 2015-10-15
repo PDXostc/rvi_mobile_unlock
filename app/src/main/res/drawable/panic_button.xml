@@ -2,6 +2,6 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@drawable/panic_highlighted" android:state_pressed="true"/>
     <item android:drawable="@drawable/panic_disabled" android:state_enabled="false"/>
-    <item android:drawable="@drawable/panic_on" android:state_checked="true"/>
+    <item android:drawable="@drawable/panic_on" android:state_selected="true"/>
     <item android:drawable="@drawable/panic"/>
 </selector>

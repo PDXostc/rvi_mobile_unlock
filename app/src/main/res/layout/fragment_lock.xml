@@ -26,16 +26,16 @@
         <TextView
             android:id="@+id/userheader"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:layout_marginRight="25dp"
-            android:text="User: "
             android:layout_marginLeft="10dp"
-            android:textColor="@color/white"
-            android:layout_gravity="bottom"
-            android:textSize="20dp"
+            android:paddingBottom="5dp"
             android:paddingTop="10dp"
-            android:paddingBottom="5dp"/>
+            android:layout_gravity="bottom"
+            android:text="User: "
+            android:textColor="@color/white"
+            android:textSize="20dp"/>
 
 
         <TextView
@@ -93,21 +93,18 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="42"/>
-            <!--android:background="#ff0000"-->
 
             <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="302">
-                <!--android:background="#00ff00"-->
 
 
                 <View
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="121"/>
-                <!--android:background="#ffff00"-->
 
                 <LinearLayout
                         android:orientation="horizontal"
@@ -158,17 +155,17 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="41"/>
-                <!--android:background="#ff00ff"-->
 
                 <LinearLayout
+                        android:id="@+id/trunk_find_row"
                         android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="159">
 
                     <ImageButton
-                            android:background="#00000000"
                             android:id="@+id/find"
+                            android:background="#00000000"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="132"
@@ -188,7 +185,6 @@
                             android:layout_weight="38"/>
 
                     <ImageButton
-                            android:background="#00000000"
                             android:id="@+id/trunk"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
@@ -199,9 +195,57 @@
                             android:paddingStart="10dp"
                             android:paddingRight="5dp"
                             android:paddingEnd="5dp"
+                            android:background="#00000000"
                             android:scaleType="centerInside"
                             android:src="@drawable/trunk_button"
                             android:contentDescription="@string/trunk"/>
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                        android:id="@+id/engine_row"
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="159">
+
+                    <ImageButton
+                            android:background="#00000000"
+                            android:id="@+id/start"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="132"
+                            android:paddingTop="22dp"
+                            android:paddingBottom="15dp"
+                            android:paddingLeft="5dp"
+                            android:paddingStart="5dp"
+                            android:paddingRight="10dp"
+                            android:paddingEnd="10dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/start_button"
+                            android:contentDescription="@string/start"/>
+
+                    <View
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="38"/>
+
+                    <ImageButton
+                            android:background="#00000000"
+                            android:id="@+id/stop"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="132"
+                            android:paddingTop="22dp"
+                            android:paddingBottom="15dp"
+                            android:paddingLeft="10dp"
+                            android:paddingStart="10dp"
+                            android:paddingRight="5dp"
+                            android:paddingEnd="5dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/stop_button"
+                            android:contentDescription="@string/stop"/>
 
 
                 </LinearLayout>
@@ -210,7 +254,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="42"/>
-                <!--android:background="#00ffff"-->
 
                 <LinearLayout
                         android:orientation="horizontal"
@@ -250,7 +293,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="111"/>
-                <!--android:background="#ffff99"-->
 
             </LinearLayout>
 
@@ -259,7 +301,6 @@
                     android:layout_height="match_parent"
                     android:layout_weight="98"
                     android:contentDescription="@string/keyfob_logo"/>
-            <!--android:background="#0000ff"-->
         </LinearLayout>
 
 
