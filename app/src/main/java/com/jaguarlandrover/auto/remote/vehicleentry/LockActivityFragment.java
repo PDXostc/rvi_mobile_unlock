@@ -52,6 +52,7 @@ public class LockActivityFragment extends Fragment {
     private TextView                   validTime;
     private TextView                   userHeader;
     private TextView                   vehicleHeader;
+    private LinearLayout               keyManagementLayout;
     private LockFragmentButtonListener buttonListener;
     private Handler                    buttonSet;
 
@@ -86,6 +87,7 @@ public class LockActivityFragment extends Fragment {
         validTime = (TextView) view.findViewById(R.id.guestvalidTime);
         userHeader = (TextView)view.findViewById(R.id.user_header);
         vehicleHeader = (TextView) view.findViewById(R.id.vehicle_header);
+        keyManagementLayout = (LinearLayout) view.findViewById(R.id.key_management_layout);
 //        panicOn = (Button) view.findViewById(R.id.panicOn);
 
 
@@ -183,7 +185,7 @@ public class LockActivityFragment extends Fragment {
                     break;
                 case R.id.find:
                     Log.i(TAG, "FindBtn");
-                    ed.putBoolean("Gruka", false);
+                    ed.putBoolean("77", false);
                     buttonListener.onButtonCommand("lights");
                     break;
                 case R.id.start:
@@ -280,47 +282,50 @@ public class LockActivityFragment extends Fragment {
             JSONObject json = new JSONObject(showme);
             if (userType.equals("guest")) {
                 setDateLabel();
-                share.setVisibility(View.GONE);
-                change.setVisibility(View.GONE);
+
                 keylbl.setText("Key Valid To:");
+                keyManagementLayout.setVisibility(View.GONE);
                 lock.setEnabled(json.getBoolean("lock"));
                 unlock.setEnabled(json.getBoolean("lock"));
                 trunk.setEnabled(json.getBoolean("trunk"));
                 find.setEnabled(json.getBoolean("lights"));
                 start.setEnabled(json.getBoolean("engine"));
                 stop.setEnabled(json.getBoolean("engine"));
+                panic.setEnabled(json.getBoolean("hazard"));
 
                 if (json.getBoolean("engine") == false) {
                     if (json.getBoolean("lock") == false) {
                         validDate.setText("Revoked");
+                        //validTime.setVisibility(View.GONE);
                     }
                 }
 
             } else if (userType.equals("owner")) {
                 validDate.setVisibility(View.GONE);
-                share.setVisibility(View.VISIBLE);
-                change.setVisibility(View.VISIBLE);
+                //validTime.setVisibility(View.GONE);
+                keyManagementLayout.setVisibility(View.VISIBLE);
                 lock.setEnabled(true);
                 unlock.setEnabled(true);
                 trunk.setEnabled(true);
                 find.setEnabled(true);
                 start.setEnabled(true);
                 stop.setEnabled(true);
+                panic.setEnabled(true);
 
-            } else {
-                validDate.setVisibility(View.GONE);
-                share.setVisibility(View.GONE);
-                change.setVisibility(View.GONE);
-                lock.setEnabled(false);
-                unlock.setEnabled(false);
-                trunk.setEnabled(false);
-                find.setEnabled(false);
-                start.setEnabled(false);
-                stop.setEnabled(false);
             }
-
         }
         catch (Exception e) {
+            validDate.setVisibility(View.VISIBLE);
+            //validTime.setVisibility(View.VISIBLE);
+            keyManagementLayout.setVisibility(View.GONE);
+            lock.setEnabled(false);
+            unlock.setEnabled(false);
+            trunk.setEnabled(false);
+            find.setEnabled(false);
+            start.setEnabled(false);
+            stop.setEnabled(false);
+            panic.setEnabled(false);
+
             e.printStackTrace();
         }
 
@@ -333,7 +338,7 @@ public class LockActivityFragment extends Fragment {
             return parameterVal;
         }
         catch (JSONException e) {
-            Log.d(TAG, "JSON EXception on parsing string -- " + e);
+            Log.d(TAG, "JSON Exception on parsing string -- " + e);
         }
         catch (Exception e) {
             e.printStackTrace();

@@ -322,7 +322,7 @@
             android:background="@android:color/white"/>
 
     <LinearLayout
-            android:id="@+id/bottomlayout"
+            android:id="@+id/key_management_layout"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -366,10 +366,9 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="25"
-            android:gravity="center"
             android:layout_marginStart="40dp"
             android:paddingBottom="5dp"
-            android:text="@string/abc_action_bar_home_description"
+            android:text="@string/revoked"
             android:textSize="18sp"
             android:textColor="@color/white"
             android:visibility="visible"/>
@@ -385,6 +384,6 @@
             android:text="@string/abc_action_bar_home_description"
             android:textSize="18sp"
             android:textColor="@color/white"
-            android:visibility="visible"/>
+            android:visibility="gone"/>
 
 </LinearLayout>

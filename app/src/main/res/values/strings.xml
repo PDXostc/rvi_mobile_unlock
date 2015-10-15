@@ -51,5 +51,6 @@
     <string name="find">find</string>
     <string name="fob_background">keyfob background</string>
     <string name="user_header">User:</string>
+    <string name="revoked">Revoked</string>
 
 </resources>
