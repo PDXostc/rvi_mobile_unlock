@@ -270,13 +270,14 @@ public class LockActivityFragment extends Fragment {
 
     public void setButtons(String showme, String userType) {
         String username = JSONParser(sharedPref.getString("Userdata", "Nothing there!!"), "username");
+        String vehicle  = JSONParser(sharedPref.getString("Userdata", "Nothing there!!"), "vehicleName");
 
+        Log.d(TAG, "Saved userdata: " + sharedPref.getString("Userdata", "Nothing there!!"));
         SharedPreferences.Editor ed = sharedPref.edit();
         ed.putString("user", username);
         ed.commit();
         userHeader.setText(username);
-        // TODO vehicle name is hardcoded
-        vehicleHeader.setText("Test Car");
+        vehicleHeader.setText(vehicle);
 
         try {
             JSONObject json = new JSONObject(showme);
