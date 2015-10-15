@@ -128,7 +128,7 @@
                             android:paddingRight="20dp"
                             android:paddingEnd="20dp"
                             android:scaleType="centerInside"
-                            android:src="@drawable/unlock"
+                            android:src="@drawable/unlock_button"
                             android:contentDescription="@string/unlock"/>
 
                     <View
