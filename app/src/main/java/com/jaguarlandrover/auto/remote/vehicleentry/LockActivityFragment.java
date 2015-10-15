@@ -9,18 +9,10 @@
 
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.Typeface;
-import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -32,7 +24,6 @@ import android.widget.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -93,8 +84,8 @@ public class LockActivityFragment extends Fragment {
         keylbl = (TextView) view.findViewById(R.id.keysharelbl);
         validDate = (TextView) view.findViewById(R.id.guestvalidDate);
         validTime = (TextView) view.findViewById(R.id.guestvalidTime);
-        userHeader = (TextView)view.findViewById(R.id.userheader);
-        vehicleHeader = (TextView) view.findViewById(R.id.vehicleheader);
+        userHeader = (TextView)view.findViewById(R.id.user_header);
+        vehicleHeader = (TextView) view.findViewById(R.id.vehicle_header);
 //        panicOn = (Button) view.findViewById(R.id.panicOn);
 
 
