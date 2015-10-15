@@ -137,8 +137,8 @@ public class keyShareActivityFragment extends Fragment {
         authServ.put(new JSONObject().put("start", engineSwitch.toString()));
 
         authServ.put(new JSONObject().put("trunk", trunkLights.toString()));
-        authServ.put(new JSONObject().put("lights", trunkLights.toString()));
         authServ.put(new JSONObject().put("windows", "false"));
+        authServ.put(new JSONObject().put("lights", trunkLights.toString()));
         authServ.put(new JSONObject().put("hazard", "false"));
         authServ.put(new JSONObject().put("horn", "false"));
 
