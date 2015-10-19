@@ -64,7 +64,7 @@ import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
 public class RviService extends Service /* implements BeaconConsumer */{
-    private static final String TAG = "RVI";
+    private static final String TAG = "RVI:RVIService";
     private ConnectivityManager cm;
     private static TelephonyManager tm;
     private ConcurrentHashMap<String,Long> visible = new ConcurrentHashMap<String, Long>();
@@ -439,7 +439,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
             final double connectDistance = Double.parseDouble(prefs.getString("pref_auto_conn_dist", "3"));
             final double lockDistance = Double.parseDouble(prefs.getString("pref_auto_lock_dist", "10"));
 
-            Log.d(TAG,"distance:"+ro.distance+", lockDistance:"+lockDistance+", unlockDistance:"+unlockDistance+", connectDistance:"+connectDistance);
+            Log.d(TAG,"distance:"+ro.distance+", weightedDistance:"+ro.weightedDistance+", unlockDistance:"+unlockDistance+", connectDistance:"+connectDistance);
             Log.d(TAG,"connected:"+connected+", connecting:"+connecting+", unlocked:"+unlocked);
 
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
