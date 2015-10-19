@@ -398,20 +398,15 @@ public class RviService extends Service /* implements BeaconConsumer */{
             return false;
         }
 
-
-        String dateString;
-
         String userDate = dateTime[0];
         String userTime = dateTime[1];
 
         String userDateTime = userDate + " " + userTime;
 
         SimpleDateFormat formatter1;
-        SimpleDateFormat formatter2;
 
         try {
             formatter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            formatter2 = new SimpleDateFormat("MM/dd/yyy\nh:mm a z");
         } catch (Exception e) {
             return false;
         }
@@ -419,9 +414,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
         formatter1.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         Date savedDate = formatter1.parse(userDateTime);
-
-        //String now = formatter2.format(new Date());
-        Date dateNow = new Date();//formatter2.parse(now);
+        Date dateNow = new Date();
 
         return savedDate.compareTo(dateNow) > 0;
     }
