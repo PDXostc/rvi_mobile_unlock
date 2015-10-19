@@ -9,17 +9,10 @@
 
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -31,7 +24,6 @@ import android.widget.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -39,31 +31,36 @@ import java.util.TimeZone;
 
 public class LockActivityFragment extends Fragment {
 
-    public static final String STOPPED_LBL="StartStop";
-    public static final String LOCKED_LBL="OpenClose";
+    public static final String STOPPED_LBL = "StartStop";
+    public static final String LOCKED_LBL  = "OpenClose";
 
     private static final String TAG = "RVI";
 
     private boolean revokeCheckStarted = false;
 
-    private ImageButton lock;
-    private ImageButton unlock;
-//    private Button start;
-//    private Button stop;
-    private ImageButton trunk;
-    private ImageButton panic;
-//    private Button panicOn;
-    private Button share;
-    private Button change;
-    private TextView keylbl;
-    private TextView validDate;
-    private TextView validTime;
-    private TextView userHeader;
-    private TextView vehicleHeader;
+    private ImageButton                lock;
+    private ImageButton                unlock;
+    private ImageButton                trunk;
+    private ImageButton                find;
+    private ImageButton                start;
+    private ImageButton                stop;
+    private ImageButton                panic;
+    private ImageButton                change;
+    private ImageButton                share;
+    private TextView                   keylbl;
+    private TextView                   validDate;
+    private TextView                   validTime;
+    private TextView                   userHeader;
+    private TextView                   vehicleHeader;
+    private LinearLayout               keyManagementLayout;
     private LockFragmentButtonListener buttonListener;
-    private Handler buttonSet;
+    private Handler                    buttonSet;
+
     //Temp button press storage
-    private SharedPreferences sharedPref;
+    private SharedPreferences          sharedPref;
+
+    //    private Button panicOn;
+
 
     public LockActivityFragment() {
     }
@@ -78,18 +75,21 @@ public class LockActivityFragment extends Fragment {
 
         lock = (ImageButton) view.findViewById(R.id.lock);
         unlock = (ImageButton) view.findViewById(R.id.unlock);
-//        start = (Button) view.findViewById(R.id.start);
-//        stop = (Button) view.findViewById(R.id.stop);
         trunk = (ImageButton) view.findViewById(R.id.trunk);
+        find = (ImageButton) view.findViewById(R.id.find);
+        start = (ImageButton) view.findViewById(R.id.start);
+        stop = (ImageButton) view.findViewById(R.id.stop);
         panic = (ImageButton) view.findViewById(R.id.panic);
-//        panicOn = (Button) view.findViewById(R.id.panicOn);
-        share = (Button) view.findViewById(R.id.share);
-        change = (Button) view.findViewById(R.id.change);
+        share = (ImageButton) view.findViewById(R.id.share);
+        change = (ImageButton) view.findViewById(R.id.change);
         keylbl = (TextView) view.findViewById(R.id.keysharelbl);
         validDate = (TextView) view.findViewById(R.id.guestvalidDate);
         validTime = (TextView) view.findViewById(R.id.guestvalidTime);
-        userHeader = (TextView)view.findViewById(R.id.userheader);
-        vehicleHeader = (TextView) view.findViewById(R.id.vehicleheader);
+        userHeader = (TextView)view.findViewById(R.id.user_header);
+        vehicleHeader = (TextView) view.findViewById(R.id.vehicle_header);
+        keyManagementLayout = (LinearLayout) view.findViewById(R.id.key_management_layout);
+//        panicOn = (Button) view.findViewById(R.id.panicOn);
+
 
         String showme = JSONParser(sharedPref.getString("Userdata", "Nothing There!!"), "authorizedServices");
         String userType = JSONParser(sharedPref.getString("Userdata","Nothing there!!"), "userType");
@@ -99,25 +99,17 @@ public class LockActivityFragment extends Fragment {
         buttonSet = new Handler();
         startRepeatingTask();
 
-//        unlock.setTypeface(fontawesome);
-//        lock.setTypeface(fontawesome);
-//        start.setTypeface(fontawesome);
-//        stop.setTypeface(fontawesome);
-//        trunk.setTypeface(fontawesome);
-//        panic.setTypeface(fontawesome);
-//        panicOn.setTypeface(fontawesome);
-//        share.setTypeface(fontawesome);
-//        change.setTypeface(fontawesome);
-
         lock.setOnClickListener(l);
         unlock.setOnClickListener(l);
-//        start.setOnClickListener(l);
-//        stop.setOnClickListener(l);
         trunk.setOnClickListener(l);
+        find.setOnClickListener(l);
+        start.setOnClickListener(l);
+        stop.setOnClickListener(l);
         panic.setOnClickListener(l);
-//        panicOn.setOnClickListener(l);
         share.setOnClickListener(l);
         change.setOnClickListener(l);
+//        panicOn.setOnClickListener(l);
+
         buttonListener = (LockFragmentButtonListener) getActivity();
         return view;
     }
@@ -170,59 +162,68 @@ public class LockActivityFragment extends Fragment {
         toggleButtonsFromPref();
     }
 
-    private View.OnClickListener l = new View.OnClickListener() {
+    private View.OnClickListener l = new View.OnClickListener()
+    {
         @Override
         public void onClick(View v) {
             SharedPreferences.Editor ed = sharedPref.edit();
-            switch(v.getId()) {
+            switch (v.getId()) {
                 case R.id.lock:
-                    Log.i(TAG,"LockBtn");
-                    ed.putBoolean(LOCKED_LBL,true);
+                    Log.i(TAG, "LockBtn");
+                    ed.putBoolean(LOCKED_LBL, true);
                     buttonListener.onButtonCommand("lock");
                     break;
                 case R.id.unlock:
-                    Log.i(TAG,"UnlockBtn");
+                    Log.i(TAG, "UnlockBtn");
                     ed.putBoolean(LOCKED_LBL, false);
                     buttonListener.onButtonCommand("unlock");
                     break;
-//                case R.id.start:
-//                    Log.i(TAG,"StartBtn");
-//                    ed.putBoolean(STOPPED_LBL, true);
-//                    buttonListener.onButtonCommand("start");
-//                    break;
-//                case R.id.stop:
-//                    Log.i(TAG,"StopBtn");
-//                    ed.putBoolean(STOPPED_LBL, false);
-//                    buttonListener.onButtonCommand("stop");
-//                    break;
+                case R.id.trunk:
+                    Log.i(TAG, "TrunkBtn");
+                    ed.putBoolean("Gruka", false);
+                    buttonListener.onButtonCommand("trunk");
+                    break;
+                case R.id.find:
+                    Log.i(TAG, "FindBtn");
+                    ed.putBoolean("77", false);
+                    buttonListener.onButtonCommand("lights");
+                    break;
+                case R.id.start:
+                    Log.i(TAG, "StartBtn");
+                    ed.putBoolean(STOPPED_LBL, true);
+                    buttonListener.onButtonCommand("start");
+                    break;
+                case R.id.stop:
+                    Log.i(TAG, "StopBtn");
+                    ed.putBoolean(STOPPED_LBL, false);
+                    buttonListener.onButtonCommand("stop");
+                    break;
                 case R.id.share:
                     Log.i(TAG, "ShareBtn");
                     buttonListener.keyShareCommand("keyshare");
                     break;
                 case R.id.change:
-                    Log.i(TAG,"ChangeBtn");
+                    Log.i(TAG, "ChangeBtn");
                     buttonListener.keyShareCommand("keychange");
-                    break;
-                case R.id.trunk:Log.i(TAG, "TrunkBtn");
-                    ed.putBoolean("Gruka", false);
-                    buttonListener.onButtonCommand("trunk");
                     break;
                 case R.id.panic:
                     Log.i(TAG, "PanicBtn");
-//                    panicOn.setVisibility(View.VISIBLE);
-                    panic.setVisibility(View.GONE);
-                    buttonListener.onButtonCommand("panic");
-                    Log.i(TAG, "PanicBtn swap 1 ");
-                    Handler handler = new Handler(Looper.getMainLooper());
-                    handler.postDelayed(new Runnable() {
-                        public void run() {
-                            panic.setVisibility(View.VISIBLE);
-//                            panicOn.setVisibility(View.GONE);
-                            Log.i(TAG, "PanicBtn swap 2 ");
-                        }
-                    }, 5000);
+
+//                    if (isPanic) {
+//                        panic.setSelected(false);
+//                        isPanic = false;
+//
+//                    }
+//                    buttonListener.onButtonCommand("panic");
+//                    Log.i(TAG, "PanicBtn swap 1 ");
+//                    Handler handler = new Handler(Looper.getMainLooper());
+//                    handler.postDelayed(new Runnable()
+//                    {
+//                        public void run() {
+//                            panic.setSelected(!panic.isSelected());
+//                        }
+//                    }, 5000);
                     break;
-//                case R.id.panicOn:Log.i(TAG,"PanicOnBtn");break;
             }
 
             Log.i(TAG, "Before commit");
@@ -238,9 +239,7 @@ public class LockActivityFragment extends Fragment {
     private void toggleButtonsFromPref() {
 
         boolean locked = sharedPref.getBoolean(LOCKED_LBL, true);
-        boolean stopped = sharedPref.getBoolean(STOPPED_LBL,true);
-
-
+        boolean stopped = sharedPref.getBoolean(STOPPED_LBL, true);
 
 
 //        unlock.setSelected(!locked);
@@ -254,105 +253,123 @@ public class LockActivityFragment extends Fragment {
         //start.setVisibility(stopped?View.GONE:View.VISIBLE);
         //stop.setVisibility(stopped?View.VISIBLE:View.GONE);
 
-        trunk.setEnabled(true);
+        //trunk.setEnabled(true);
     }
 
     public void onNewServiceDiscovered(String... service) {
-        for(String s:service)
+        for (String s : service)
             Log.e(TAG, "Service = " + s);
-}
+    }
 
-    public interface LockFragmentButtonListener {
+    public interface LockFragmentButtonListener
+    {
         public void onButtonCommand(String cmd);
+
         public void keyShareCommand(String key);
     }
 
-    public void setButtons(String showme, String userType){
+    public void setButtons(String showme, String userType) {
         String username = JSONParser(sharedPref.getString("Userdata", "Nothing there!!"), "username");
+        String vehicle  = JSONParser(sharedPref.getString("Userdata", "Nothing there!!"), "vehicleName");
 
+        Log.d(TAG, "Saved userdata: " + sharedPref.getString("Userdata", "Nothing there!!"));
         SharedPreferences.Editor ed = sharedPref.edit();
-        ed.putString("user",username);
+        ed.putString("user", username);
         ed.commit();
-        userHeader.setText(username);
-        // TODO vehicle name is hardcoded
-        vehicleHeader.setText("Test Car");
+        userHeader.setText("User: " + username);
+        vehicleHeader.setText("Vehicle: " + vehicle);
 
         try {
             JSONObject json = new JSONObject(showme);
-            if(userType.equals("guest")) {
+            if (userType.equals("guest")) {
                 setDateLabel();
-                share.setVisibility(View.GONE);
-                change.setVisibility(View.GONE);
+
                 keylbl.setText("Key Valid To:");
-//                start.setEnabled(json.getBoolean("engine"));
-//                stop.setEnabled(json.getBoolean("engine"));
+                keyManagementLayout.setVisibility(View.GONE);
                 lock.setEnabled(json.getBoolean("lock"));
                 unlock.setEnabled(json.getBoolean("lock"));
+                trunk.setEnabled(json.getBoolean("trunk"));
+                find.setEnabled(json.getBoolean("lights"));
+                start.setEnabled(json.getBoolean("engine"));
+                stop.setEnabled(json.getBoolean("engine"));
+                panic.setEnabled(json.getBoolean("hazard"));
 
-                if(json.getBoolean("engine") == false) {
-                    if(json.getBoolean("lock") == false) {
+                if (json.getBoolean("engine") == false) {
+                    if (json.getBoolean("lock") == false) {
                         validDate.setText("Revoked");
+                        //validTime.setVisibility(View.GONE);
                     }
                 }
 
-                if (json.getBoolean("engine") == false) {
-//                    start.setTextColor(Color.parseColor("#ff757575"));
-//                    stop.setTextColor(Color.parseColor("#ff757575"));
-                }
-                if (json.getBoolean("lock") == false) {
-//                    lock.setTextColor(Color.parseColor("#ff757575"));
-//                    unlock.setTextColor(Color.parseColor("#ff757575"));
-                }
-            }else if(userType.equals("owner")){
+            } else if (userType.equals("owner")) {
                 validDate.setVisibility(View.GONE);
-                share.setVisibility(View.VISIBLE);
-                change.setVisibility(View.VISIBLE);
-//                start.setEnabled(true);
-//                stop.setEnabled(true);
+                //validTime.setVisibility(View.GONE);
+                keyManagementLayout.setVisibility(View.VISIBLE);
                 lock.setEnabled(true);
                 unlock.setEnabled(true);
-            }
+                trunk.setEnabled(true);
+                find.setEnabled(true);
+                start.setEnabled(true);
+                stop.setEnabled(true);
+                panic.setEnabled(true);
 
-        }catch(Exception e){
+            }
+        }
+        catch (Exception e) {
+            validDate.setVisibility(View.VISIBLE);
+            //validTime.setVisibility(View.VISIBLE);
+            keyManagementLayout.setVisibility(View.GONE);
+            lock.setEnabled(false);
+            unlock.setEnabled(false);
+            trunk.setEnabled(false);
+            find.setEnabled(false);
+            start.setEnabled(false);
+            stop.setEnabled(false);
+            panic.setEnabled(false);
+
             e.printStackTrace();
         }
 
     }
-    public String JSONParser(String jsonString, String RqstData)
-    {
+
+    public String JSONParser(String jsonString, String RqstData) {
         try {
             JSONObject json = new JSONObject(jsonString);
             String parameterVal = json.getString(RqstData);
             return parameterVal;
-        } catch (JSONException e) {
-            Log.d(TAG, "JSON EXception on parsing string -- " + e);
-        }catch (Exception e){
+        }
+        catch (JSONException e) {
+            Log.d(TAG, "JSON Exception on parsing string -- " + e);
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
         return "0";
     }
-    public void setDateLabel() {
-            String[] dateTime = JSONParser(sharedPref.getString("Userdata", "There's nothing"), "validTo").split("T");
-            String userDate = dateTime[0];
-            String userTime = dateTime[1];
-            userTime.substring(0, userTime.length() - 5);
-            String userDateTime = userDate + " " + userTime;
-            SimpleDateFormat oldFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            oldFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-            try {
-                Date newDate = oldFormat.parse(userDateTime);
-                oldFormat = new SimpleDateFormat("MM/dd/yyy\nh:mm a z");
-                String date = oldFormat.format(newDate);
-                validDate.setText(date);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
 
-            //validTime.setVisibility(View.VISIBLE);
-            validDate.setVisibility(View.VISIBLE);
+    public void setDateLabel() {
+        String[] dateTime = JSONParser(sharedPref.getString("Userdata", "There's nothing"), "validTo").split("T");
+        String userDate = dateTime[0];
+        String userTime = dateTime[1];
+        userTime.substring(0, userTime.length() - 5);
+        String userDateTime = userDate + " " + userTime;
+        SimpleDateFormat oldFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        oldFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        try {
+            Date newDate = oldFormat.parse(userDateTime);
+            oldFormat = new SimpleDateFormat("MM/dd/yyy\nh:mm a z");
+            String date = oldFormat.format(newDate);
+            validDate.setText(date);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //validTime.setVisibility(View.VISIBLE);
+        validDate.setVisibility(View.VISIBLE);
     }
 
-    void checkDate(){
+    void checkDate() {
         try {
             SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyy\nh:mm a z");
 
@@ -360,13 +377,13 @@ public class LockActivityFragment extends Fragment {
             Date date1 = formatter.parse(date);
             String now = formatter.format(new Date());
             Date date2 = formatter.parse(now);
-            if(date1.compareTo(date2)<=0)
-            {
+            if (date1.compareTo(date2) <= 0) {
                 String authservices = "{\"engine\":false,\"windows\":false,\"lock\":false,\"hazard\":false,\"horn\":false,\"lights\":false,\"trunk\":false}";
                 setButtons(authservices, "guest");
             }
 
-        }catch (Exception e){
+        }
+        catch (Exception e) {
             Log.w(TAG, "EXCEPTION Check for Valid To Date: " + e.toString());
         }
 

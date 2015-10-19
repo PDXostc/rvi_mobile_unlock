@@ -8,544 +8,384 @@
 
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    style="@style/AppTheme"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/background"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
+              xmlns:tools="http://schemas.android.com/tools"
+              style="@style/AppTheme"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@drawable/background"
+              tools:context=".MainActivity">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@drawable/background"
-        android:orientation="horizontal"
-        android:layout_weight="40">
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@drawable/background"
+            android:layout_weight="40">
 
         <TextView
-            android:id="@+id/userheader"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="25dp"
-            android:text="User: "
-            android:layout_marginLeft="10dp"
-            android:textColor="@color/white"
-            android:layout_gravity="bottom"
-            android:textSize="20dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="5dp"/>
+                android:id="@+id/user_header"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="25dp"
+                android:paddingBottom="5dp"
+                android:paddingTop="10dp"
+                android:text="@string/user_header"
+                android:textColor="@color/white"
+                android:textSize="20sp"/>
 
 
         <TextView
-            android:id="@+id/vehicleheader"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="@string/vehicle"
-            android:textColor="@color/white"
-            android:layout_gravity="bottom"
-            android:layout_marginLeft="10dp"
-            android:textSize="20dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="5dp"/>
+                android:id="@+id/vehicle_header"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="10dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="5dp"
+                android:text="@string/vehicle"
+                android:textColor="@color/white"
+                android:textSize="20sp"/>
     </LinearLayout>
 
     <View
-        android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:background="@android:color/white"
-        android:layout_weight="1"/>
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@android:color/white"/>
 
     <FrameLayout
-            android:layout_margin="10dp"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="300">
+            android:layout_weight="300"
+            android:layout_margin="10dp">
 
 
-    <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="center">
+        <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center">
 
             <ImageView
                     android:id="@+id/fob_background"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:scaleType="centerInside"
                     android:adjustViewBounds="true"
                     android:layout_centerInParent="true"
-                    android:src="@drawable/fob_background"/>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:layout_centerInParent="true"
-                android:layout_alignTop="@+id/fob_background"
-                android:layout_alignBottom="@+id/fob_background"
-                android:layout_alignStart="@+id/fob_background"
-                android:layout_alignEnd="@+id/fob_background">
-
-            <View
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="42"/>
-            <!--android:background="#ff0000"-->
+                    android:scaleType="centerInside"
+                    android:src="@drawable/fob_background"
+                    android:contentDescription="@string/fob_background"/>
 
             <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="0dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="302">
-                <!--android:background="#00ff00"-->
-
-
-                <View
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="121"/>
-                <!--android:background="#ffff00"-->
-
-                <LinearLayout
-                        android:orientation="horizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="159">
-
-                    <ImageButton
-                            android:background="#00000000"
-                            android:id="@+id/unlock"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="131"
-                            android:paddingTop="22dp"
-                            android:paddingBottom="15dp"
-                            android:paddingLeft="15dp"
-                            android:paddingStart="15dp"
-                            android:paddingRight="20dp"
-                            android:paddingEnd="20dp"
-                            android:scaleType="centerInside"
-                            android:src="@drawable/unlock"
-                            android:contentDescription="@string/unlock"/>
-
-                    <View
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="40"/>
-
-                    <ImageButton
-                            android:background="#00000000"
-                            android:id="@+id/lock"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="131"
-                            android:paddingTop="22dp"
-                            android:paddingBottom="15dp"
-                            android:paddingLeft="20dp"
-                            android:paddingStart="20dp"
-                            android:paddingRight="15dp"
-                            android:paddingEnd="15dp"
-                            android:scaleType="centerInside"
-                            android:src="@drawable/lock"
-                            android:contentDescription="@string/lock"/>
-
-                </LinearLayout>
+                    android:layout_centerInParent="true"
+                    android:layout_alignTop="@+id/fob_background"
+                    android:layout_alignBottom="@+id/fob_background"
+                    android:layout_alignStart="@+id/fob_background"
+                    android:layout_alignEnd="@+id/fob_background">
 
                 <View
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="41"/>
-                <!--android:background="#ff00ff"-->
-
-                <LinearLayout
-                        android:orientation="horizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="159">
-
-                    <ImageButton
-                            android:background="#00000000"
-                            android:id="@+id/find"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="132"
-                            android:paddingTop="22dp"
-                            android:paddingBottom="15dp"
-                            android:paddingLeft="15dp"
-                            android:paddingStart="15dp"
-                            android:paddingRight="20dp"
-                            android:paddingEnd="20dp"
-                            android:scaleType="centerInside"
-                            android:src="@drawable/unlock"
-                            android:contentDescription="@string/find"/>
-
-                    <View
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="38"/>
-
-                    <ImageButton
-                            android:background="#00000000"
-                            android:id="@+id/trunk"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="132"
-                            android:paddingTop="22dp"
-                            android:paddingBottom="15dp"
-                            android:paddingLeft="20dp"
-                            android:paddingStart="20dp"
-                            android:paddingRight="15dp"
-                            android:paddingEnd="15dp"
-                            android:scaleType="centerInside"
-                            android:src="@drawable/lock"
-                            android:contentDescription="@string/trunk"/>
-
-
-                </LinearLayout>
-
-                <View
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
                         android:layout_weight="42"/>
-                <!--android:background="#00ffff"-->
 
                 <LinearLayout
-                        android:orientation="horizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="167">
+                        android:orientation="vertical"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="302">
+
 
                     <View
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="65"/>
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="121"/>
 
-                    <ImageButton
-                            android:background="#00000000"
-                            android:id="@+id/panic"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="171"
-                            android:paddingTop="22dp"
-                            android:paddingBottom="15dp"
-                            android:paddingLeft="20dp"
-                            android:paddingStart="20dp"
-                            android:paddingRight="20dp"
-                            android:paddingEnd="20dp"
-                            android:scaleType="centerInside"
-                            android:src="@drawable/lock"
-                            android:contentDescription="@string/panic"/>
+                    <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="159">
+
+                        <ImageButton
+                                android:id="@+id/lock"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="131"
+                                android:paddingTop="22dp"
+                                android:paddingBottom="15dp"
+                                android:paddingStart="5dp"
+                                android:paddingEnd="10dp"
+                                android:background="#00000000"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/lock_button"
+                                android:contentDescription="@string/lock"/>
+
+                        <View
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="40"/>
+
+                        <ImageButton
+                                android:id="@+id/unlock"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="131"
+                                android:paddingTop="22dp"
+                                android:paddingBottom="15dp"
+                                android:paddingStart="10dp"
+                                android:paddingEnd="5dp"
+                                android:background="#00000000"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/unlock_button"
+                                android:contentDescription="@string/unlock"/>
+
+                    </LinearLayout>
 
                     <View
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="65"/>
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="41"/>
+
+                    <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="159">
+
+                        <ImageButton
+                                android:id="@+id/find"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="132"
+                                android:paddingTop="22dp"
+                                android:paddingBottom="15dp"
+                                android:paddingStart="5dp"
+                                android:paddingEnd="10dp"
+                                android:background="#00000000"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/find_button"
+                                android:contentDescription="@string/find"/>
+
+                        <View
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="38"/>
+
+                        <ImageButton
+                                android:id="@+id/trunk"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="132"
+                                android:paddingTop="22dp"
+                                android:paddingBottom="15dp"
+                                android:paddingStart="10dp"
+                                android:paddingEnd="5dp"
+                                android:background="#00000000"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/trunk_button"
+                                android:contentDescription="@string/trunk"/>
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="0">
+
+                        <ImageButton
+                                android:id="@+id/start"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="132"
+                                android:paddingTop="22dp"
+                                android:paddingBottom="15dp"
+                                android:paddingStart="5dp"
+                                android:paddingEnd="10dp"
+                                android:background="#00000000"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/start_button"
+                                android:contentDescription="@string/start"/>
+
+                        <View
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="38"/>
+
+                        <ImageButton
+                                android:id="@+id/stop"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="132"
+                                android:paddingTop="22dp"
+                                android:paddingBottom="15dp"
+                                android:paddingStart="10dp"
+                                android:paddingEnd="5dp"
+                                android:background="#00000000"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/stop_button"
+                                android:contentDescription="@string/stop"/>
+
+
+                    </LinearLayout>
+
+                    <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="42"/>
+
+                    <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="167">
+
+                        <View
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="65"/>
+
+                        <ImageButton
+                                android:id="@+id/panic"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="171"
+                                android:paddingTop="3dp"
+                                android:paddingBottom="5dp"
+                                android:paddingLeft="12dp"
+                                android:paddingStart="12dp"
+                                android:paddingRight="12dp"
+                                android:paddingEnd="12dp"
+                                android:background="#00000000"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/panic_button"
+                                android:contentDescription="@string/panic"/>
+
+                        <View
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="65"/>
+
+                    </LinearLayout>
+
+                    <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="111"/>
 
                 </LinearLayout>
 
-                <View
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="111"/>
-                <!--android:background="#ffff99"-->
-
+                <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="98"
+                        android:contentDescription="@string/keyfob_logo"/>
             </LinearLayout>
 
-            <ImageView
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="98"
-                    android:contentDescription="@string/keyfob_logo"/>
-            <!--android:background="#0000ff"-->
-        </LinearLayout>
 
-
-    </RelativeLayout>
+        </RelativeLayout>
     </FrameLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@drawable/background"
-        android:orientation="horizontal"
-        android:layout_weight="40">
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="40"
+            android:background="@drawable/background">
 
         <TextView
-            android:id="@+id/keysharelbl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="25dp"
-            android:text="@string/share_lbl"
-            android:textColor="@color/white"
-            android:textSize="20dp"
-            android:layout_gravity="bottom"
-            android:paddingTop="10dp"
-            android:paddingBottom="5dp"/>
+                android:id="@+id/keysharelbl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="25dp"
+                android:paddingBottom="5dp"
+                android:paddingTop="10dp"
+                android:layout_gravity="bottom"
+                android:text="@string/share_lbl"
+                android:textColor="@color/white"
+                android:textSize="20sp"/>
 
     </LinearLayout>
 
     <View
-        android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:background="@android:color/white"
-        android:layout_weight="1"/>
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@android:color/white"/>
 
     <LinearLayout
-        android:id="@+id/bottomlayout"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="10dp"
-        android:orientation="horizontal"
-        android:background="@drawable/background"
-        android:layout_weight="90"
-        android:visibility="gone">
-
-        <Button
-            android:id="@+id/share"
-            android:layout_column="2"
-            android:layout_row="8"
-            android:layout_width="115sp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
+            android:id="@+id/key_management_layout"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="90"
             android:layout_marginTop="10dp"
-            android:layout_marginRight="100dp"
-            android:text="@string/share"
-            android:background="@drawable/grey_button"
-            android:textAllCaps="false"
-            android:visibility="visible"
-            />
+            android:layout_marginStart="10dp"
+            android:background="@drawable/background"
+            android:visibility="visible">
 
-        <Button
-            android:id="@+id/change"
-            android:layout_column="0"
-            android:layout_row="8"
-            android:layout_width="115sp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="10dp"
-            android:text="@string/change"
-            android:background="@drawable/grey_button"
-            android:textAllCaps="false"
-            android:visibility="visible"
-            />
+        <ImageButton
+                android:id="@+id/share"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="100"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:padding="10dp"
+                android:background="#00000000"
+                android:scaleType="centerInside"
+                android:src="@drawable/share_button"
+                android:visibility="visible"
+                android:contentDescription="@string/share"/>
+
+        <ImageButton
+                android:id="@+id/change"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="100"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:padding="10dp"
+                android:background="#00000000"
+                android:scaleType="centerInside"
+                android:src="@drawable/revoke_button"
+                android:visibility="visible"
+                android:contentDescription="@string/change"/>
     </LinearLayout>
 
     <TextView
-        android:id="@+id/guestvalidDate"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:gravity="center"
-        android:textSize="18dp"
-        android:textColor="@color/white"
-        android:visibility="visible"
-        android:text="@string/abc_action_bar_home_description"
-        android:layout_marginLeft="40dp"
-        android:paddingBottom="5dp"
-        android:layout_weight="25"/>
+            android:id="@+id/guestvalidDate"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="25"
+            android:layout_marginStart="40dp"
+            android:paddingBottom="5dp"
+            android:text="@string/revoked"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:visibility="visible"/>
 
     <TextView
-        android:id="@+id/guestvalidTime"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:gravity="center"
-        android:textSize="18dp"
-        android:textColor="@color/white"
-        android:visibility="visible"
-        android:text="@string/abc_action_bar_home_description"
-        android:layout_marginLeft="40dp"
-        android:paddingBottom="5dp"
-        android:layout_weight="25"/>
+            android:id="@+id/guestvalidTime"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="25"
+            android:gravity="center"
+            android:layout_marginStart="40dp"
+            android:paddingBottom="5dp"
+            android:text="@string/abc_action_bar_home_description"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:visibility="gone"/>
 
-    <!--<FrameLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="0dp"-->
-            <!--android:layout_weight="0">-->
-
-    <!--<Button-->
-        <!--android:id="@+id/start"-->
-        <!--style="@style/black_button_text"-->
-        <!--android:layout_width="90sp"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_column="1"-->
-        <!--android:layout_gravity="center_horizontal"-->
-        <!--android:layout_marginTop="20dp"-->
-        <!--android:layout_row="1"-->
-        <!--android:background="@drawable/black_button"-->
-        <!--android:text="@string/share"-->
-        <!--android:textAllCaps="false"-->
-        <!--android:visibility="gone" />-->
-
-    <!--<Button-->
-        <!--android:id="@+id/stop"-->
-        <!--android:layout_width="115sp"-->
-        <!--android:layout_height="115sp"-->
-        <!--android:layout_gravity="center_horizontal"-->
-        <!--android:layout_marginTop="20dp"-->
-        <!--android:background="@drawable/red_button"-->
-        <!--android:onClick="sendPanic"-->
-        <!--android:text="@string/panic_icon"-->
-        <!--android:textColor="#fff"-->
-        <!--android:textSize="90sp"-->
-        <!--android:visibility="gone" />-->
-
-    <!--<Button-->
-        <!--android:id="@+id/panicOn"-->
-        <!--android:layout_width="115sp"-->
-        <!--android:layout_height="115sp"-->
-        <!--android:layout_gravity="center_horizontal"-->
-        <!--android:layout_marginTop="20dp"-->
-        <!--android:background="@drawable/red_button"-->
-        <!--android:onClick="sendPanicOff"-->
-        <!--android:text="@string/panic_stop_icon"-->
-        <!--android:textColor="#fff"-->
-        <!--android:textSize="90sp"-->
-        <!--android:visibility="gone" />-->
-
-    <!--</FrameLayout>-->
-
-
-    <!-- ################################################################################ -->
-
-    <!--<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                      xmlns:tools="http://schemas.android.com/tools"
-                      android:id="@+id/GridLayout1"
-                      android:layout_width="match_parent"
-                      android:layout_height="match_parent"
-                      android:columnCount="3"
-                      android:rowCount="9"
-                      android:background="#555"
-                      android:orientation="horizontal"
-                      android:paddingBottom="@dimen/activity_vertical_margin"
-                      android:paddingLeft="@dimen/activity_horizontal_margin"
-                      android:paddingRight="@dimen/activity_horizontal_margin"
-                      android:paddingTop="@dimen/activity_vertical_margin"
-                      tools:context=".MainActivity">
-
-            <Button
-                android:id="@+id/start"
-                android:layout_column="1"
-                android:layout_row="0"
-                android:layout_width="100sp"
-                android:layout_height="100sp"
-                android:layout_marginTop="0dp"
-                android:text="@string/start"
-                android:background="@drawable/red_button"
-                android:textSize="20sp"
-                android:textColor="#fff"
-                android:visibility="visible" />
-
-            <Button
-                    android:id="@+id/stop"
-                    android:layout_column="1"
-                    android:layout_row="1"
-                    android:layout_width="100sp"
-                    android:layout_height="100sp"
-                    android:layout_marginTop="0dp"
-                    android:text="@string/stop"
-                    android:background="@drawable/red_button"
-                    android:textSize="20sp"
-                    android:textColor="#fff"
-                    android:visibility="visible" />
-
-            <Button
-                    android:id="@+id/unlock"
-                    android:layout_column="0"
-                    android:layout_row="0"
-                    android:layout_width="100sp"
-                    android:layout_height="140sp"
-                    android:layout_marginTop="0dp"
-                    android:text="@string/unlock_icon"
-                    android:background="@drawable/grey_button"
-                    android:textSize="100sp"
-                    android:textColor="#fff"
-                    android:visibility="visible" />
-
-            <Button
-                    android:id="@+id/lock"
-                    android:layout_column="2"
-                    android:layout_row="0"
-                    android:layout_width="100sp"
-                    android:layout_height="140sp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="0dp"
-                    android:text="@string/lock_icon"
-                    android:background="@drawable/grey_button"
-                    android:textSize="100sp"
-                    android:textColor="#fff"
-                    android:visibility="visible" />
-
-            <Button
-                android:id="@+id/trunk"
-                android:layout_column="1"
-                android:layout_row="1"
-                android:layout_width="90sp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="20dp"
-                android:text="@string/share"
-                android:background="@drawable/black_button"
-                android:textAllCaps="false"
-                android:visibility="gone"
-                style="@style/black_button_text"
-                />
-
-            <Button
-                    android:id="@+id/panic"
-                    android:layout_width="115sp"
-                    android:layout_height="115sp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="20dp"
-                    android:text="@string/panic_icon"
-                    android:onClick="sendPanic"
-                    android:background="@drawable/red_button"
-                    android:textSize="90sp"
-                    android:textColor="#fff"
-                    android:visibility="gone" />
-
-            <Button
-                    android:id="@+id/panicOn"
-                    android:layout_width="115sp"
-                    android:layout_height="115sp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="20dp"
-                    android:text="@string/panic_stop_icon"
-                    android:onClick="sendPanicOff"
-                    android:background="@drawable/red_button"
-                    android:textSize="90sp"
-                    android:textColor="#fff"
-                    android:visibility="gone" />
-            <Button
-            android:id="@+id/share"
-            android:layout_column="2"
-            android:layout_row="8"
-            android:layout_width="100sp"
-            android:layout_height="100sp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="10dp"
-            android:text="@string/share"
-            android:background="@drawable/black_button"
-            android:textAllCaps="false"
-            android:visibility="visible"
-            style="@style/black_button_text"
-            />
-
-            <Button
-                android:id="@+id/change"
-                android:layout_column="0"
-                android:layout_row="8"
-                android:layout_width="115sp"
-                android:layout_height="115sp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="10dp"
-                android:text="@string/change"
-                android:background="@drawable/black_button"
-                android:textAllCaps="false"
-                android:visibility="visible"
-                style="@style/black_button_text"
-                />
-        </GridLayout>-->
 </LinearLayout>

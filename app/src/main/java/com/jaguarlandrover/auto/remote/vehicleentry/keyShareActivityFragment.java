@@ -11,11 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.Switch;
-import android.widget.TextView;
-import android.widget.TimePicker;
+import android.widget.*;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,14 +33,16 @@ public class keyShareActivityFragment extends Fragment {
     TextView startdate, enddate, starttime, endtime;
     static final int dateDialog = 0;
     static final int timeDialog = 1;
-    private TextView  activeDialog;
-    private TextView  activeTime;
-    private TextView  userheader;
-    private Button    shareKeyBtn;
-    private Switch    lock_unlock;
-    private Switch    enginestart;
-    private ViewPager userPages;
-    private ViewPager carPages;
+    private TextView   activeDialog;
+    private TextView   activeTime;
+    private TextView   userheader;
+    private Button     shareKeyBtn;
+    //private GridLayout auth_switch_grid;
+    private Switch     lock_unlock;
+    private Switch     engine_start;
+    private Switch     trunk_lights;
+    private ViewPager  userPages;
+    private ViewPager  carPages;
 
     int[] users = {R.drawable.lilli,
             R.drawable.magnus,
@@ -68,7 +66,9 @@ public class keyShareActivityFragment extends Fragment {
 
         shareKeyBtn = (Button) view.findViewById(R.id.ShareBtn);
         lock_unlock = (Switch) view.findViewById(R.id.lock_unlock);
-        enginestart = (Switch) view.findViewById(R.id.engine);
+        engine_start = (Switch) view.findViewById(R.id.engine);
+        trunk_lights = (Switch) view.findViewById(R.id.trunk_lights);
+        //auth_switch_grid = (GridLayout) view.findViewById(R.id.auth_switch_grid);
         userPages = (ViewPager) view.findViewById(R.id.userscroll);
         carPages = (ViewPager) view.findViewById(R.id.vehiclescroll);
         userheader = (TextView) view.findViewById(R.id.user);
@@ -126,7 +126,8 @@ public class keyShareActivityFragment extends Fragment {
         e.printStackTrace();}
 
         Boolean lockSwitch = lock_unlock.isChecked();
-        Boolean engineSwitch = enginestart.isChecked();
+        Boolean engineSwitch = engine_start.isChecked();
+        Boolean trunkLights = trunk_lights.isChecked();
 
         String centerUser = getResources().getResourceEntryName(users[userPages.getCurrentItem()]);
         String centerVehicle = vins[carPages.getCurrentItem()];
@@ -135,9 +136,9 @@ public class keyShareActivityFragment extends Fragment {
         authServ.put(new JSONObject().put("lock", lockSwitch.toString()));
         authServ.put(new JSONObject().put("start", engineSwitch.toString()));
 
-        authServ.put(new JSONObject().put("trunk", "false"));
+        authServ.put(new JSONObject().put("trunk", trunkLights.toString()));
         authServ.put(new JSONObject().put("windows", "false"));
-        authServ.put(new JSONObject().put("lights", "false"));
+        authServ.put(new JSONObject().put("lights", trunkLights.toString()));
         authServ.put(new JSONObject().put("hazard", "false"));
         authServ.put(new JSONObject().put("horn", "false"));
 

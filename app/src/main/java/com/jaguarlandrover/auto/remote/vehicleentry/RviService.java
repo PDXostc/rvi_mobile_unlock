@@ -48,9 +48,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -388,6 +388,38 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
     private static final PublishSubject<JSONObject> btSender = PublishSubject.create();
 
+    private boolean isKeyValid() throws ParseException {
+        String[] dateTime;
+
+        try {
+            dateTime = JSONParser(prefs.getString("Userdata", "There's nothing"), "validTo").split("T");
+        }
+        catch (Exception e) {
+            return false;
+        }
+
+        String userDate = dateTime[0];
+        String userTime = dateTime[1];
+
+        String userDateTime = userDate + " " + userTime;
+
+        SimpleDateFormat formatter1;
+
+        try {
+            formatter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        } catch (Exception e) {
+            return false;
+        }
+
+        formatter1.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        Date savedDate = formatter1.parse(userDateTime);
+        Date dateNow = new Date();
+
+        return savedDate.compareTo(dateNow) > 0;
+    }
+
+
     private Subscriber<RangeObject> beaconSubscriber = new Subscriber<RangeObject>(){
         @Override
         public void onCompleted() {
@@ -416,9 +448,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
             JSONObject services = null;
             try{
                 services = new JSONObject(showme);
-                if(userType.equals("guest")&& services.getString("lock").equals("false")){
-
-                }else {
+                if (userType.equals("guest") && (services.getString("lock").equals("false") || !isKeyValid())) {
+                    Log.d(TAG, "User is not authorized to lock/unlock car.");
+                } else {
                     // No longer using auto lock/unlock for demo, commenting out
                     //if(prefs.getString("autounlock", "nothing").equals("true")){
                         if (!connected && (ro.distance > connectDistance)) {

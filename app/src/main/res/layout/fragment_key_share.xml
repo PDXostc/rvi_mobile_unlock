@@ -171,6 +171,7 @@
         android:background="@android:color/white" />
 
     <GridLayout
+        android:id="@+id/auth_switch_grid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
@@ -178,10 +179,10 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:orientation="horizontal"
-        android:rowCount="2">
+        android:rowCount="3">
 
         <TextView
-            android:id="@+id/LockswitchLbl"
+            android:id="@+id/lock_switch_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_column="0"
@@ -191,13 +192,24 @@
             android:textColor="#ffff" />
 
         <TextView
-            android:id="@+id/engineswitchLbl"
+            android:id="@+id/engine_switch_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_column="0"
             android:layout_row="1"
             android:text="Engine Start"
+            android:textColor="#ffff"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/trunk_find_switch_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="2"
+            android:text="Trunk/Lights"
             android:textColor="#ffff" />
+
 
         <Switch
             android:id="@+id/lock_unlock"
@@ -212,6 +224,15 @@
             android:layout_column="1"
             android:layout_marginEnd="15dp"
             android:layout_row="1"
+            android:textOff="OFF"
+            android:textOn="ON"
+            android:visibility="gone"/>
+
+        <Switch
+            android:id="@+id/trunk_lights"
+            android:layout_column="1"
+            android:layout_marginEnd="15dp"
+            android:layout_row="2"
             android:textOff="OFF"
             android:textOn="ON" />
 
