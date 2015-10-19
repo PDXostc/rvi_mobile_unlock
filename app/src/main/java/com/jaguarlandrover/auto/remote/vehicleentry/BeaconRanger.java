@@ -32,6 +32,7 @@ public class BeaconRanger {
     private boolean started = false;
     private Subscriber<? super RangeObject> sub;
     private EvictingQueue<Double> ranges = null;
+    private EvictingQueue<Double> weightedRanges = null;
     private Long lastdist = -1L;
     private SharedPreferences prefs;
 
@@ -52,6 +53,7 @@ public class BeaconRanger {
 
         numberMesurments = Integer.parseInt(prefs.getString("pref_ranging_sample_buffer", "10"));
         ranges = EvictingQueue.create(numberMesurments);
+        weightedRanges = EvictingQueue.create(numberMesurments);
         calc = new CurveFittedDistanceCalculator(0.42093, 6.9476, 0.54992);
     }
 
@@ -91,17 +93,26 @@ public class BeaconRanger {
                 }
 
                 double mean = 0;
+                double weightedMean = 0;
+
                 //double newReading2 = getDistance(rssi, scanRecord[29]);
                 double newReading = calc.calculateDistance(scanRecord[29],rssi);
                 //System.out.println("RVI New reading dist : "+newReading+" : "+newReading2);
                 synchronized (ranges) {
+                    final double unlockDistance = Double.parseDouble(prefs.getString("pref_auto_unlock_dist", "1"));
+
+                    if (newReading > unlockDistance) weightedRanges.add(1.0);
+                    else weightedRanges.add(0.0);
+
                     ranges.add(newReading);
+
                     if(ranges.size() == numberMesurments) { //Full
-                        for (double d : ranges) {
-                            mean += d;
-                            //System.out.println("RVI Loop mean : "+mean);
-                        }
-                        mean = mean / numberMesurments;
+
+                        mean = getMean(ranges);
+                        weightedMean = getMean(weightedRanges);
+
+                        System.out.println("Distance: " + newReading + " unlock distance: " + unlockDistance + " weighted mean: " + weightedMean);
+
                     } else {
                         //System.out.println("RVI Not yet full : "+ranges.size());
                     }
@@ -121,11 +132,21 @@ public class BeaconRanger {
                     ro.rssi = rssi;
                     ro.txPower = scanRecord[29];
                     ro.distance = mean;
+                    ro.weightedDistance = weightedMean;
                     sub.onNext(ro);
                 }
             }
         }
     };
+
+    double getMean(EvictingQueue<Double> ranges) {
+        double mean = 0;
+        for (double d : ranges) {
+            mean += d;
+            //System.out.println("RVI Loop mean : "+mean);
+        }
+        return mean / ranges.size();
+    }
 
 //    double getDistance(int rssi, int txPower) {
 //    /*
@@ -234,6 +255,7 @@ class RangeObject {
     String id;
     String addr;
     double distance;
+    double weightedDistance;
     int rssi;
     int txPower;
 

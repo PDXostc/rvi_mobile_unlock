@@ -458,12 +458,12 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             return;
                         }
 
-                        if (connected && (!unlocked) && (ro.distance > unlockDistance)) {
+                        if (connected && (!unlocked) && (ro.weightedDistance > 0.5/*unlockDistance*/)) {
                             Log.d(TAG, "Too far out unlock : " + ro.distance);
                             return;
                         }
 
-                        if (connected && (!unlocked) && ro.distance <= unlockDistance) {
+                        if (connected && (!unlocked) && ro.weightedDistance <= 0.5/*unlockDistance*/) {
                             unlocked = true;
                             //changing back to normal unlock instead of auto_*
                             RviService.service("unlock", RviService.this);
@@ -471,7 +471,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             return;
                         }
 
-                        if (connected && unlocked && ro.distance >= lockDistance) {
+                        if (connected && unlocked && ro.weightedDistance >= 0.5/*lockDistance*/) {
                             unlocked = false;
                             //changing back to normal lock instead of auto_*
                             RviService.service("lock", RviService.this);
