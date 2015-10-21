@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -215,10 +216,10 @@ public class RviService extends Service /* implements BeaconConsumer */{
         int rviPort = Integer.parseInt(prefs.getString("pref_rvi_server_port","8807"));
 
         //Create service vector
-        final String certProv = "jlr.com/mobile/" + tm.getDeviceId() + "/dm/cert_provision";
-        final String certRsp = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_response";
-        final String certAccountDetails = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_accountdetails";
-        final String serviceInvokedByGuest = "jlr.com/mobile/"+tm.getDeviceId()+"/report/serviceinvokedbyguest";
+        final String certProv = "jlr.com/mobile/" + getLocalNodeIdentifier() + "/dm/cert_provision";
+        final String certRsp = "jlr.com/mobile/"+ getLocalNodeIdentifier() +"/dm/cert_response";
+        final String certAccountDetails = "jlr.com/mobile/"+ getLocalNodeIdentifier() +"/dm/cert_accountdetails";
+        final String serviceInvokedByGuest = "jlr.com/mobile/"+ getLocalNodeIdentifier() +"/report/serviceinvokedbyguest";
         final String[] ss = {certProv, certRsp, certAccountDetails, serviceInvokedByGuest};
 
         //final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
@@ -999,11 +1000,11 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
     }
 
-    public static void requestAll(JSONArray json){
+    public void requestAll(JSONArray json){
         JSONObject request;
         JSONObject uuid = new JSONObject();
         try{
-            uuid.put("mobileUUID", tm.getDeviceId());
+            uuid.put("mobileUUID", getLocalNodeIdentifier());
             json.put(uuid);
             request = RviProtocol.createReceiveData(4, "jlr.com/backend/dm/cert_requestall", json, "", "");
             // Testing for dupe service invokes
@@ -1019,7 +1020,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
             cloudSender.onError(e);}
     }
 
-    public  static void revokeKey(JSONArray json){
+    public static void revokeKey(JSONArray json){
         JSONObject send;
         try{
             send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_modify",json,"","");
@@ -1044,5 +1045,45 @@ public class RviService extends Service /* implements BeaconConsumer */{
             //e.printStackTrace();
         }
         return "0";
+    }
+
+    private final static String LOCAL_SERVICE_PREFIX_STRING = "deviceUUID";
+
+    // TODO: Test and verify this function
+    private static String uuidB58String() {
+        UUID uuid = UUID.randomUUID();
+        String b64Str;
+
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+
+        b64Str = Base64.encodeToString(bb.array(), Base64.DEFAULT);
+        b64Str = b64Str.split("=")[0];
+
+        b64Str = b64Str.replace('+', 'P');
+        b64Str = b64Str.replace('/', 'S'); /* Reduces likelihood of uniqueness but stops non-alphanumeric characters from screwing up any urls or anything */
+
+        return b64Str;
+    }
+
+    /**
+     * Gets the prefix of the local RVI node
+     *
+     * @param context the application context
+     * @return the local prefix
+     */
+    public  String getLocalNodeIdentifier() { // TODO: There is no easy way to reset this once it's stored, is there? Maybe an app version check?
+
+        String localServicePrefix;
+
+        if ((localServicePrefix = prefs.getString(LOCAL_SERVICE_PREFIX_STRING, null)) == null)
+            localServicePrefix = uuidB58String();
+
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(LOCAL_SERVICE_PREFIX_STRING, localServicePrefix);
+        editor.apply();
+
+        return localServicePrefix;
     }
 }
