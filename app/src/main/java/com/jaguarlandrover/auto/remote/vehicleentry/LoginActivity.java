@@ -148,7 +148,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         BKTask task = new BKTask(this);
         task.setUser(login_fragment.userName.getEditableText().toString());
         task.setpWd(login_fragment.password.getEditableText().toString());
-        task.execute(new String[]{("http://" + prefs.getString("pref_rvi_server", "38.129.64.40") + ":8000/token/new.json")});
+        task.execute(new String[]{("http://" + prefs.getString("pref_rvi_server", "rvi-test2.nginfotpdx.net") + ":8000/token/new.json")});
     }
 
     @Override

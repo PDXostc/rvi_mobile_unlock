@@ -29,6 +29,7 @@
             android:defaultValue="8807"
             android:inputType="numberDecimal"
             />
+        
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Bluetooth"
