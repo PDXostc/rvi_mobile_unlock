@@ -493,7 +493,10 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         e.commit();
                     //}
                 }
-            }catch(Exception e){e.printStackTrace();}
+            } catch (JSONException je) {
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             //br.stop();
             //connected = true;
