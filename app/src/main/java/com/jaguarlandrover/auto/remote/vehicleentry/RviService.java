@@ -438,7 +438,14 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
             final double unlockDistance = Double.parseDouble(prefs.getString("pref_auto_unlock_dist", "1"));
             final double connectDistance = Double.parseDouble(prefs.getString("pref_auto_conn_dist", "3"));
-            final double lockDistance = Double.parseDouble(prefs.getString("pref_auto_lock_dist", "10"));
+            double grayArea = Double.parseDouble(prefs.getString("pref_auto_lock_unlock_cutoff_gray_area", "0.4"));
+
+            if (grayArea > 1.0 || grayArea < 0.0) {
+                Log.d(TAG, "Invalid grayArea: " + grayArea + "! Resetting to default value of 0.4");
+                grayArea = 0.4;
+            }
+
+            final double weightedCutoff = ((1.0 - grayArea) / 2.0);
 
             Log.d(TAG,"distance:"+ro.distance+", weightedDistance:"+ro.weightedDistance+", unlockDistance:"+unlockDistance+", connectDistance:"+connectDistance);
             Log.d(TAG,"connected:"+connected+", connecting:"+connecting+", unlocked:"+unlocked);
@@ -459,12 +466,12 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             return;
                         }
 
-                        if (connected && (!unlocked) && (ro.weightedDistance > 0.5/*unlockDistance*/)) {
+                        if (connected && (!unlocked) && (ro.weightedDistance > weightedCutoff)) {
                             Log.d(TAG, "Too far out unlock : " + ro.distance);
                             return;
                         }
 
-                        if (connected && (!unlocked) && ro.weightedDistance <= 0.5/*unlockDistance*/) {
+                        if (connected && (!unlocked) && ro.weightedDistance <= weightedCutoff) {
                             unlocked = true;
                             //changing back to normal unlock instead of auto_*
                             RviService.service("unlock", RviService.this);
@@ -472,7 +479,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             return;
                         }
 
-                        if (connected && unlocked && ro.weightedDistance >= 0.5/*lockDistance*/) {
+                        if (connected && unlocked && ro.weightedDistance >= (1.0 - weightedCutoff)) {
                             unlocked = false;
                             //changing back to normal lock instead of auto_*
                             RviService.service("lock", RviService.this);
