@@ -48,9 +48,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.nio.ByteBuffer;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -64,7 +65,7 @@ import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
 public class RviService extends Service /* implements BeaconConsumer */{
-    private static final String TAG = "RVI";
+    private static final String TAG = "RVI:RVIService";
     private ConnectivityManager cm;
     private static TelephonyManager tm;
     private ConcurrentHashMap<String,Long> visible = new ConcurrentHashMap<String, Long>();
@@ -211,14 +212,14 @@ public class RviService extends Service /* implements BeaconConsumer */{
     }
     private static final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
     private void _connectConnect() {
-        String rviServer = prefs.getString("pref_rvi_server", "54.172.25.254");
+        String rviServer = prefs.getString("pref_rvi_server", "38.129.64.40");//"54.172.25.254");//
         int rviPort = Integer.parseInt(prefs.getString("pref_rvi_server_port","8807"));
 
         //Create service vector
-        final String certProv = "jlr.com/mobile/" + tm.getDeviceId() + "/dm/cert_provision";
-        final String certRsp = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_response";
-        final String certAccountDetails = "jlr.com/mobile/"+tm.getDeviceId()+"/dm/cert_accountdetails";
-        final String serviceInvokedByGuest = "jlr.com/mobile/"+tm.getDeviceId()+"/report/serviceinvokedbyguest";
+        final String certProv = "jlr.com/mobile/" + getLocalNodeIdentifier() + "/dm/cert_provision";
+        final String certRsp = "jlr.com/mobile/"+ getLocalNodeIdentifier() +"/dm/cert_response";
+        final String certAccountDetails = "jlr.com/mobile/"+ getLocalNodeIdentifier() +"/dm/cert_accountdetails";
+        final String serviceInvokedByGuest = "jlr.com/mobile/"+ getLocalNodeIdentifier() +"/report/serviceinvokedbyguest";
         final String[] ss = {certProv, certRsp, certAccountDetails, serviceInvokedByGuest};
 
         //final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
@@ -388,6 +389,38 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
     private static final PublishSubject<JSONObject> btSender = PublishSubject.create();
 
+    private boolean isKeyValid() throws ParseException {
+        String[] dateTime;
+
+        try {
+            dateTime = JSONParser(prefs.getString("Userdata", "There's nothing"), "validTo").split("T");
+        }
+        catch (Exception e) {
+            return false;
+        }
+
+        String userDate = dateTime[0];
+        String userTime = dateTime[1];
+
+        String userDateTime = userDate + " " + userTime;
+
+        SimpleDateFormat formatter1;
+
+        try {
+            formatter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        } catch (Exception e) {
+            return false;
+        }
+
+        formatter1.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        Date savedDate = formatter1.parse(userDateTime);
+        Date dateNow = new Date();
+
+        return savedDate.compareTo(dateNow) > 0;
+    }
+
+
     private Subscriber<RangeObject> beaconSubscriber = new Subscriber<RangeObject>(){
         @Override
         public void onCompleted() {
@@ -405,9 +438,16 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
             final double unlockDistance = Double.parseDouble(prefs.getString("pref_auto_unlock_dist", "1"));
             final double connectDistance = Double.parseDouble(prefs.getString("pref_auto_conn_dist", "3"));
-            final double lockDistance = Double.parseDouble(prefs.getString("pref_auto_lock_dist", "10"));
+            double grayArea = Double.parseDouble(prefs.getString("pref_auto_lock_unlock_cutoff_gray_area", "0.4"));
 
-            Log.d(TAG,"distance:"+ro.distance+", lockDistance:"+lockDistance+", unlockDistance:"+unlockDistance+", connectDistance:"+connectDistance);
+            if (grayArea > 1.0 || grayArea < 0.0) {
+                Log.d(TAG, "Invalid grayArea: " + grayArea + "! Resetting to default value of 0.4");
+                grayArea = 0.4;
+            }
+
+            final double weightedCutoff = ((1.0 - grayArea) / 2.0);
+
+            Log.d(TAG,"distance:"+ro.distance+", weightedDistance:"+ro.weightedDistance+", unlockDistance:"+unlockDistance+", connectDistance:"+connectDistance);
             Log.d(TAG,"connected:"+connected+", connecting:"+connecting+", unlocked:"+unlocked);
 
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -416,9 +456,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
             JSONObject services = null;
             try{
                 services = new JSONObject(showme);
-                if(userType.equals("guest")&& services.getString("lock").equals("false")){
-
-                }else {
+                if (userType.equals("guest") && (services.getString("lock").equals("false") || !isKeyValid())) {
+                    Log.d(TAG, "User is not authorized to lock/unlock car.");
+                } else {
                     // No longer using auto lock/unlock for demo, commenting out
                     //if(prefs.getString("autounlock", "nothing").equals("true")){
                         if (!connected && (ro.distance > connectDistance)) {
@@ -426,12 +466,12 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             return;
                         }
 
-                        if (connected && (!unlocked) && (ro.distance > unlockDistance)) {
+                        if (connected && (!unlocked) && (ro.weightedDistance > weightedCutoff)) {
                             Log.d(TAG, "Too far out unlock : " + ro.distance);
                             return;
                         }
 
-                        if (connected && (!unlocked) && ro.distance <= unlockDistance) {
+                        if (connected && (!unlocked) && ro.weightedDistance <= weightedCutoff) {
                             unlocked = true;
                             //changing back to normal unlock instead of auto_*
                             RviService.service("unlock", RviService.this);
@@ -439,7 +479,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             return;
                         }
 
-                        if (connected && unlocked && ro.distance >= lockDistance) {
+                        if (connected && unlocked && ro.weightedDistance >= (1.0 - weightedCutoff)) {
                             unlocked = false;
                             //changing back to normal lock instead of auto_*
                             RviService.service("lock", RviService.this);
@@ -461,7 +501,10 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         e.commit();
                     //}
                 }
-            }catch(Exception e){e.printStackTrace();}
+            } catch (JSONException je) {
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             //br.stop();
             //connected = true;
@@ -598,6 +641,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                     BluetoothSocket sock = null;
                     @Override
                     public void call(Subscriber<? super JSONObject> sub) {
+                        if (connected == true) return;
 
                         connected = false;
                         unlocked = false;
@@ -927,7 +971,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                 location.put("latitude", latit);
                 location.put("longitude", longi);
                 locationData.put(location);
-                JSONObject rcv = RviProtocol.createReceiveData(2, "jlr.com/bt/stoffe/" + service,
+                JSONObject rcv = RviProtocol.createReceiveData(2, "jlr.com/vin/stoffe/" + service,
                 locationData, cert, "");
                 /*
                 try{
@@ -963,11 +1007,11 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
     }
 
-    public static void requestAll(JSONArray json){
+    public void requestAll(JSONArray json){
         JSONObject request;
         JSONObject uuid = new JSONObject();
         try{
-            uuid.put("mobileUUID", tm.getDeviceId());
+            uuid.put("mobileUUID", getLocalNodeIdentifier());
             json.put(uuid);
             request = RviProtocol.createReceiveData(4, "jlr.com/backend/dm/cert_requestall", json, "", "");
             // Testing for dupe service invokes
@@ -983,7 +1027,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
             cloudSender.onError(e);}
     }
 
-    public  static void revokeKey(JSONArray json){
+    public static void revokeKey(JSONArray json){
         JSONObject send;
         try{
             send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_modify",json,"","");
@@ -1005,8 +1049,48 @@ public class RviService extends Service /* implements BeaconConsumer */{
             String parameterVal = json.getString(RqstData);
             return parameterVal;
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         return "0";
+    }
+
+    private final static String LOCAL_SERVICE_PREFIX_STRING = "deviceUUID";
+
+    // TODO: Test and verify this function
+    private static String uuidB58String() {
+        UUID uuid = UUID.randomUUID();
+        String b64Str;
+
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+
+        b64Str = Base64.encodeToString(bb.array(), Base64.DEFAULT);
+        b64Str = b64Str.split("=")[0];
+
+        b64Str = b64Str.replace('+', 'P');
+        b64Str = b64Str.replace('/', 'S'); /* Reduces likelihood of uniqueness but stops non-alphanumeric characters from screwing up any urls or anything */
+
+        return b64Str;
+    }
+
+    /**
+     * Gets the prefix of the local RVI node
+     *
+     * @param context the application context
+     * @return the local prefix
+     */
+    public  String getLocalNodeIdentifier() { // TODO: There is no easy way to reset this once it's stored, is there? Maybe an app version check?
+
+        String localServicePrefix;
+
+        if ((localServicePrefix = prefs.getString(LOCAL_SERVICE_PREFIX_STRING, null)) == null)
+            localServicePrefix = uuidB58String();
+
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(LOCAL_SERVICE_PREFIX_STRING, localServicePrefix);
+        editor.apply();
+
+        return localServicePrefix;
     }
 }

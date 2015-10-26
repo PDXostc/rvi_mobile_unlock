@@ -1,14 +1,11 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.ServiceConnection;
+import android.content.*;
 import android.graphics.Typeface;
 import android.net.http.HttpResponseCache;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -144,10 +141,14 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
 
     public void submit(View v){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);;
+
+
+
         BKTask task = new BKTask(this);
         task.setUser(login_fragment.userName.getEditableText().toString());
         task.setpWd(login_fragment.password.getEditableText().toString());
-        task.execute(new String[]{"http://ec2-54-172-25-254.compute-1.amazonaws.com:8000/token/new.json"});
+        task.execute(new String[]{("http://" + prefs.getString("pref_rvi_server", "rvi-test2.nginfotpdx.net") + ":8000/token/new.json")});
     }
 
     @Override
@@ -166,6 +167,9 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent();
+            intent.setClass(LoginActivity.this, AdvancedPreferenceActivity.class);
+            startActivityForResult(intent, 0);
             return true;
         }
 

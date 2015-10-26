@@ -1,12 +1,8 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.SharedPreferences;
-import android.location.GpsStatus;
-import android.os.Handler;
-import android.os.Looper;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -15,22 +11,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.Switch;
-import android.widget.TextView;
-import android.widget.TimePicker;
+import android.widget.*;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
-import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 
 
@@ -43,27 +32,27 @@ public class keyShareActivityFragment extends Fragment {
     String am_pm;
     TextView startdate, enddate, starttime, endtime;
     static final int dateDialog = 0;
-    static final int timeDialog=1;
-    private TextView activeDialog;
-    private TextView activeTime;
-    private TextView userheader;
-    private Button shareKeyBtn;
-    private Switch lock_unlock;
-    private Switch enginestart;
-    private ViewPager userPages;
-    private ViewPager carPages;
+    static final int timeDialog = 1;
+    private TextView   activeDialog;
+    private TextView   activeTime;
+    private TextView   userheader;
+    private Button     shareKeyBtn;
+    //private GridLayout auth_switch_grid;
+    private Switch     lock_unlock;
+    private Switch     engine_start;
+    private Switch     trunk_lights;
+    private ViewPager  userPages;
+    private ViewPager  carPages;
 
-    int[] users={R.drawable.llesavre,
-            R.drawable.arodriguez,
-            R.drawable.dbenjamin,
-            R.drawable.bjamal,
-            R.drawable.pmeinelt,
+    int[] users = {R.drawable.lilli,
+            R.drawable.magnus,
+            R.drawable.anson,
 
-            };
+    };
 
-    int[] vehicles = {R.drawable.car1,
-    R.drawable.car2};
-    String[] vins = {"1234567890ABCDEFG", "00000000000000000"};
+    int[]    vehicles = {R.drawable.car1,
+            R.drawable.car2};
+    String[] vins     = {"stoffe", "stoffe"};
     private ShareFragmentButtonListener buttonListener;
 
     public keyShareActivityFragment() {
@@ -77,7 +66,9 @@ public class keyShareActivityFragment extends Fragment {
 
         shareKeyBtn = (Button) view.findViewById(R.id.ShareBtn);
         lock_unlock = (Switch) view.findViewById(R.id.lock_unlock);
-        enginestart = (Switch) view.findViewById(R.id.engine);
+        engine_start = (Switch) view.findViewById(R.id.engine);
+        trunk_lights = (Switch) view.findViewById(R.id.trunk_lights);
+        //auth_switch_grid = (GridLayout) view.findViewById(R.id.auth_switch_grid);
         userPages = (ViewPager) view.findViewById(R.id.userscroll);
         carPages = (ViewPager) view.findViewById(R.id.vehiclescroll);
         userheader = (TextView) view.findViewById(R.id.user);
@@ -91,11 +82,13 @@ public class keyShareActivityFragment extends Fragment {
         return view;
     }
 
-    public interface ShareFragmentButtonListener {
+    public interface ShareFragmentButtonListener
+    {
         public void onButtonCommand(String cmd);
     }
 
-    private View.OnClickListener l = new View.OnClickListener() {
+    private View.OnClickListener l = new View.OnClickListener()
+    {
         @Override
         public void onClick(View v) {
             switch(v.getId()) {
@@ -133,7 +126,8 @@ public class keyShareActivityFragment extends Fragment {
         e.printStackTrace();}
 
         Boolean lockSwitch = lock_unlock.isChecked();
-        Boolean engineSwitch = enginestart.isChecked();
+        Boolean engineSwitch = engine_start.isChecked();
+        Boolean trunkLights = trunk_lights.isChecked();
 
         String centerUser = getResources().getResourceEntryName(users[userPages.getCurrentItem()]);
         String centerVehicle = vins[carPages.getCurrentItem()];
@@ -142,9 +136,9 @@ public class keyShareActivityFragment extends Fragment {
         authServ.put(new JSONObject().put("lock", lockSwitch.toString()));
         authServ.put(new JSONObject().put("start", engineSwitch.toString()));
 
-        authServ.put(new JSONObject().put("trunk", "false"));
+        authServ.put(new JSONObject().put("trunk", trunkLights.toString()));
         authServ.put(new JSONObject().put("windows", "false"));
-        authServ.put(new JSONObject().put("lights", "false"));
+        authServ.put(new JSONObject().put("lights", trunkLights.toString()));
         authServ.put(new JSONObject().put("hazard", "false"));
         authServ.put(new JSONObject().put("horn", "false"));
 
@@ -331,9 +325,9 @@ public class keyShareActivityFragment extends Fragment {
         userPages.setAdapter(userPageAdapter);
         userPages.setOffscreenPageLimit(2);
         Log.d("ScrollPager", "Users");
-        userPages.setPageMargin(-500);
+        //userPages.setPageMargin(-500);
         userPages.setHorizontalFadingEdgeEnabled(true);
-        userPages.setFadingEdgeLength(50);
+        //userPages.setFadingEdgeLength(50);
     }
 
     public void showCarSelect(){
@@ -341,9 +335,9 @@ public class keyShareActivityFragment extends Fragment {
         carPages.setAdapter(carPageAdapter);
         carPages.setOffscreenPageLimit(2);
         Log.d("ScrollPager", "Vehicles");
-        carPages.setPageMargin(-500);
+        //carPages.setPageMargin(-500);
         carPages.setHorizontalFadingEdgeEnabled(true);
-        carPages.setFadingEdgeLength(50);
+        //carPages.setFadingEdgeLength(50);
     }
 
     private DatePickerDialog.OnDateSetListener dpickerListener
