@@ -3,9 +3,9 @@ RVI Mobile Unlock demo android app.
 
 App that will discover and iBeacon and try to establish a BT RFCOMM socket to the car.
 On the car side right now there is a Raspberry PI executing the Erlang RVI stack.
-The PI has to have BT scanning on and also BT LE announcment of the Beacon
+The PI has to have BT scanning on and also BT LE announcement of the Beacon
 
-```
+```Shell
 sudo hciconfig hci0 piscan leadv
 sudo hcitool -i hci0 cmd 0x08 0x0008 1E 02 01 1A 1A FF 4C 00 02 15 33 43 33 43 46 46 47 45 38 45 54 32 39 31 34 30 39 00 00 00 C5 00
 sudo hcitool -i hci0 cmd 0x08 0x0006 A0 00 A0 00 03 00 00 00 00 00 00 00 00 07 00
@@ -19,25 +19,35 @@ One good in particular is the Locate App
 
 
 # INSTALL
-Raspbian 
-rvi_0.4.0
-fob.py
-jsonrpclib + rvilib.py
-apt-get install  bluez
-/etc/rc.local
-/etc/bluetooth/main.conf Add
-  DisablePlugins = pnat
-
+- Raspbian
+- rvi_0.4.0
+- fob.py
+- jsonrpclib + rvilib.py
+- apt-get install  bluez
+- /etc/rc.local
+- /etc/bluetooth/main.conf Add DisablePlugins = pnat
 
 
 # TO BUILD
-sudo apt-get update
-apt-get install libbluetooth-dev
-apt-get install git
-apt-get install libssl-dev
-apt-get install libncurses-dev
-Unpack OTP R16B03
-./configure --prefix=/usr
-make
-make install
+- sudo apt-get update
+- apt-get install libbluetooth-dev
+- apt-get install git
+- apt-get install libssl-dev
+- apt-get install libncurses-dev
+- Unpack OTP R16B03
+- ./configure --prefix=/usr
+- make
+- make install
 
+
+# SET UP IN VEHICLE
+Default pin configuration is below, with all pins assumed to be active high:
+```Python
+GPIO_UNLOCK = 5
+GPIO_LOCK   = 6
+GPIO_LIGHTS = 13
+GPIO_TRUNK  = 19
+GPIO_PANIC  = 26
+GPIO_START  = 20
+GPIO_STOP   = 21
+```

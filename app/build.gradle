@@ -37,7 +37,8 @@ dependencies {
     //releaseWearApp project(path:':wear', configuration: 'release')
     compile 'com.android.support:appcompat-v7:22.0.0'
     compile 'com.google.android.gms:play-services:7.0.0'
-    compile group: 'com.google.guava', name: 'guava', version: '18.+'
+    compile 'com.rengwuxian.materialedittext:library:2.1.4'
+    compile(group: 'com.google.guava', name: 'guava', version: '18.0')
 }
 
 repositories {
