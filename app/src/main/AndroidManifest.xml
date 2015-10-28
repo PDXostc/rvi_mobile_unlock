@@ -29,7 +29,8 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".AdvancedPreferenceActivity" >
+        <activity android:name=".AdvancedPreferenceActivity"
+                  android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
 
