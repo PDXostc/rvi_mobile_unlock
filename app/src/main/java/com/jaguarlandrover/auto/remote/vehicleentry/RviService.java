@@ -38,6 +38,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.widget.TabHost;
 
+import com.google.gson.Gson;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -260,8 +261,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         String servicePtr = data.getString("service");
                         //ADD SERVICE HERE----*************
 
-                        Log.i(TAG, "Received Service : " + servicePtr);
-                        //Log.i(TAG, "Received Service : " + data);
+                        Log.i(TAG, "XX Received Service : " + servicePtr);
+                        Log.i(TAG, "XX Received Data : " + data);
                         //CERT SERVICE
                         if (servicePtr.equals(ss[0])) {
                             JSONArray params = data.getJSONArray("parameters");
@@ -282,6 +283,16 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             String[] token = RviProtocol.parseAndValidateJWT(jwt);
                             JSONObject key = new JSONObject(token[1]);
                             Log.d(TAG, "Token = " + key.toString(2));
+
+                            Gson gson = new Gson();
+                            Certificate certificateObj = null;
+
+                            try {
+                                certificateObj = gson.fromJson(key.toString(2), Certificate.class);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
                             sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
                                     "dialog", "New Key", key.getString("id"));
 

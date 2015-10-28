@@ -48,10 +48,11 @@ public class ServiceBundle
         /**
          * Callback for when a local service belonging to the bundle was invoked.
          *
+         * @param serviceBundle
          * @param serviceIdentifier the service identifier
          * @param parameters the parameters received in the invocation
          */
-        public void onServiceInvoked(String serviceIdentifier, Object parameters);
+        public void onServiceInvoked(ServiceBundle serviceBundle, String serviceIdentifier, Object parameters);
     }
 
     private ServiceBundleListener mListener;
@@ -222,7 +223,7 @@ public class ServiceBundle
      * @param service the service
      */
     void serviceInvoked(Service service) {
-        if (mListener != null) mListener.onServiceInvoked(service.getServiceIdentifier(), service.getParameters()); // TODO: This code can pass through a service that might not exist locally
+        if (mListener != null) mListener.onServiceInvoked(this, service.getServiceIdentifier(), service.getParameters()); // TODO: This code can pass through a service that might not exist locally
     }
 
     /**
