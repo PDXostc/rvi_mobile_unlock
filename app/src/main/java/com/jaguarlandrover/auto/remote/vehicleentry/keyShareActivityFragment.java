@@ -65,7 +65,7 @@ public class keyShareActivityFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_key_share, container, false);
 
         shareKeyBtn = (Button) view.findViewById(R.id.ShareBtn);
-        lock_unlock = (Switch) view.findViewById(R.id.lock_unlock);
+        lock_unlock = (Switch) view.findViewById(R.id.lockUnlock);
         engine_start = (Switch) view.findViewById(R.id.engine);
         trunk_lights = (Switch) view.findViewById(R.id.trunk_lights);
         //auth_switch_grid = (GridLayout) view.findViewById(R.id.auth_switch_grid);

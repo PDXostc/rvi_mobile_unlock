@@ -8,9 +8,6 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import java.util.ArrayList;
 
 /**
@@ -30,22 +27,19 @@ public class UsersAdapter extends ArrayAdapter<User>{
         }
 
         TextView name = (TextView) convertView.findViewById(R.id.name);
-        TextView vehicle = (TextView) convertView.findViewById(R.id.vehicle);
-        TextView valid_from = (TextView) convertView.findViewById(R.id.validfrom);
-        TextView valid_to = (TextView) convertView.findViewById(R.id.validto);
-        CheckBox lock_unlock = (CheckBox) convertView.findViewById(R.id.lock_unlock);
-        CheckBox engine_start = (CheckBox) convertView.findViewById(R.id.enginestart);
+        TextView vehicleName = (TextView) convertView.findViewById(R.id.vehicle_name);
+        TextView validFrom = (TextView) convertView.findViewById(R.id.valid_from);
+        TextView validTo = (TextView) convertView.findViewById(R.id.valid_to);
+        CheckBox lockUnlock = (CheckBox) convertView.findViewById(R.id.lock_unlock);
+        CheckBox engineStart = (CheckBox) convertView.findViewById(R.id.engine_start);
 
-        name.setText(user.username);
-        vehicle.setText(user.vehicle);
-        valid_from.setText(user.validfrom);
-        valid_to.setText(user.validto);
-        lock_unlock.setChecked(user.lock_unlock);
-        engine_start.setChecked(user.enginestart);
+        name.setText(user.getUserName());
+        vehicleName.setText(user.getVehicleName());
+        validFrom.setText(user.getValidFrom());
+        validTo.setText(user.getValidTo());
+        lockUnlock.setChecked(user.isLockUnlock());
+        engineStart.setChecked(user.isEngineStart());
 
         return convertView;
     }
-
-
-
 }

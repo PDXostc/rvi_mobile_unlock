@@ -264,7 +264,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         Log.i(TAG, "XX Received Service : " + servicePtr);
                         Log.i(TAG, "XX Received Data : " + data);
                         //CERT SERVICE
-                        if (servicePtr.equals(ss[0])) {
+                        if (servicePtr.equals(ss[0])) { /* "/dm/cert_provision" */
                             JSONArray params = data.getJSONArray("parameters");
                             Log.i(TAG, "Received Cert Params : " + params);
                             JSONObject p1 = params.getJSONObject(0);
@@ -296,7 +296,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
                                     "dialog", "New Key", key.getString("id"));
 
-                        } else if (servicePtr.equals(ss[1])) {
+                        } else if (servicePtr.equals(ss[1])) { /* "/dm/cert_response" */
                             String params = data.getString("parameters");
                             Log.i(TAG, "Received from Cloud Cert: " + params);
 
@@ -305,7 +305,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             e.putString("newKeyList", "true");
                             e.apply();
 
-                        } else if (servicePtr.equals(ss[2])) {
+                        } else if (servicePtr.equals(ss[2])) { /* "/dm/cert_accountdetails" */
                             JSONArray params = data.getJSONArray("parameters");
                             JSONObject p1 = params.getJSONObject(0);
                             Log.i(TAG, "User Data:" + p1);
@@ -315,7 +315,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             e.putString("newdata", "true");
                             e.commit();
 
-                        } else if (servicePtr.equals(ss[3])) {
+                        } else if (servicePtr.equals(ss[3])) { /* "/report/serviceinvokedbyguest" */
                             JSONArray params = data.getJSONArray("parameters");
                             JSONObject p1 = params.getJSONObject(0);
                             Log.i(TAG, "Service Invoked by Guest:" + p1);
