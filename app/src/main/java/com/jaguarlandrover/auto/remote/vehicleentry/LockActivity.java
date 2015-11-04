@@ -178,7 +178,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
         return super.onOptionsItemSelected(item);
     }
-    
+
 //    public void clickedStart(View v){
 //        SharedPreferences.Editor ed = sharedPref.edit();
 //        ed.putBoolean(LockActivityFragment.STOPPED_LBL, true);
@@ -241,8 +241,10 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         }
     }
     public JSONArray Request() throws JSONException {
+        SharedPreferences sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor e = sharedpref.edit();
         JSONObject request = new JSONObject();
-        request.put("vehicleVIN", "1234567890ABCDEFG");
+        request.put("vehicleVIN", lock_fragment.JSONParser(sharedpref.getString("Userdata", "Nothing There!!"), "vehicleVIN"));//"1234567890ABCDEFG");
 
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(request);
