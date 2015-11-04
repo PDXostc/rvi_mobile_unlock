@@ -216,10 +216,10 @@ public class RviService extends Service /* implements BeaconConsumer */{
         int rviPort = Integer.parseInt(prefs.getString("pref_rvi_server_port","8807"));
 
         //Create service vector
-        final String certProv = "jlr.com/mobile/" + getLocalNodeIdentifier() + "/dm/cert_provision";
-        final String certRsp = "jlr.com/mobile/"+ getLocalNodeIdentifier() +"/dm/cert_response";
-        final String certAccountDetails = "jlr.com/mobile/"+ getLocalNodeIdentifier() +"/dm/cert_accountdetails";
-        final String serviceInvokedByGuest = "jlr.com/mobile/"+ getLocalNodeIdentifier() +"/report/serviceinvokedbyguest";
+        final String certProv = "jlr.com/mobile/" + getLocalNodeIdentifier(this) + "/dm/cert_provision";
+        final String certRsp = "jlr.com/mobile/"+ getLocalNodeIdentifier(this) +"/dm/cert_response";
+        final String certAccountDetails = "jlr.com/mobile/"+ getLocalNodeIdentifier(this) +"/dm/cert_accountdetails";
+        final String serviceInvokedByGuest = "jlr.com/mobile/"+ getLocalNodeIdentifier(this) +"/report/serviceinvokedbyguest";
         final String[] ss = {certProv, certRsp, certAccountDetails, serviceInvokedByGuest};
 
         //final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
@@ -995,7 +995,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
             send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_create",json,"","");
             // Testing for dupe service invokes
             //send = RviProtocol.createRequestData(3, "jlr.com/backend/dm/cert_create", json.getJSONObject(0), "", "");
-            Log.d(TAG,"Successfully sent"+send.toString());
+            Log.d(TAG, "Successfully sent" + send.toString());
             // Testing for dupe service invokes
             Log.d("stack cloud send: ", Thread.currentThread().getStackTrace().toString());
             Thread.currentThread().getStackTrace();
@@ -1007,11 +1007,11 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
     }
 
-    public void requestAll(JSONArray json){
+    public static void requestAll(JSONArray json, Context ctx){
         JSONObject request;
         JSONObject uuid = new JSONObject();
         try{
-            uuid.put("mobileUUID", getLocalNodeIdentifier());
+            uuid.put("mobileUUID", getLocalNodeIdentifier(ctx));
             json.put(uuid);
             request = RviProtocol.createReceiveData(4, "jlr.com/backend/dm/cert_requestall", json, "", "");
             // Testing for dupe service invokes
@@ -1080,8 +1080,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
      * @param context the application context
      * @return the local prefix
      */
-    public  String getLocalNodeIdentifier() { // TODO: There is no easy way to reset this once it's stored, is there? Maybe an app version check?
+    public static String getLocalNodeIdentifier(Context context) { // TODO: There is no easy way to reset this once it's stored, is there? Maybe an app version check?
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String localServicePrefix;
 
         if ((localServicePrefix = prefs.getString(LOCAL_SERVICE_PREFIX_STRING, null)) == null)
