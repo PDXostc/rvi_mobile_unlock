@@ -189,7 +189,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     public void onButtonCommand(String cmd) {
         //TODO send to RVI service
-        rviService.service(cmd, LockActivity.this);
+        RviService.service(cmd, LockActivity.this);
     }
 
     public void keyUpdate(final String authServ, final String userType) {
@@ -231,8 +231,9 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                 break;
             case "keychange":
                 try {
-                    rviService.requestAll(Request());
+                    RviService.requestAll(Request(), LockActivity.this);
                     requestProgress = ProgressDialog.show(LockActivity.this, "","Retrieving keys...",true);
+
                     startRequest();
                 } catch (Exception e) {
                     e.printStackTrace();
