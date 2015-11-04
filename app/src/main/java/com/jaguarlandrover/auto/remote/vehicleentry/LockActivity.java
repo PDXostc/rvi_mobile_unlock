@@ -178,7 +178,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
         return super.onOptionsItemSelected(item);
     }
-    
+
 //    public void clickedStart(View v){
 //        SharedPreferences.Editor ed = sharedPref.edit();
 //        ed.putBoolean(LockActivityFragment.STOPPED_LBL, true);
@@ -189,7 +189,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     public void onButtonCommand(String cmd) {
         //TODO send to RVI service
-        rviService.service(cmd, LockActivity.this);
+        RviService.service(cmd, LockActivity.this);
     }
 
     public void keyUpdate(final String authServ, final String userType) {
@@ -231,8 +231,18 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                 break;
             case "keychange":
                 try {
-                    rviService.requestAll(Request());
+                    RviService.requestAll(Request(), LockActivity.this);
                     requestProgress = ProgressDialog.show(LockActivity.this, "","Retrieving keys...",true);
+
+                    requestProgress.setCancelable(true);
+                    requestProgress.setOnCancelListener(new DialogInterface.OnCancelListener()
+                    {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                             // TODO: ?
+                        }
+                    });
+                    
                     startRequest();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -241,8 +251,10 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         }
     }
     public JSONArray Request() throws JSONException {
+        SharedPreferences sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor e = sharedpref.edit();
         JSONObject request = new JSONObject();
-        request.put("vehicleVIN", "1234567890ABCDEFG");
+        request.put("vehicleVIN", lock_fragment.JSONParser(sharedpref.getString("Userdata", "Nothing There!!"), "vehicleVIN"));//"1234567890ABCDEFG");
 
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(request);

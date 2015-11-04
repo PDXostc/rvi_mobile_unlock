@@ -62,7 +62,7 @@ public abstract class RviProtocol {
     public static JSONObject createReceiveData(int tid, String service, JSONArray params, String cert, String sig) throws JSONException {
         JSONObject payload = new JSONObject();
         payload.put("service", service);
-        payload.put("timeout", 1433266704); //TODO
+        payload.put("timeout", System.currentTimeMillis() + 20000); //TODO
         payload.put("parameters", params);
         payload.put("certificate", cert);
         payload.put("signature", sig);
@@ -82,7 +82,7 @@ public abstract class RviProtocol {
     public static JSONObject createRequestData(int tid, String service, JSONObject params, String cert, String sig) throws JSONException {
         JSONObject payload = new JSONObject();
         payload.put("service", service);
-        payload.put("timeout", 1433266704); //TODO
+        payload.put("timeout", System.currentTimeMillis() + 20000); //TODO
         payload.put("parameters", params);
         payload.put("certificate", cert);
         payload.put("signature", sig);
