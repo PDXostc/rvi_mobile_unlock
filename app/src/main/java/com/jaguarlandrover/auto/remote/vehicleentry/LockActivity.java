@@ -234,6 +234,15 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                     RviService.requestAll(Request(), LockActivity.this);
                     requestProgress = ProgressDialog.show(LockActivity.this, "","Retrieving keys...",true);
 
+                    requestProgress.setCancelable(true);
+                    requestProgress.setOnCancelListener(new DialogInterface.OnCancelListener()
+                    {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                             // TODO: ?
+                        }
+                    });
+                    
                     startRequest();
                 } catch (Exception e) {
                     e.printStackTrace();
