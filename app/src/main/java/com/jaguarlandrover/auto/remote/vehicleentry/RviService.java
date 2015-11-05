@@ -1000,10 +1000,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
             }
 
         }
-
     }
 
-    public static void sendaKey(JSONArray json){
+    public static void sendKey(JSONArray json) {
         JSONObject send;
         try{
             send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_create",json,"","");
@@ -1018,7 +1017,6 @@ public class RviService extends Service /* implements BeaconConsumer */{
             e.printStackTrace();
             cloudSender.onError(e);
         }
-
     }
 
     public static void requestAll(JSONArray json, Context ctx){

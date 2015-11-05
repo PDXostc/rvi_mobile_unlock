@@ -195,14 +195,14 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         RviService.service(cmd, LockActivity.this);
     }
 
-    public void keyUpdate(final AuthorizedServices authorizedServices, final String userType) {
+    public void keyUpdate(final UserCredentials userCredentials) {
         AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
         builder.setInverseBackgroundForced(true);
         builder.setMessage("Key updates have been made").setCancelable(false).setPositiveButton("OK",
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        lock_fragment.setButtons(authorizedServices, userType);
+                        lock_fragment.setButtons(userCredentials);
                     }
                 });
         AlertDialog alert = builder.create();
@@ -267,7 +267,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
 
         if (userCredentials != null && PrefsWrapper.thereAreNewUserCredentials()) {
-            keyUpdate(userCredentials.getAuthorizedServices(), userCredentials.getUserType());
+            keyUpdate(userCredentials);
             PrefsWrapper.setThereAreNewUserCredentials(false);
         }
     }

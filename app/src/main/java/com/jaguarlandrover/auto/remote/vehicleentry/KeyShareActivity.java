@@ -25,8 +25,6 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
 
     KeyShareActivityFragment share_fragment;
 
-    private RviService rviservice;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,10 +66,9 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
                         try{
-                            rviservice.sendaKey(share_fragment.getFormData());
+                            RviService.sendKey(share_fragment.getFormData());
                             confirmationMessage();
-                            Log.d("Form", share_fragment.getFormData().toString());
-                        }catch (Exception e){
+                        } catch (Exception e) {
 
                         }
                         break;
@@ -81,6 +78,7 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
                 }
             }
         };
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Are you sure?")
                 .setPositiveButton("Share Key", dialogClickListener)
@@ -111,12 +109,13 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
 
     private void handleExtra(Intent intent) {
         Bundle extras = intent.getExtras();
-        if( extras != null && extras.size() > 0 ) {
+        if (extras != null && extras.size() > 0) {
             for(String k : extras.keySet()) {
                 Log.i(TAG, "k = " + k+" : "+extras.getString(k));
             }
         }
-        if( extras != null && "dialog".equals(extras.get("_extra1")) ) {
+
+        if (extras != null && "dialog".equals(extras.get("_extra1"))) {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setTitle(""+extras.get("_extra2"));
             alertDialogBuilder
@@ -152,42 +151,7 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
         }
     }
 
-    public JSONArray dummyData(){
-        JSONObject user = new JSONObject();
-        JSONObject authServices = new JSONObject();
-
-        try{
-            authServices.put("lock","false");
-            authServices.put("start","false");
-            authServices.put("trunk","false");
-            authServices.put("windows","false");
-            authServices.put("lights","false");
-            authServices.put("hazard","false");
-            authServices.put("horn","false");
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        try{
-            user.put("username", "arodriguez");
-            user.put("validTo", "2015-09-30T08:01:09.000Z");
-            user.put("validFrom", "2015-08-21T23:31:59.000Z");
-            user.put("vehicleVIN", "1234567890ABCDEFG");
-            user.put("authorizedServices", authServices);
-
-
-        }catch (JSONException e){
-            e.printStackTrace();
-        }
-
-        JSONArray jsonArray = new JSONArray();
-
-        jsonArray.put(user);
-        return jsonArray;
-    }
-
-
-    public void confirmationMessage(){
+    public void confirmationMessage() {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog, int which){
                 switch(which){
@@ -197,6 +161,7 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
                 }
             }
         };
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Key successfully shared")
                 .setPositiveButton("Ok", dialogClickListener).show();

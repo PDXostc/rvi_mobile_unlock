@@ -99,7 +99,8 @@ public class KeyRevokeActivity extends ActionBarActivity {
 
             revokeKey.put(payload);
             revokeKeyOuter.put(revokeKey);
-            Log.d("REVOKE_OLD", revokeKeyOuter.toString());
+
+            Log.d("REVOKE_OLD", revokeKey.toString());
 
             /* New code */
             UserCredentials revokingCredentials = new UserCredentials();

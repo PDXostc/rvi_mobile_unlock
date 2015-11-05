@@ -33,7 +33,7 @@ public class UserCredentials
     private String mValidToFormatted = null;
 
     @SerializedName("userType")
-    private String mUserType;
+    private String mUserType = "guest";
 
     @SerializedName("guests")
     private ArrayList<String> mGuests;
@@ -47,8 +47,8 @@ public class UserCredentials
     @SerializedName("certid")
     private String mCertId;
 
-    private boolean mLockUnlock;
-    private boolean mEngineStart;
+//    private boolean mLockUnlock;
+//    private boolean mEngineStart;
 
     UserCredentials() {
     }
@@ -167,21 +167,24 @@ public class UserCredentials
     }
 
     public boolean isLockUnlock() {
-        if (mAuthorizedServices != null) return mAuthorizedServices.isLock();
-        else return mLockUnlock; // TODO: Remove when done refactoring
+        return mAuthorizedServices.isLock();
+//        if (mAuthorizedServices != null) return mAuthorizedServices.isLock();
+//        else return mLockUnlock; // TODO: Remove when done refactoring
     }
 
     public void setLockUnlock(boolean lockUnlock) {
-        this.mLockUnlock = lockUnlock;
+        mAuthorizedServices.setLock(lockUnlock);
     }
 
     public boolean isEngineStart() {
-        if (mAuthorizedServices != null) return mAuthorizedServices.isEngine();
-        else return mEngineStart; // TODO: Remove when done refactoring
+        return mAuthorizedServices.isEngine();
+//        if (mAuthorizedServices != null) return mAuthorizedServices.isEngine();
+//        else return mEngineStart; // TODO: Remove when done refactoring
     }
 
     public void setEngineStart(boolean engineStart) {
-        this.mEngineStart = engineStart;
+        mAuthorizedServices.setEngine(engineStart);
+//        this.mEngineStart = engineStart;
     }
 
     public String getUserType() {

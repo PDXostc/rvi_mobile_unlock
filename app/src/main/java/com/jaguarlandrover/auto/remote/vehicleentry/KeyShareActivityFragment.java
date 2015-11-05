@@ -72,8 +72,12 @@ public class KeyShareActivityFragment extends Fragment {
         userPages = (ViewPager) view.findViewById(R.id.userscroll);
         carPages = (ViewPager) view.findViewById(R.id.vehiclescroll);
         userheader = (TextView) view.findViewById(R.id.user);
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        userheader.setText(sharedPref.getString("user", "unknown"));
+
+        UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
+        if (userCredentials != null) {
+            userheader.setText(userCredentials.getUserName());
+        }
+
         shareKeyBtn.setOnClickListener(l);
         buttonListener = (ShareFragmentButtonListener) getActivity();
 
@@ -100,7 +104,11 @@ public class KeyShareActivityFragment extends Fragment {
     };
 
 
-    public JSONArray getFormData() throws JSONException{
+    public JSONArray getFormData() throws JSONException {
+        String centerUser = getResources().getResourceEntryName(users[userPages.getCurrentItem()]);
+        String centerVehicle = vins[carPages.getCurrentItem()];
+
+        /* Old code */
         String start = null;
         String end = null;
         String end_time=null;
@@ -129,9 +137,6 @@ public class KeyShareActivityFragment extends Fragment {
         Boolean engineSwitch = engine_start.isChecked();
         Boolean trunkLights = trunk_lights.isChecked();
 
-        String centerUser = getResources().getResourceEntryName(users[userPages.getCurrentItem()]);
-        String centerVehicle = vins[carPages.getCurrentItem()];
-
         JSONArray authServ = new JSONArray();
         authServ.put(new JSONObject().put("lock", lockSwitch.toString()));
         authServ.put(new JSONObject().put("start", engineSwitch.toString()));
@@ -152,6 +157,29 @@ public class KeyShareActivityFragment extends Fragment {
 
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(payload);
+
+        Log.d("SHARE_OLD", jsonArray.toString());
+
+        /* New code */
+        UserCredentials shareCredentials = new UserCredentials();
+
+        try {
+            shareCredentials.setValidFrom(convertTime(starttime.getText().toString()));
+            shareCredentials.setValidTo(convertTime(endtime.getText().toString()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        shareCredentials.setUserName(centerUser);
+        shareCredentials.setVehicleVin(centerVehicle);
+
+        shareCredentials.getAuthorizedServices().setEngine(engine_start.isChecked());
+        shareCredentials.getAuthorizedServices().setLights(trunk_lights.isChecked());
+        shareCredentials.getAuthorizedServices().setLock(lock_unlock.isChecked());
+        shareCredentials.getAuthorizedServices().setTrunk(trunk_lights.isChecked());
+
+        Log.d("SHARE_NEW", shareCredentials.toString());
+
         return jsonArray;
     }
 
@@ -162,7 +190,7 @@ public class KeyShareActivityFragment extends Fragment {
         return displayFormat.format(date);
     }
 
-    public void showDialog(){
+    public void showDialog() {
         final Calendar cal = Calendar.getInstance();
         year_x = cal.get(Calendar.YEAR);
         month_x = cal.get(Calendar.MONTH);
