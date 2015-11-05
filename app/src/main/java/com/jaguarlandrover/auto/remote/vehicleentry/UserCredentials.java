@@ -2,7 +2,7 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.util.Log;
 
-import com.google.common.escape.Escaper;
+import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,7 +16,8 @@ import java.util.TimeZone;
 /**
  * Created by rdz on 8/12/2015.
  */
-public class User {
+public class UserCredentials
+{
     @SerializedName("username")
     private String mUserName;
 
@@ -24,11 +25,11 @@ public class User {
     private String mVehicleVin;
 
     @SerializedName("validFrom")
-    private String mValidFrom;
+    private String mValidFrom          = "1971-09-09T22:00:00.000Z";
     private String mValidFromFormatted = null;
 
     @SerializedName("validTo")
-    private String mValidTo;
+    private String mValidTo          = "1971-09-09T23:00:00.000Z";
     private String mValidToFormatted = null;
 
     @SerializedName("userType")
@@ -41,16 +42,18 @@ public class User {
     private String mVehicleName;
 
     @SerializedName("authorizedServices")
-    private AuthorizedServices mAuthorizedServices;
+    private AuthorizedServices mAuthorizedServices = new AuthorizedServices();
 
-    private String  mCertId;
+    @SerializedName("certid")
+    private String mCertId;
+
     private boolean mLockUnlock;
     private boolean mEngineStart;
 
-    User() {
+    UserCredentials() {
     }
 
-    public User(String userName, String vehicle, String validFrom, String validTo, boolean lockUnlock, boolean engineStart) {
+    public UserCredentials(String userName, String vehicle, String validFrom, String validTo, boolean lockUnlock, boolean engineStart) {
         this.setUserName(userName);
         this.setVehicleVin(vehicle);
         this.setValidFrom(validFrom);
@@ -59,7 +62,7 @@ public class User {
         this.setEngineStart(engineStart);
     }
 
-    public User(JSONObject object) {
+    public UserCredentials(JSONObject object) {
         try {
             this.setUserName(object.getString("username"));
             String start = object.getString("validFrom").substring(0, 23);
@@ -87,17 +90,17 @@ public class User {
         }
     }
 
-    public static ArrayList<User> fromJson(JSONArray jsonobjects) {//,LinearLayout layout, keyRevokeActivity activity){
-        ArrayList<User> users = new ArrayList<User>();
+    public static ArrayList<UserCredentials> fromJson(JSONArray jsonobjects) {//,LinearLayout layout, keyRevokeActivity activity){
+        ArrayList<UserCredentials> userCredentialses = new ArrayList<UserCredentials>();
         for(int i=0; i <jsonobjects.length();i++){
             try{
-                users.add(new User(jsonobjects.getJSONObject(i)));
+                userCredentialses.add(new UserCredentials(jsonobjects.getJSONObject(i)));
                 //Log.i("DATA", jsonobjects.getJSONObject(i).toString());
             }catch(JSONException e){
                 e.printStackTrace();
             }
         }
-        return users;
+        return userCredentialses;
     }
 
     private String newFormat(String oldFormat) {
@@ -211,6 +214,12 @@ public class User {
 
     public void setAuthorizedServices(AuthorizedServices authorizedServices) {
         mAuthorizedServices = authorizedServices;
+    }
+
+    @Override
+    public String toString() {
+        Gson gson = new Gson();
+        return gson.toJson(this, UserCredentials.class);
     }
 }
 

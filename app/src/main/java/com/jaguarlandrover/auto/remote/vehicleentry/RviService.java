@@ -9,8 +9,6 @@
 
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -18,27 +16,24 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
-import android.nfc.Tag;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Log;
-import android.widget.TabHost;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,13 +44,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
@@ -304,8 +298,10 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             e.putString("newKeyList", "true");
                             e.apply();
 
-                            ArrayList remoteKeys = gson.fromJson(params, ArrayList.class);
-                            PrefsWrapper.setRemoteKeys(remoteKeys);
+                            Type collectionType = new TypeToken<Collection<UserCredentials>>(){}.getType();
+                            Collection<UserCredentials> remoteCredentials = gson.fromJson(gson.toJson(gson.fromJson(params, HashMap.class).get("certificates")), collectionType);
+
+                            PrefsWrapper.setRemoteCredentialsList(remoteCredentials);
 
                         } else if (servicePtr.equals(ss[2])) { /* "/dm/cert_accountdetails" */
                             JSONArray params = data.getJSONArray("parameters");
@@ -317,8 +313,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             e.putString("newdata", "true");
                             e.commit();
 
-                            User user = gson.fromJson(p1.toString(), User.class);
-                            PrefsWrapper.setUser(user);
+                            UserCredentials userCredentials = gson.fromJson(p1.toString(), UserCredentials.class);
+                            PrefsWrapper.setUserCredentials(userCredentials);
 
                         } else if (servicePtr.equals(ss[3])) { /* "/report/serviceinvokedbyguest" */
                             JSONArray params = data.getJSONArray("parameters");

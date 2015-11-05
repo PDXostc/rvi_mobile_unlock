@@ -90,12 +90,12 @@ public class LockActivityFragment extends Fragment {
         keyManagementLayout = (LinearLayout) view.findViewById(R.id.key_management_layout);
 //        panicOn = (Button) view.findViewById(R.id.panicOn);
 
-        User user = PrefsWrapper.getUser();
+        UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
 
-        if (user == null) {
+        if (userCredentials == null) {
             setButtons(new AuthorizedServices(), "guest");
         } else {
-            setButtons(user.getAuthorizedServices(), user.getUserType());
+            setButtons(userCredentials.getAuthorizedServices(), userCredentials.getUserType());
         }
 
         buttonSet = new Handler();

@@ -13,7 +13,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -257,7 +256,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
     public JSONArray Request() throws JSONException, java.lang.NullPointerException {
         JSONObject request = new JSONObject();
-        request.put("vehicleVIN", PrefsWrapper.getUser().getVehicleVin());
+        request.put("vehicleVIN", PrefsWrapper.getUserCredentials().getVehicleVin());
 
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(request);
@@ -265,27 +264,27 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     }
 
     public void checkForKeys() {
-        User user = PrefsWrapper.getUser();
+        UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
 
-        if (user != null && PrefsWrapper.thereIsNewUserData()) {
-            keyUpdate(user.getAuthorizedServices(), user.getUserType());
-            PrefsWrapper.setThereIsNewUserData(false);
+        if (userCredentials != null && PrefsWrapper.thereAreNewUserCredentials()) {
+            keyUpdate(userCredentials.getAuthorizedServices(), userCredentials.getUserType());
+            PrefsWrapper.setThereAreNewUserCredentials(false);
         }
     }
 
     public void checkForGuestActivity() {
         InvokedServiceReport report = PrefsWrapper.getInvokedServiceReport();
 
-        if (report != null && PrefsWrapper.thereIsNewGuestActivity()) {
+        if (report != null && PrefsWrapper.thereIsNewInvokedServiceReport()) {
             notififyGuestUsedKey(report.getUserName(), report.getServiceIdentifier());
-            PrefsWrapper.setThereIsNewGuestActivity(false);
+            PrefsWrapper.setThereIsNewInvokedServiceReport(false);
         }
     }
 
     public void requestComplete() {
-        if (PrefsWrapper.keyListIsUpdated()) {
+        if (PrefsWrapper.thereAreNewRemoteCredentials()) {
             done();
-            PrefsWrapper.setKeyListIsUpdated(false);
+            PrefsWrapper.setThereAreNewRemoteCredentials(false);
             requestProgress.dismiss();
             Intent intent = new Intent();
             intent.setClass(LockActivity.this, keyRevokeActivity.class);

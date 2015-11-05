@@ -10,42 +10,38 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.CheckBox;
-import android.widget.Gallery;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.Collection;
 
 
 public class keyRevokeActivity extends ActionBarActivity {
     LinearLayout layout;
     SharedPreferences sharedpref;
-    int Item ;
-    RviService rviService;
+    int mPosition;
+    RviService   rviService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_key_change);
         sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
-        ArrayList<User> arrayofusers = new ArrayList<User>();
+        ArrayList<UserCredentials> arrayofusers = new ArrayList<UserCredentials>();
         //layout = (LinearLayout) findViewById(R.id.userlayout);
 
         UsersAdapter adapter = new UsersAdapter(this, arrayofusers);
         ListView listView = (ListView) findViewById(R.id.sharedKeys);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Item = position;
+                mPosition = position;
                 alertMessage();
             }
         });
@@ -53,14 +49,15 @@ public class keyRevokeActivity extends ActionBarActivity {
         addUsers(adapter);
 
     }
+
     public void alertMessage(){
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog, int which){
                 switch(which){
                     case DialogInterface.BUTTON_POSITIVE:
                         try{
-                            rviService.revokeKey(selectKey());//share_fragment.getFormData());
-                        }catch (Exception e){
+                            RviService.revokeKey(selectKey());//share_fragment.getFormData());
+                        } catch (Exception e){
 
                         }
                         finish();
@@ -77,14 +74,15 @@ public class keyRevokeActivity extends ActionBarActivity {
                 .setNegativeButton("Cancel", dialogClickListener).show();
     }
 
-    public JSONArray selectKey(){
+    public JSONArray selectKey() {
         JSONArray revokeKeyOuter = new JSONArray();
         JSONArray revokeKey = new JSONArray();
 
         try {
+            /* Old code */
             JSONObject jsonObject = new JSONObject(sharedpref.getString("Certificates", "NOTHING here"));
             JSONArray jsonArray = jsonObject.getJSONArray("certificates");
-            JSONObject key = jsonArray.getJSONObject(Item);
+            JSONObject key = jsonArray.getJSONObject(mPosition);
 
             JSONObject payload = new JSONObject();
             JSONArray authServices = new JSONArray();
@@ -104,8 +102,22 @@ public class keyRevokeActivity extends ActionBarActivity {
 
             revokeKey.put(payload);
             revokeKeyOuter.put(revokeKey);
-            Log.d("REVOKE", revokeKeyOuter.toString());
-        } catch (Exception e){e.printStackTrace();}
+            Log.d("REVOKE_OLD", revokeKeyOuter.toString());
+
+            /* New code */
+            Collection<UserCredentials> remoteCredentialsList = PrefsWrapper.getRemoteCredentialsList();
+            assert remoteCredentialsList != null;
+            UserCredentials[] remoteCredsArray = remoteCredentialsList.toArray(new UserCredentials[0]);
+
+            UserCredentials remoteCredentials = remoteCredsArray[mPosition];//.get(mPosition);
+            UserCredentials revokingCredentials = new UserCredentials();
+
+            revokingCredentials.setCertId(remoteCredentials.getCertId());
+
+            Log.d("REVOKE_NEW", revokingCredentials.toString());
+
+        } catch (Exception e) { e.printStackTrace(); }
+
         return revokeKey;
     }
 
@@ -113,8 +125,8 @@ public class keyRevokeActivity extends ActionBarActivity {
                 try{
                     JSONObject jsonObject=new JSONObject(sharedpref.getString("Certificates","NOTHING here"));
                     JSONArray jsonArray = jsonObject.getJSONArray("certificates");
-                    ArrayList<User> newUsers = User.fromJson(jsonArray);//, layout, this);
-                    adapter.addAll(newUsers);
+                    ArrayList<UserCredentials> newUserCredentialses = UserCredentials.fromJson(jsonArray);//, layout, this);
+                    adapter.addAll(newUserCredentialses);
                 }catch(Exception e){e.printStackTrace();}
 
     }

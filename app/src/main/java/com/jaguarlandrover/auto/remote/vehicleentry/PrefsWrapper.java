@@ -17,20 +17,25 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 
 public class PrefsWrapper
 {
-    private final static String TAG                        = "UnlockDemo:PrefsWrapper";
-    private final static String NEW_CERTIFICATE_DATA_KEY   = "NEW_CERTIFICATE_DATA_KEY";
-    private final static String CERTIFICATE_DATA_KEY       = "CERTIFICATE_DATA_KEY";
-    private final static String NEW_USER_DATA_KEY          = "NEW_DATA_KEY";
-    private final static String USER_DATA_KEY              = "USER_DATA_KEY";
-    private final static String UPDATED_KEY_LIST_KEY       = "UPDATED_KEY_LIST_KEY";
-    private final static String REMOTE_KEY_LIST_KEY        = "REMOTE_KEY_LIST_KEY";
-    private final static String NEW_GUEST_ACTIVITY_KEY     = "NEW_ACTIVITY_KEY";
-    private final static String INVOKED_SERVICE_REPORT_KEY = "INVOKED_SERVICE_REPORT_KEY";
+    private final static String TAG                             = "UnlockDemo:PrefsWrapper";
+
+    private final static String NEW_CERTIFICATE_DATA_KEY        = "NEW_CERTIFICATE_DATA_KEY";
+    private final static String CERTIFICATE_DATA_KEY            = "CERTIFICATE_DATA_KEY";
+    private final static String NEW_USER_CREDENTIALS_KEY        = "NEW_USER_CREDENTIALS_KEY";
+    private final static String USER_CREDENTIALS_KEY            = "USER_CREDENTIALS_KEY";
+    private final static String NEW_REMOTE_CREDENTIALS_LIST_KEY = "NEW_REMOTE_CREDENTIALS_LIST_KEY";
+    private final static String REMOTE_CREDENTIALS_LIST_KEY     = "REMOTE_CREDENTIALS_LIST_KEY";
+    private final static String NEW_INVOKED_SERVICE_REPORT_KEY  = "NEW_INVOKED_SERVICE_REPORT_KEY";
+    private final static String INVOKED_SERVICE_REPORT_KEY      = "INVOKED_SERVICE_REPORT_KEY";
 
     private static PrefsWrapper             ourInstance = new PrefsWrapper();
     private static SharedPreferences        prefs       = PreferenceManager.getDefaultSharedPreferences(UnlockApplication.getContext());
@@ -60,36 +65,38 @@ public class PrefsWrapper
         PrefsWrapper.setThereIsNewCertificateData(true);
     }
 
-    public static User getUser() {
-        String userStr = prefs.getString(USER_DATA_KEY, null);
+    public static UserCredentials getUserCredentials() {
+        String userStr = prefs.getString(USER_CREDENTIALS_KEY, null);
 
         if (userStr == null) return null;
 
-        return gson.fromJson(userStr, User.class);
+        return gson.fromJson(userStr, UserCredentials.class);
     }
 
-    public static void setUser(User user) {
-        String userStr = gson.toJson(user, User.class);
-        editor.putString(USER_DATA_KEY, userStr);
+    public static void setUserCredentials(UserCredentials userCredentials) {
+        String userStr = gson.toJson(userCredentials, UserCredentials.class);
+        editor.putString(USER_CREDENTIALS_KEY, userStr);
         editor.commit();
 
-        PrefsWrapper.setThereIsNewUserData(true);
+        PrefsWrapper.setThereAreNewUserCredentials(true);
     }
 
-    public static ArrayList getRemoteKeys() {
-        String keysStr = prefs.getString(REMOTE_KEY_LIST_KEY, null);
+    public static Collection<UserCredentials> getRemoteCredentialsList() {
+        String credListStr = prefs.getString(REMOTE_CREDENTIALS_LIST_KEY, null);
 
-        if (keysStr == null) return null;
+        if (credListStr == null) return null;
 
-        return gson.fromJson(keysStr, ArrayList.class);
+        Type collectionType = new TypeToken<Collection<UserCredentials>>(){}.getType();
+        return gson.fromJson(credListStr, collectionType);
     }
 
-    public static void setRemoteKeys(ArrayList keys) {
-        String keysStr = gson.toJson(keys, ArrayList.class);
-        editor.putString(REMOTE_KEY_LIST_KEY, keysStr);
+    public static void setRemoteCredentialsList(Collection<UserCredentials> keys) {
+        Type collectionType = new TypeToken<Collection<UserCredentials>>(){}.getType();
+        String credListStr = gson.toJson(keys, collectionType);
+        editor.putString(REMOTE_CREDENTIALS_LIST_KEY, credListStr);
         editor.commit();
 
-        PrefsWrapper.setKeyListIsUpdated(true);
+        PrefsWrapper.setThereAreNewRemoteCredentials(true);
     }
 
     public static InvokedServiceReport getInvokedServiceReport() {
@@ -105,7 +112,7 @@ public class PrefsWrapper
         editor.putString(INVOKED_SERVICE_REPORT_KEY, reportStr);
         editor.commit();
 
-        PrefsWrapper.setThereIsNewGuestActivity(true);
+        PrefsWrapper.setThereIsNewInvokedServiceReport(true);
     }
 
     public static Boolean thereIsNewCertificateData() {
@@ -117,30 +124,30 @@ public class PrefsWrapper
         editor.commit();
     }
 
-    public static Boolean thereIsNewUserData() {
-        return prefs.getBoolean(NEW_USER_DATA_KEY, false);
+    public static Boolean thereAreNewUserCredentials() {
+        return prefs.getBoolean(NEW_USER_CREDENTIALS_KEY, false);
     }
 
-    public static void setThereIsNewUserData(Boolean isNewData) {
-        editor.putBoolean(NEW_USER_DATA_KEY, isNewData);
+    public static void setThereAreNewUserCredentials(Boolean areNewCredentials) {
+        editor.putBoolean(NEW_USER_CREDENTIALS_KEY, areNewCredentials);
         editor.commit();
     }
 
-    public static Boolean keyListIsUpdated() {
-        return prefs.getBoolean(UPDATED_KEY_LIST_KEY, false);
+    public static Boolean thereAreNewRemoteCredentials() {
+        return prefs.getBoolean(NEW_REMOTE_CREDENTIALS_LIST_KEY, false);
     }
 
-    public static void setKeyListIsUpdated(Boolean isNewData) {
-        editor.putBoolean(UPDATED_KEY_LIST_KEY, isNewData);
+    public static void setThereAreNewRemoteCredentials(Boolean areNewCredentials) {
+        editor.putBoolean(NEW_REMOTE_CREDENTIALS_LIST_KEY, areNewCredentials);
         editor.commit();
     }
 
-    public static Boolean thereIsNewGuestActivity() {
-        return prefs.getBoolean(NEW_GUEST_ACTIVITY_KEY, false);
+    public static Boolean thereIsNewInvokedServiceReport() {
+        return prefs.getBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, false);
     }
 
-    public static void setThereIsNewGuestActivity(Boolean isNewActivity) {
-        editor.putBoolean(NEW_GUEST_ACTIVITY_KEY, isNewActivity);
+    public static void setThereIsNewInvokedServiceReport(Boolean isNewReport) {
+        editor.putBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, isNewReport);
         editor.commit();
     }
 

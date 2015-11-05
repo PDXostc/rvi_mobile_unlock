@@ -13,14 +13,14 @@ import java.util.ArrayList;
 /**
  * Created by rdz on 8/13/2015.
  */
-public class UsersAdapter extends ArrayAdapter<User>{
-    public UsersAdapter(Context context, ArrayList<User> users){
-        super(context, 0, users);
+public class UsersAdapter extends ArrayAdapter<UserCredentials>{
+    public UsersAdapter(Context context, ArrayList<UserCredentials> userCredentialses){
+        super(context, 0, userCredentialses);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent){
-        User user = getItem(position);
+        UserCredentials userCredentials = getItem(position);
 
         if(convertView == null){
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.user_layout, parent, false);
@@ -33,12 +33,12 @@ public class UsersAdapter extends ArrayAdapter<User>{
         CheckBox lockUnlock = (CheckBox) convertView.findViewById(R.id.lock_unlock);
         CheckBox engineStart = (CheckBox) convertView.findViewById(R.id.engine_start);
 
-        name.setText(user.getUserName());
-        vehicleName.setText(user.getVehicleName());
-        validFrom.setText(user.getValidFrom());
-        validTo.setText(user.getValidTo());
-        lockUnlock.setChecked(user.isLockUnlock());
-        engineStart.setChecked(user.isEngineStart());
+        name.setText(userCredentials.getUserName());
+        vehicleName.setText(userCredentials.getVehicleName());
+        validFrom.setText(userCredentials.getValidFrom());
+        validTo.setText(userCredentials.getValidTo());
+        lockUnlock.setChecked(userCredentials.isLockUnlock());
+        engineStart.setChecked(userCredentials.isEngineStart());
 
         return convertView;
     }
