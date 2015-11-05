@@ -23,19 +23,15 @@ import java.util.Collection;
 
 public class keyRevokeActivity extends ActionBarActivity {
     LinearLayout layout;
-    SharedPreferences sharedpref;
     int mPosition;
-    RviService   rviService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_key_change);
-        sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
         ArrayList<UserCredentials> arrayofusers = new ArrayList<UserCredentials>();
-        //layout = (LinearLayout) findViewById(R.id.userlayout);
 
-        UsersAdapter adapter = new UsersAdapter(this, arrayofusers);
+        RemoteCredentialsAdapter adapter = new RemoteCredentialsAdapter(this, arrayofusers);
         ListView listView = (ListView) findViewById(R.id.sharedKeys);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
@@ -45,9 +41,9 @@ public class keyRevokeActivity extends ActionBarActivity {
                 alertMessage();
             }
         });
+
         listView.setAdapter(adapter);
         addUsers(adapter);
-
     }
 
     public void alertMessage(){
@@ -68,6 +64,7 @@ public class keyRevokeActivity extends ActionBarActivity {
                 }
             }
         };
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Are you sure?")
                 .setPositiveButton("Revoke Key", dialogClickListener)
@@ -79,11 +76,11 @@ public class keyRevokeActivity extends ActionBarActivity {
         JSONArray revokeKey = new JSONArray();
 
         try {
-            /* Old code */
-            JSONObject jsonObject = new JSONObject(sharedpref.getString("Certificates", "NOTHING here"));
-            JSONArray jsonArray = jsonObject.getJSONArray("certificates");
-            JSONObject key = jsonArray.getJSONObject(mPosition);
+            ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(PrefsWrapper.getRemoteCredentialsList());
 
+            UserCredentials selectedRemoteCredentials = remoteCredentialsList.get(mPosition);
+
+            /* Old code */
             JSONObject payload = new JSONObject();
             JSONArray authServices = new JSONArray();
 
@@ -98,21 +95,16 @@ public class keyRevokeActivity extends ActionBarActivity {
             payload.put("authorizedServices", authServices);
             payload.put("validTo", "1971-09-09T23:00:00.000Z");
             payload.put("validFrom", "1971-09-09T22:00:00.000Z");
-            payload.put("certid", key.getString("certid"));
+            payload.put("certid", selectedRemoteCredentials.getCertId());
 
             revokeKey.put(payload);
             revokeKeyOuter.put(revokeKey);
             Log.d("REVOKE_OLD", revokeKeyOuter.toString());
 
             /* New code */
-            Collection<UserCredentials> remoteCredentialsList = PrefsWrapper.getRemoteCredentialsList();
-            assert remoteCredentialsList != null;
-            UserCredentials[] remoteCredsArray = remoteCredentialsList.toArray(new UserCredentials[0]);
-
-            UserCredentials remoteCredentials = remoteCredsArray[mPosition];//.get(mPosition);
             UserCredentials revokingCredentials = new UserCredentials();
 
-            revokingCredentials.setCertId(remoteCredentials.getCertId());
+            revokingCredentials.setCertId(selectedRemoteCredentials.getCertId());
 
             Log.d("REVOKE_NEW", revokingCredentials.toString());
 
@@ -121,15 +113,16 @@ public class keyRevokeActivity extends ActionBarActivity {
         return revokeKey;
     }
 
-    public void addUsers(UsersAdapter adapter){
-                try{
-                    JSONObject jsonObject=new JSONObject(sharedpref.getString("Certificates","NOTHING here"));
-                    JSONArray jsonArray = jsonObject.getJSONArray("certificates");
-                    ArrayList<UserCredentials> newUserCredentialses = UserCredentials.fromJson(jsonArray);//, layout, this);
-                    adapter.addAll(newUserCredentialses);
-                }catch(Exception e){e.printStackTrace();}
+    public void addUsers(RemoteCredentialsAdapter adapter){
+        try {
+            ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(PrefsWrapper.getRemoteCredentialsList());
 
+            adapter.addAll(remoteCredentialsList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

@@ -13,9 +13,9 @@ import java.util.ArrayList;
 /**
  * Created by rdz on 8/13/2015.
  */
-public class UsersAdapter extends ArrayAdapter<UserCredentials>{
-    public UsersAdapter(Context context, ArrayList<UserCredentials> userCredentialses){
-        super(context, 0, userCredentialses);
+public class RemoteCredentialsAdapter extends ArrayAdapter<UserCredentials>{
+    public RemoteCredentialsAdapter(Context context, ArrayList<UserCredentials> remoteCredentials){
+        super(context, 0, remoteCredentials);
     }
 
     @Override
