@@ -217,25 +217,25 @@ public class User {
 class AuthorizedServices
 {
     @SerializedName("engine")
-    private boolean mEngine;
+    private boolean mEngine = false;
 
     @SerializedName("windows")
-    private boolean mWindows;
+    private boolean mWindows = false;
 
     @SerializedName("lock")
-    private boolean mLock;
+    private boolean mLock = false;
 
     @SerializedName("hazard")
-    private boolean mHazard;
+    private boolean mHazard = false;
 
     @SerializedName("horn")
-    private boolean mHorn;
+    private boolean mHorn = false;
 
     @SerializedName("lights")
-    private boolean mLights;
+    private boolean mLights = false;
 
     @SerializedName("trunk")
-    private boolean mTrunk;
+    private boolean mTrunk = false;
 
     AuthorizedServices() {}
 

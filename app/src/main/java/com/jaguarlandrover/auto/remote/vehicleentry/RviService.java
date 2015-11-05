@@ -67,20 +67,22 @@ import rx.subjects.PublishSubject;
 
 public class RviService extends Service /* implements BeaconConsumer */{
     private static final String TAG = "RVI:RVIService";
-    private ConnectivityManager cm;
-    private static TelephonyManager tm;
-    private ConcurrentHashMap<String,Long> visible = new ConcurrentHashMap<String, Long>();
-    private static double latit =0;
-    private static double longi=0;
+    private        ConnectivityManager cm;
+    private static TelephonyManager    tm;
+    private        ConcurrentHashMap<String, Long> visible = new ConcurrentHashMap<String, Long>();
+    private static double                          latit   = 0;
+    private static double                          longi   = 0;
     private static Location location;
     LocationManager locationManager;
     //private int timeoutSec = 10; //If beacon did not report in 10 sec then remove
 
     private BluetoothAdapter bluetoothAdapter;
 
-    private static boolean connected = false;
+    private Gson gson = new Gson();
+
+    private static boolean connected  = false;
     private static boolean connecting = false;
-    private static boolean unlocked = false;
+    private static boolean unlocked   = false;
 
     //ScheduledExecutorService executorService = null;
 
@@ -88,7 +90,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
     //public static final String[] SUPPORTED_SERVICES = new String[1];
 
-    private static final ConcurrentHashMap<String,String> certs = new ConcurrentHashMap<String,String>(1);
+    private static final ConcurrentHashMap<String, String> certs = new ConcurrentHashMap<String, String>(1);
 
     public RviService() {
     }
@@ -98,7 +100,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
      * runs in the same process as its clients, we don't need to deal with
      * IPC.
      */
-    public class RviBinder extends Binder {
+    public class RviBinder extends Binder
+    {
         RviService getService() {
             return RviService.this;
         }
@@ -109,8 +112,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate Service");
-        locationManager=    (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        LocationListener locationListener = new LocationListener() {
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        LocationListener locationListener = new LocationListener()
+        {
             @Override
             public void onLocationChanged(Location location) {
                 latit = location.getLatitude();
@@ -284,14 +288,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             JSONObject key = new JSONObject(token[1]);
                             Log.d(TAG, "Token = " + key.toString(2));
 
-                            Gson gson = new Gson();
-                            Certificate certificateObj = null;
-
-                            try {
-                                certificateObj = gson.fromJson(key.toString(2), Certificate.class);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            Certificate certificate = gson.fromJson(key.toString(2), Certificate.class);
+                            PrefsWrapper.setCertificate(certificate); // TODO: Maybe just pass in the string instead of deserializing it first, here?
+                            // TODO: Is saving things to prefs really the best way to pass new objects from the RVI layer to the ui??
 
                             sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
                                     "dialog", "New Key", key.getString("id"));
@@ -305,6 +304,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             e.putString("newKeyList", "true");
                             e.apply();
 
+                            ArrayList remoteKeys = gson.fromJson(params, ArrayList.class);
+                            PrefsWrapper.setRemoteKeys(remoteKeys);
+
                         } else if (servicePtr.equals(ss[2])) { /* "/dm/cert_accountdetails" */
                             JSONArray params = data.getJSONArray("parameters");
                             JSONObject p1 = params.getJSONObject(0);
@@ -314,6 +316,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             e.putString("Userdata", p1.toString());
                             e.putString("newdata", "true");
                             e.commit();
+
+                            User user = gson.fromJson(p1.toString(), User.class);
+                            PrefsWrapper.setUser(user);
 
                         } else if (servicePtr.equals(ss[3])) { /* "/report/serviceinvokedbyguest" */
                             JSONArray params = data.getJSONArray("parameters");
@@ -325,6 +330,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             e.putString("newguestactivity", "true");
                             e.commit();
 
+                            InvokedServiceReport report = gson.fromJson(p1.toString(), InvokedServiceReport.class);
+                            PrefsWrapper.setInvokedServiceReport(report);
                         }
 
                     } else if ("sa".equals(cmd)) {

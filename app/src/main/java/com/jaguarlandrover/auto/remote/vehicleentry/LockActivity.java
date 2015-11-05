@@ -21,7 +21,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -34,14 +33,11 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     private boolean bound = false;
     private String username;
     private TextView userHeader;
-    //private Messenger service = null;
     private Handler keyCheck;
-    private RviService rviService = null;
     private Handler request;
     private Handler guestServiceCheck;
     LockActivityFragment lock_fragment = null;
     ProgressDialog requestProgress;
-    private SharedPreferences sharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,33 +58,36 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         //doBindService();
     }
 
-    Runnable StatusCheck = new Runnable() {
+    Runnable StatusCheck = new Runnable()
+    {
         @Override
         public void run() {
-            try{
-                checkforKeys();
+            try {
+                checkForKeys();
             } catch (Exception e1) {
-                Log.w(TAG,"EXCEPTION Check for Key Status: "+e1.toString());
+                Log.w(TAG, "EXCEPTION Check for Key Status: " + e1.toString());
             }
 
             keyCheck.postDelayed(StatusCheck, 5000);
         }
     };
 
-    Runnable guestCheck = new Runnable() {
+    Runnable guestCheck = new Runnable()
+    {
         @Override
         public void run() {
             try {
-                checkforGuestActivity();
+                checkForGuestActivity();
             } catch (Exception e1) {
-                Log.w(TAG,"JCheck for Guest Activity: "+e1.toString());
+                Log.w(TAG, "JCheck for Guest Activity: " + e1.toString());
             }
 
             guestServiceCheck.postDelayed(guestCheck, 10000);
         }
     };
 
-    Runnable requestCheck = new Runnable() {
+    Runnable requestCheck = new Runnable()
+    {
         @Override
         public void run() {
             requestComplete();
@@ -96,13 +95,15 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         }
     };
 
-    void startRequest(){
+    void startRequest() {
         requestCheck.run();
     }
-    void done(){
+
+    void done() {
         request.removeCallbacks(requestCheck);
     }
-    void startRepeatingTask(){
+
+    void startRepeatingTask() {
         StatusCheck.run();
         guestCheck.run();
     }
@@ -114,7 +115,9 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     }
 
     @Override
-    public void onResume() {super.onResume();}
+    public void onResume() {
+        super.onResume();
+    }
 
     private void handleExtra(Intent intent) {
         Bundle extras = intent.getExtras();
@@ -129,7 +132,8 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             alertDialogBuilder
                     .setMessage("" + extras.get("_extra3"))
                     .setCancelable(false)
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener()
+                    {
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.cancel();
                         }
@@ -192,14 +196,14 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         RviService.service(cmd, LockActivity.this);
     }
 
-    public void keyUpdate(final String authServ, final String userType) {
+    public void keyUpdate(final AuthorizedServices authorizedServices, final String userType) {
         AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
         builder.setInverseBackgroundForced(true);
         builder.setMessage("Key updates have been made").setCancelable(false).setPositiveButton("OK",
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        lock_fragment.setButtons(authServ, userType);
+                        lock_fragment.setButtons(authorizedServices, userType);
                     }
                 });
         AlertDialog alert = builder.create();
@@ -242,7 +246,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                              // TODO: ?
                         }
                     });
-                    
+
                     startRequest();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -250,49 +254,38 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                 break;
         }
     }
-    public JSONArray Request() throws JSONException {
-        SharedPreferences sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor e = sharedpref.edit();
+
+    public JSONArray Request() throws JSONException, java.lang.NullPointerException {
         JSONObject request = new JSONObject();
-        request.put("vehicleVIN", lock_fragment.JSONParser(sharedpref.getString("Userdata", "Nothing There!!"), "vehicleVIN"));//"1234567890ABCDEFG");
+        request.put("vehicleVIN", PrefsWrapper.getUser().getVehicleVin());
 
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(request);
         return jsonArray;
     }
 
-    public void checkforKeys(){
-        SharedPreferences sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor e = sharedpref.edit();
-        String showme = lock_fragment.JSONParser(sharedpref.getString("Userdata", "Nothing There!!"), "authorizedServices");
-        String userType = lock_fragment.JSONParser(sharedpref.getString("Userdata", "Nothing there!!"), "userType");
-        if (sharedpref.getString("newdata", "nothing").equals("true")) {
-            keyUpdate(showme, userType);
-            e.putString("newdata", "false");
-            e.commit();
+    public void checkForKeys() {
+        User user = PrefsWrapper.getUser();
+
+        if (user != null && PrefsWrapper.thereIsNewUserData()) {
+            keyUpdate(user.getAuthorizedServices(), user.getUserType());
+            PrefsWrapper.setThereIsNewUserData(false);
         }
     }
 
-    public void checkforGuestActivity(){
-        SharedPreferences sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor e = sharedpref.edit();
-        String guestUser = lock_fragment.JSONParser(sharedpref.getString("guestInvokedService", "Nothing there!!"), "username");
-        String guestService = lock_fragment.JSONParser(sharedpref.getString("guestInvokedService", "Nothing there!!"), "service");
-        if (sharedpref.getString("newguestactivity", "nothing").equals("true")) {
-            notififyGuestUsedKey(guestUser, guestService);
-            e.putString("newguestactivity", "false");
-            e.commit();
+    public void checkForGuestActivity() {
+        InvokedServiceReport report = PrefsWrapper.getInvokedServiceReport();
+
+        if (report != null && PrefsWrapper.thereIsNewGuestActivity()) {
+            notififyGuestUsedKey(report.getUserName(), report.getServiceIdentifier());
+            PrefsWrapper.setThereIsNewGuestActivity(false);
         }
     }
 
-    public void requestComplete(){
-        SharedPreferences sharedpref = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor e = sharedpref.edit();
-        String newRequest = sharedpref.getString("newKeyList", "nothing");
-        if(newRequest.equals("true")){
+    public void requestComplete() {
+        if (PrefsWrapper.keyListIsUpdated()) {
             done();
-            e.putString("newKeyList", "false");
-            e.commit();
+            PrefsWrapper.setKeyListIsUpdated(false);
             requestProgress.dismiss();
             Intent intent = new Intent();
             intent.setClass(LockActivity.this, keyRevokeActivity.class);

@@ -90,11 +90,13 @@ public class LockActivityFragment extends Fragment {
         keyManagementLayout = (LinearLayout) view.findViewById(R.id.key_management_layout);
 //        panicOn = (Button) view.findViewById(R.id.panicOn);
 
+        User user = PrefsWrapper.getUser();
 
-        String showme = JSONParser(sharedPref.getString("Userdata", "Nothing There!!"), "authorizedServices");
-        String userType = JSONParser(sharedPref.getString("Userdata","Nothing there!!"), "userType");
-        Log.d("USER", showme);
-        setButtons(showme, userType);
+        if (user == null) {
+            setButtons(new AuthorizedServices(), "guest");
+        } else {
+            setButtons(user.getAuthorizedServices(), user.getUserType());
+        }
 
         buttonSet = new Handler();
         startRepeatingTask();
@@ -268,7 +270,7 @@ public class LockActivityFragment extends Fragment {
         public void keyShareCommand(String key);
     }
 
-    public void setButtons(String showme, String userType) {
+    public void setButtons(AuthorizedServices authorizedServices, String userType) {
         String username = JSONParser(sharedPref.getString("Userdata", "Nothing there!!"), "username");
         String vehicle  = JSONParser(sharedPref.getString("Userdata", "Nothing there!!"), "vehicleName");
 
@@ -280,22 +282,22 @@ public class LockActivityFragment extends Fragment {
         vehicleHeader.setText("Vehicle: " + vehicle);
 
         try {
-            JSONObject json = new JSONObject(showme);
+            //JSONObject json = new JSONObject(authorizedServices);
             if (userType.equals("guest")) {
                 setDateLabel();
 
                 keylbl.setText("Key Valid To:");
                 keyManagementLayout.setVisibility(View.GONE);
-                lock.setEnabled(json.getBoolean("lock"));
-                unlock.setEnabled(json.getBoolean("lock"));
-                trunk.setEnabled(json.getBoolean("trunk"));
-                find.setEnabled(json.getBoolean("lights"));
-                start.setEnabled(json.getBoolean("engine"));
-                stop.setEnabled(json.getBoolean("engine"));
-                panic.setEnabled(json.getBoolean("hazard"));
+                lock.setEnabled(authorizedServices.isLock());
+                unlock.setEnabled(authorizedServices.isLock());
+                trunk.setEnabled(authorizedServices.isTrunk());
+                find.setEnabled(authorizedServices.isLights());
+                start.setEnabled(authorizedServices.isEngine());
+                stop.setEnabled(authorizedServices.isEngine());
+                panic.setEnabled(authorizedServices.isHazard());
 
-                if (json.getBoolean("engine") == false) {
-                    if (json.getBoolean("lock") == false) {
+                if (!authorizedServices.isEngine()) {
+                    if (!authorizedServices.isLock()) {
                         validDate.setText("Revoked");
                         //validTime.setVisibility(View.GONE);
                     }
@@ -378,8 +380,7 @@ public class LockActivityFragment extends Fragment {
             String now = formatter.format(new Date());
             Date date2 = formatter.parse(now);
             if (date1.compareTo(date2) <= 0) {
-                String authservices = "{\"engine\":false,\"windows\":false,\"lock\":false,\"hazard\":false,\"horn\":false,\"lights\":false,\"trunk\":false}";
-                setButtons(authservices, "guest");
+                setButtons(new AuthorizedServices(), "guest");
             }
 
         }

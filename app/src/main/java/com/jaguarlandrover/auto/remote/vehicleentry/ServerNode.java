@@ -89,55 +89,19 @@ public class ServerNode
         public void onServiceInvoked(ServiceBundle serviceBundle, String serviceIdentifier, Object parameters) {
             if (serviceBundle.getBundleIdentifier().equals(CERT_PROV_BUNDLE)) {
                 if (serviceIdentifier.equals(CERT_RESPONSE)) {
-//                    Log.i(TAG, "Received Cert Params : " + parameters);
-//                    JSONObject p1 = parameters.getJSONObject(0);
-//                    JSONObject p2 = parameters.getJSONObject(1);
-//                    String certId = p1.getString("certid");
-//                    String jwt = p2.getString("certificate");
-//                    Log.i(TAG, "Received from Cloud Cert ID: " + certId);
-//                    Log.i(TAG, "JWT = " + jwt);
-//
-//                    certs.put(certId, jwt);
-//                    //Debug
-//                    // Errors seen here on parseAndValidateJWT. Should be getting Base64
-//                    // from backend, but sometimes getting errors that it's not.
-//                    // Should be fixed now, backend is sending URL safe Base64,
-//                    // parseAndValidateJWT now using Base64.URL_SAFE
-//                    String[] token = RviProtocol.parseAndValidateJWT(jwt);
-//                    JSONObject key = new JSONObject(token[1]);
-//                    Log.d(TAG, "Token = " + key.toString(2));
-//                    sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
-//                            "dialog", "New Key", key.getString("id"));
+                    // TODO: Copy updated code from RviService.java
 
                 } else if (serviceIdentifier.equals(CERT_PROVISION)) {
-
-//                    Log.i(TAG, "Received from Cloud Cert: " + parameters);
-//
-//                    SharedPreferences.Editor e = preferences.edit();
-//                    e.putString("Certificates", parameters);
-//                    e.putString("newKeyList", "true");
-//                    e.apply();
+                    // TODO: Copy updated code from RviService.java
 
                 } else if (serviceIdentifier.equals(CERT_ACCOUNT_DETAILS)) {
-//                    JSONObject p1 = parameters.getJSONObject(0);
-//                    Log.i(TAG, "User Data:" + p1);
-//
-//                    SharedPreferences.Editor e = preferences.edit();
-//                    e.putString("Userdata", p1.toString());
-//                    e.putString("newdata", "true");
-//                    e.commit();
+                    // TODO: Copy updated code from RviService.java
 
                 }
             } else if (serviceBundle.getBundleIdentifier().equals(REPORTING_BUNDLE)) {
                 if (serviceIdentifier.equals(SERVICE_INVOKED_BY_GUEST)) {
-//                    JSONArray params = data.getJSONArray("parameters");
-//                    JSONObject p1 = params.getJSONObject(0);
-//                    Log.i(TAG, "Service Invoked by Guest:" + p1);
-//
-//                    SharedPreferences.Editor e = preferences.edit();
-//                    e.putString("guestInvokedService", p1.toString());
-//                    e.putString("newguestactivity", "true");
-//                    e.commit();
+                    // TODO: Copy updated code from RviService.java
+
 
                 }
             }
