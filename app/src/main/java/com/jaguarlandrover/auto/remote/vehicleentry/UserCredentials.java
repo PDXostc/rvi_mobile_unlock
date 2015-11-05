@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -120,6 +121,37 @@ public class UserCredentials
         }
 
         return null;
+    }
+
+    public boolean isKeyValid() throws ParseException {
+        String[] dateTime;
+
+        try {
+            dateTime = mValidTo.split("T");
+        }
+        catch (Exception e) {
+            return false;
+        }
+
+        String userDate = dateTime[0];
+        String userTime = dateTime[1];
+
+        String userDateTime = userDate + " " + userTime;
+
+        SimpleDateFormat formatter1;
+
+        try {
+            formatter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        } catch (Exception e) {
+            return false;
+        }
+
+        formatter1.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        Date savedDate = formatter1.parse(userDateTime);
+        Date dateNow = new Date();
+
+        return savedDate.compareTo(dateNow) > 0;
     }
 
     public String getUserName() {
