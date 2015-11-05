@@ -229,7 +229,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         Intent intent = new Intent();
         switch (key) {
             case "keyshare":
-                intent.setClass(LockActivity.this, keyShareActivity.class);
+                intent.setClass(LockActivity.this, KeyShareActivity.class);
                 startActivityForResult(intent, 0);
                 break;
             case "keychange":
@@ -287,7 +287,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             PrefsWrapper.setThereAreNewRemoteCredentials(false);
             requestProgress.dismiss();
             Intent intent = new Intent();
-            intent.setClass(LockActivity.this, keyRevokeActivity.class);
+            intent.setClass(LockActivity.this, KeyRevokeActivity.class);
             startActivityForResult(intent, 0);
         }
     }

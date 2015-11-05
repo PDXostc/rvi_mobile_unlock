@@ -8,7 +8,7 @@
     android:orientation="vertical"
     android:rowCount="4"
     android:weightSum="1"
-    tools:context="com.jaguarlandrover.auto.remote.vehicleentry.keyShareActivityFragment">
+    tools:context=".KeyShareActivityFragment">
 
     <LinearLayout
         android:layout_width="match_parent"

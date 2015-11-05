@@ -26,7 +26,7 @@ import java.util.TimeZone;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class keyShareActivityFragment extends Fragment {
+public class KeyShareActivityFragment extends Fragment {
 
     int year_x, month_x, day_x, hour_x, min_x, hour_end, min_end;
     String am_pm;
@@ -55,7 +55,7 @@ public class keyShareActivityFragment extends Fragment {
     String[] vins     = {"stoffe", "stoffe"};
     private ShareFragmentButtonListener buttonListener;
 
-    public keyShareActivityFragment() {
+    public KeyShareActivityFragment() {
     }
 
     @Override

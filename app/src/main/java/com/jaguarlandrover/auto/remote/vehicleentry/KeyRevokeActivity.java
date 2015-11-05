@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 
-public class keyRevokeActivity extends ActionBarActivity {
+public class KeyRevokeActivity extends ActionBarActivity {
     LinearLayout layout;
     int mPosition;
 
@@ -122,7 +122,7 @@ public class keyRevokeActivity extends ActionBarActivity {
             e.printStackTrace();
         }
     }
-    
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

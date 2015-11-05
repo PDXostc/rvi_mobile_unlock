@@ -6,56 +6,24 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Point;
-import android.support.annotation.NonNull;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.text.Layout;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.concurrent.locks.Lock;
-
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.DatePicker;
-import android.widget.ExpandableListView;
-import android.widget.ExpandableListView.OnChildClickListener;
-import android.widget.ExpandableListView.OnGroupClickListener;
-import android.widget.ExpandableListView.OnGroupCollapseListener;
-import android.widget.ExpandableListView.OnGroupExpandListener;
-import android.widget.HorizontalScrollView;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
-import android.widget.Switch;
-import android.widget.TextView;
-import android.widget.TimePicker;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class keyShareActivity extends ActionBarActivity implements keyShareActivityFragment.ShareFragmentButtonListener {
+public class KeyShareActivity extends ActionBarActivity implements KeyShareActivityFragment.ShareFragmentButtonListener {
     String TAG = "JSON DATA:";
     static final int dateDialog = 0;
-    static final int timeDialog=1;
+    static final int timeDialog = 1;
 
-    keyShareActivityFragment share_fragment;
+    KeyShareActivityFragment share_fragment;
 
     private RviService rviservice;
 
@@ -67,7 +35,7 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
 
         setContentView(R.layout.activity_key_share);
 
-        share_fragment = (keyShareActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentshare);
+        share_fragment = (KeyShareActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentshare);
 
         ArrayList<String> userList = new ArrayList<String>();
         ArrayList<String> vehicleList = new ArrayList<String>();
@@ -75,27 +43,29 @@ public class keyShareActivity extends ActionBarActivity implements keyShareActiv
         //vehicleList = rcvDataList(dummyData(), getResources().getString(R.string.VEHICLE));
         //Log.i(TAG, dummyData().toString());
 
-         //setUserImage(userList);
+        //setUserImage(userList);
         //setVehicleImage(vehicleList);
         share_fragment.showUserSelect();
         share_fragment.showCarSelect();
         share_fragment.showDialog();
-                //String selectedUser = getResources().getString(users[userPages.getCurrentItem()]);
-                //Toast.makeText(keyShareActivity.this, selectedUser, Toast.LENGTH_LONG).show();
+        //String selectedUser = getResources().getString(users[userPages.getCurrentItem()]);
+        //Toast.makeText(keyShareActivity.this, selectedUser, Toast.LENGTH_LONG).show();
     }
+
     @Override
-    protected Dialog onCreateDialog(int id){
-        if(id == dateDialog)
-            return new DatePickerDialog(this,share_fragment.getdplistener(), share_fragment.getyear(), share_fragment.getmonth()-1, share_fragment.getday());
-        if(id == timeDialog)
-            return  new TimePickerDialog(this, share_fragment.gettplistener(), share_fragment.gethour(), share_fragment.getmin(), false);
+    protected Dialog onCreateDialog(int id) {
+        if (id == dateDialog)
+            return new DatePickerDialog(this, share_fragment.getdplistener(), share_fragment.getyear(), share_fragment.getmonth() - 1, share_fragment.getday());
+        if (id == timeDialog)
+            return new TimePickerDialog(this, share_fragment.gettplistener(), share_fragment.gethour(), share_fragment.getmin(), false);
         return null;
     }
 
-    public void alertMessage(){
-        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener(){
-            public void onClick(DialogInterface dialog, int which){
-                switch(which){
+    public void alertMessage() {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
                         try{
                             rviservice.sendaKey(share_fragment.getFormData());

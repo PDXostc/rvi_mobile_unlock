@@ -59,7 +59,7 @@
         </receiver>
 
         <activity
-            android:name=".keyShareActivity"
+            android:name=".KeyShareActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
         </activity>
@@ -74,7 +74,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".keyRevokeActivity"
+            android:name=".KeyRevokeActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
         </activity>

@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/background"
     android:orientation="vertical"
-    tools:context="com.jaguarlandrover.auto.remote.vehicleentry.keyRevokeActivity">
+    tools:context=".KeyRevokeActivity">
 
     <TextView
         android:layout_width="match_parent"
