@@ -8,7 +8,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,6 +18,11 @@ import java.util.TimeZone;
  */
 public class UserCredentials
 {
+    private final static String TAG = "UnlockDemo:UserCrede...";
+
+    private final static String SERVER_DATE_TIME_FORMATTER = "yyyy-MM-dd'T'HH:mm:ss";
+    private final static String PRETTY_DATE_TIME_FORMATTER = "MM/dd/yyyy h:mm a z";
+
     @SerializedName("username")
     private String mUserName;
 
@@ -26,12 +30,10 @@ public class UserCredentials
     private String mVehicleVin;
 
     @SerializedName("validFrom")
-    private String mValidFrom          = "1971-09-09T22:00:00.000Z";
-    private String mValidFromFormatted = null;
+    private String mValidFrom = "1971-09-09T22:00:00.000Z";
 
     @SerializedName("validTo")
-    private String mValidTo          = "1971-09-09T23:00:00.000Z";
-    private String mValidToFormatted = null;
+    private String mValidTo   = "1971-09-09T23:00:00.000Z";
 
     @SerializedName("userType")
     private String mUserType = "guest";
@@ -66,21 +68,6 @@ public class UserCredentials
     public UserCredentials(JSONObject object) {
         try {
             this.setUserName(object.getString("username"));
-            String start = object.getString("validFrom").substring(0, 23);
-            String stop = object.getString("validTo").substring(0, 23);
-            try {
-                SimpleDateFormat inputformat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-                SimpleDateFormat outputformat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
-                inputformat.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-                Date newStart = inputformat.parse(start);
-                Date newEnd = inputformat.parse(stop);
-                mValidFromFormatted = outputformat.format(newStart);
-                mValidToFormatted = outputformat.format(newEnd);
-            } catch (Exception e) {
-                Log.d("DATE", "ERROR IN DATE FORMAT");
-                e.printStackTrace();
-            }
 
             JSONObject authservices = object.getJSONObject("authorizedServices");
             this.setLockUnlock(authservices.getBoolean("lock"));
@@ -104,54 +91,40 @@ public class UserCredentials
         return userCredentialses;
     }
 
-    private String newFormat(String oldFormat) {
-        String newFormat = oldFormat.substring(0, 23);
-
+    private String prettyFormat(String serverString) {
         try {
-            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-            SimpleDateFormat outputFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
-            inputFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            SimpleDateFormat serverFormat = new SimpleDateFormat(SERVER_DATE_TIME_FORMATTER);
+            SimpleDateFormat prettyFormat = new SimpleDateFormat(PRETTY_DATE_TIME_FORMATTER);
+            serverFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-            Date newDate = inputFormat.parse(newFormat);
-            return outputFormat.format(newDate);
+            Date newDate = serverFormat.parse(serverString.substring(0, 23));
+            return prettyFormat.format(newDate);
 
         } catch (Exception e) {
-            Log.d("DATE", "ERROR IN DATE FORMAT");
+            Log.d(TAG, "Error parsing date/time.");
             e.printStackTrace();
-        }
 
-        return null;
+            return serverString;
+        }
     }
 
-    public boolean isKeyValid() throws ParseException {
-        String[] dateTime;
-
+    public boolean isKeyValid() {
         try {
-            dateTime = mValidTo.split("T");
-        }
-        catch (Exception e) {
-            return false;
-        }
+            SimpleDateFormat formatter = new SimpleDateFormat(SERVER_DATE_TIME_FORMATTER);
+            formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-        String userDate = dateTime[0];
-        String userTime = dateTime[1];
+            Date validTo   = formatter.parse(mValidTo.substring(0, 23));
+            Date validFrom = formatter.parse(mValidFrom.substring(0, 23));
+            Date dateNow   = new Date();
 
-        String userDateTime = userDate + " " + userTime;
+            return validTo.compareTo(dateNow) > 0 && validFrom.compareTo(dateNow) < 0;
 
-        SimpleDateFormat formatter1;
-
-        try {
-            formatter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         } catch (Exception e) {
+            Log.d(TAG, "Error parsing date/time.");
+            e.printStackTrace();
+
             return false;
         }
-
-        formatter1.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-        Date savedDate = formatter1.parse(userDateTime);
-        Date dateNow = new Date();
-
-        return savedDate.compareTo(dateNow) > 0;
     }
 
     public String getUserName() {
@@ -171,23 +144,64 @@ public class UserCredentials
     }
 
     public String getValidFrom() {
-        if (mValidFromFormatted == null) mValidFromFormatted = newFormat(mValidFrom);
-
-        return mValidFromFormatted;
+        return prettyFormat(mValidFrom);
     }
 
     public void setValidFrom(String validFrom) {
         this.mValidFrom = validFrom;
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat(SERVER_DATE_TIME_FORMATTER);
+            formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+            formatter.parse(mValidFrom.substring(0, 23));
+        } catch (Exception e) {
+            Log.d(TAG, "Error: Incorrect format for 'validFrom'. May cause issues when syncing with server.");
+            e.printStackTrace();
+        }
+    }
+
+    public void setValidFromAsDate(Date validFrom) {
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat(SERVER_DATE_TIME_FORMATTER);
+            formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+            mValidFrom = formatter.format(validFrom) + ".000Z";
+
+            Log.d(TAG, mValidFrom);
+        } catch (Exception e) {
+            Log.d(TAG, "Error parsing date/time");
+            e.printStackTrace();
+        }
     }
 
     public String getValidTo() {
-        if (mValidToFormatted == null) mValidToFormatted = newFormat(mValidTo);
-
-        return mValidToFormatted;
+        return prettyFormat(mValidTo);
     }
 
     public void setValidTo(String validTo) {
         this.mValidTo = validTo;
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat(SERVER_DATE_TIME_FORMATTER);
+            formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+            formatter.parse(mValidTo.substring(0, 23));
+
+        } catch (Exception e) {
+            Log.d(TAG, "Error: Incorrect format for 'validTo'. May cause issues when syncing with server.");
+            e.printStackTrace();
+        }
+    }
+
+    public void setValidToAsDate(Date validFrom) {
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat(SERVER_DATE_TIME_FORMATTER);
+            formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+            mValidFrom = formatter.format(validFrom) + ".000Z";
+        } catch (Exception e) {
+            Log.d(TAG, "Error parsing date/time");
+            e.printStackTrace();
+        }
     }
 
     public String getCertId() {
@@ -200,8 +214,6 @@ public class UserCredentials
 
     public boolean isLockUnlock() {
         return mAuthorizedServices.isLock();
-//        if (mAuthorizedServices != null) return mAuthorizedServices.isLock();
-//        else return mLockUnlock; // TODO: Remove when done refactoring
     }
 
     public void setLockUnlock(boolean lockUnlock) {
@@ -210,13 +222,10 @@ public class UserCredentials
 
     public boolean isEngineStart() {
         return mAuthorizedServices.isEngine();
-//        if (mAuthorizedServices != null) return mAuthorizedServices.isEngine();
-//        else return mEngineStart; // TODO: Remove when done refactoring
     }
 
     public void setEngineStart(boolean engineStart) {
         mAuthorizedServices.setEngine(engineStart);
-//        this.mEngineStart = engineStart;
     }
 
     public String getUserType() {
