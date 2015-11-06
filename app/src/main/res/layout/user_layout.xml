@@ -14,7 +14,7 @@
         android:textColor="@color/white"
         android:text="Name"/>
     <TextView
-        android:id="@+id/vehicle"
+        android:id="@+id/vehicle_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_column="1"
@@ -22,7 +22,7 @@
         android:textColor="@color/white"
         android:text="Vehicle"/>
     <TextView
-        android:id="@+id/validfromlbl"
+        android:id="@+id/valid_from_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_column="0"
@@ -30,7 +30,7 @@
         android:textColor="@color/white"
         android:text="Valid From:"/>
     <TextView
-        android:id="@+id/validtolbl"
+        android:id="@+id/valid_to_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_column="0"
@@ -39,7 +39,7 @@
         android:text="Valid To:"/>
 
     <TextView
-        android:id="@+id/validfrom"
+        android:id="@+id/valid_from"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_column="1"
@@ -47,7 +47,7 @@
         android:textColor="@color/white"
         android:text="Valid From"/>
     <TextView
-        android:id="@+id/validto"
+        android:id="@+id/valid_to"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_column="1"
@@ -67,7 +67,7 @@
         android:text="Lock/Unlock"
         />
     <CheckBox
-        android:id="@+id/enginestart"
+        android:id="@+id/engine_start"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_column="1"

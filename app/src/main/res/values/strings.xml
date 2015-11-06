@@ -33,14 +33,14 @@
     <string name="title_activity_key_share">keyShareActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="user">User:</string>
-    <string name="vehicle">Vehicle:</string>
+    <string name="vehicleVin">Vehicle:</string>
     <string name="share_lbl">Key Sharing</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="title_activity_key_change">keyChangeActivity</string>
     <string name="title_activity_http_example">HttpExampleActivity</string>
     <string name="USERNAME">user</string>
     <string name="USERTYPE">usertype</string>
-    <string name="VEHICLE">vehicle</string>
+    <string name="VEHICLE">vehicleVin</string>
     <string name="LOCK">lock</string>
     <string name="ENGINE">engine</string>
 

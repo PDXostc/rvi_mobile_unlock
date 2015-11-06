@@ -47,7 +47,7 @@
                 android:layout_marginStart="10dp"
                 android:paddingTop="10dp"
                 android:paddingBottom="5dp"
-                android:text="@string/vehicle"
+                android:text="@string/vehicleVin"
                 android:textColor="@color/white"
                 android:textSize="20sp"/>
     </LinearLayout>

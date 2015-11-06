@@ -7,28 +7,29 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVIManager.java
+ * File:    UnlockApplication.java
  * Project: UnlockDemo
  *
  * Created by Lilli Szafranski on 10/28/15.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-import com.jaguarlandrover.rvi.RVINode;
+import android.app.Application;
+import android.content.Context;
 
-public class RVIManager
+public class UnlockApplication extends Application
 {
-    private final static String TAG = "UnlockDemo:RVIManager";
+    private final static String TAG = "UnlockDemo:UnlockApplication";
 
-    private static RVIManager ourInstance = new RVIManager();
+    private static Application instance;
 
-    public static RVIManager getInstance() {
-        return ourInstance;
-    }
+        @Override
+        public void onCreate() {
+            super.onCreate();
+            instance = this;
+        }
 
-    private static RVINode serverNode  = new RVINode(null);
-    private static RVINode vehicleNode = new RVINode(null);
-
-    private RVIManager() {
-    }
+        public static Context getContext() {
+            return instance.getApplicationContext();
+        }
 }

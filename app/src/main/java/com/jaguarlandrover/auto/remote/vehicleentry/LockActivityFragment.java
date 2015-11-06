@@ -90,11 +90,13 @@ public class LockActivityFragment extends Fragment {
         keyManagementLayout = (LinearLayout) view.findViewById(R.id.key_management_layout);
 //        panicOn = (Button) view.findViewById(R.id.panicOn);
 
+        UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
 
-        String showme = JSONParser(sharedPref.getString("Userdata", "Nothing There!!"), "authorizedServices");
-        String userType = JSONParser(sharedPref.getString("Userdata","Nothing there!!"), "userType");
-        Log.d("USER", showme);
-        setButtons(showme, userType);
+        if (userCredentials == null) {
+            setButtons(new UserCredentials());
+        } else {
+            setButtons(userCredentials);
+        }
 
         buttonSet = new Handler();
         startRepeatingTask();
@@ -114,35 +116,38 @@ public class LockActivityFragment extends Fragment {
         return view;
     }
 
-    Runnable StatusCheck = new Runnable() {
+    Runnable StatusCheck = new Runnable()
+    {
         @Override
         public void run() {
-            String userType = JSONParser(sharedPref.getString("Userdata", "Nothing there!!"), "userType");
-            if(userType.equals("guest")) {
-                checkDate();
+
+            UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
+            if (userCredentials != null && userCredentials.getUserType().equals("guest") && !userCredentials.isKeyValid()) {
+                setButtons(userCredentials);
             }
+
             // Revoke check at the beginning of every minute
-            if(!revokeCheckStarted) {
+            if (!revokeCheckStarted) {
                 revokeCheckStarted = true;
                 Calendar calendar = Calendar.getInstance();
                 int seconds = calendar.get(Calendar.SECOND);
                 int sleepSecs = 60 - seconds;
                 buttonSet.postDelayed(StatusCheck, sleepSecs * 1000);
-            }
-            else {
+            } else {
                 buttonSet.postDelayed(StatusCheck, 60000);
             }
             //buttonSet.postDelayed(StatusCheck, 15000);
         }
     };
 
-    void startRepeatingTask(){
+    void startRepeatingTask() {
         StatusCheck.run();
     }
 
-    void stopRepeatingTask(){
+    void stopRepeatingTask() {
         buttonSet.removeCallbacks(StatusCheck);
     }
+
     public void sendPoptrunk(View view) {
     }
 
@@ -152,7 +157,7 @@ public class LockActivityFragment extends Fragment {
     public void sendPanicOff(View view) {
     }
 
-    public void onViewStateRestored (Bundle savedInstanceState) {
+    public void onViewStateRestored(Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
         //Assume auto unlock
         sharedPref.edit().putBoolean(LOCKED_LBL, false).commit();
@@ -268,40 +273,38 @@ public class LockActivityFragment extends Fragment {
         public void keyShareCommand(String key);
     }
 
-    public void setButtons(String showme, String userType) {
-        String username = JSONParser(sharedPref.getString("Userdata", "Nothing there!!"), "username");
-        String vehicle  = JSONParser(sharedPref.getString("Userdata", "Nothing there!!"), "vehicleName");
+    public void setButtons(UserCredentials userCredentials) {
+        if (userCredentials == null) userCredentials = new UserCredentials();
 
-        Log.d(TAG, "Saved userdata: " + sharedPref.getString("Userdata", "Nothing there!!"));
-        SharedPreferences.Editor ed = sharedPref.edit();
-        ed.putString("user", username);
-        ed.commit();
+        String username = userCredentials.getUserName() != null ? userCredentials.getUserName() : "unknown";
+        String vehicle  = userCredentials.getVehicleName() != null ? userCredentials.getVehicleName() : "unknown";
+
+        Log.d(TAG, "Saved userdata: " + userCredentials.toString());
+
         userHeader.setText("User: " + username);
         vehicleHeader.setText("Vehicle: " + vehicle);
 
         try {
-            JSONObject json = new JSONObject(showme);
-            if (userType.equals("guest")) {
-                setDateLabel();
-
+            //JSONObject json = new JSONObject(authorizedServices);
+            if (userCredentials.getUserType().equals("guest")) {
                 keylbl.setText("Key Valid To:");
-                keyManagementLayout.setVisibility(View.GONE);
-                lock.setEnabled(json.getBoolean("lock"));
-                unlock.setEnabled(json.getBoolean("lock"));
-                trunk.setEnabled(json.getBoolean("trunk"));
-                find.setEnabled(json.getBoolean("lights"));
-                start.setEnabled(json.getBoolean("engine"));
-                stop.setEnabled(json.getBoolean("engine"));
-                panic.setEnabled(json.getBoolean("hazard"));
 
-                if (json.getBoolean("engine") == false) {
-                    if (json.getBoolean("lock") == false) {
-                        validDate.setText("Revoked");
-                        //validTime.setVisibility(View.GONE);
-                    }
+                keyManagementLayout.setVisibility(View.GONE);
+                lock.setEnabled(userCredentials.getAuthorizedServices().isLock());
+                unlock.setEnabled(userCredentials.getAuthorizedServices().isLock());
+                trunk.setEnabled(userCredentials.getAuthorizedServices().isTrunk());
+                find.setEnabled(userCredentials.getAuthorizedServices().isLights());
+                start.setEnabled(userCredentials.getAuthorizedServices().isEngine());
+                stop.setEnabled(userCredentials.getAuthorizedServices().isEngine());
+                panic.setEnabled(userCredentials.getAuthorizedServices().isHazard());
+
+                if (!userCredentials.hasAnyAuthorizedServices() || !userCredentials.isKeyValid()) {
+                    validDate.setText("Revoked");
+                } else {
+                    validDate.setText(userCredentials.getValidTo());
                 }
 
-            } else if (userType.equals("owner")) {
+            } else if (userCredentials.getUserType().equals("owner")) {
                 validDate.setVisibility(View.GONE);
                 //validTime.setVisibility(View.GONE);
                 keyManagementLayout.setVisibility(View.VISIBLE);
@@ -314,8 +317,7 @@ public class LockActivityFragment extends Fragment {
                 panic.setEnabled(true);
 
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             validDate.setVisibility(View.VISIBLE);
             //validTime.setVisibility(View.VISIBLE);
             keyManagementLayout.setVisibility(View.GONE);
@@ -329,7 +331,6 @@ public class LockActivityFragment extends Fragment {
 
             e.printStackTrace();
         }
-
     }
 
     public String JSONParser(String jsonString, String RqstData) {
@@ -346,47 +347,4 @@ public class LockActivityFragment extends Fragment {
         }
         return "0";
     }
-
-    public void setDateLabel() {
-        String[] dateTime = JSONParser(sharedPref.getString("Userdata", "There's nothing"), "validTo").split("T");
-        String userDate = dateTime[0];
-        String userTime = dateTime[1];
-        userTime.substring(0, userTime.length() - 5);
-        String userDateTime = userDate + " " + userTime;
-        SimpleDateFormat oldFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        oldFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        try {
-            Date newDate = oldFormat.parse(userDateTime);
-            oldFormat = new SimpleDateFormat("MM/dd/yyy\nh:mm a z");
-            String date = oldFormat.format(newDate);
-            validDate.setText(date);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        //validTime.setVisibility(View.VISIBLE);
-        validDate.setVisibility(View.VISIBLE);
-    }
-
-    void checkDate() {
-        try {
-            SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyy\nh:mm a z");
-
-            String date = validDate.getText().toString();
-            Date date1 = formatter.parse(date);
-            String now = formatter.format(new Date());
-            Date date2 = formatter.parse(now);
-            if (date1.compareTo(date2) <= 0) {
-                String authservices = "{\"engine\":false,\"windows\":false,\"lock\":false,\"hazard\":false,\"horn\":false,\"lights\":false,\"trunk\":false}";
-                setButtons(authservices, "guest");
-            }
-
-        }
-        catch (Exception e) {
-            Log.w(TAG, "EXCEPTION Check for Valid To Date: " + e.toString());
-        }
-
-    }
-
 }

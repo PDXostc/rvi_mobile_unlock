@@ -35,11 +35,15 @@ public class RVINode
     private HashMap<String, ServiceBundle> mAllServiceBundles       = new HashMap<>();
     private RemoteConnectionManager        mRemoteConnectionManager = new RemoteConnectionManager();
 
+    private boolean mConnected = false;
+
     public RVINode(Context context) {
         mRemoteConnectionManager.setListener(new RemoteConnectionManagerListener()
         {
             @Override
             public void onRVIDidConnect() {
+                mConnected = true;
+
                 mRemoteConnectionManager.sendPacket(new DlinkAuthPacket());
 
                 announceServices();
@@ -49,11 +53,15 @@ public class RVINode
 
             @Override
             public void onRVIDidFailToConnect(Error error) {
+                mConnected = false;
+
                 if (mListener != null) mListener.nodeDidFailToConnect();
             }
 
             @Override
             public void onRVIDidDisconnect() {
+                mConnected = false;
+
                 if (mListener != null) mListener.nodeDidDisconnect();
             }
 
@@ -91,8 +99,9 @@ public class RVINode
      * @param listener the listener
      */
     public void setListener(RVINodeListener listener) {
-        /*ourInstance.*/mListener = listener;
+        mListener = listener;
     }
+
 
     /**
      * The RVI node listener interface.
@@ -134,6 +143,10 @@ public class RVINode
      */
     public void setServerPort(Integer serverPort) {
         mRemoteConnectionManager.setServerPort(serverPort);
+    }
+
+    public boolean isConnected() {
+        return mConnected;
     }
 
     /**
