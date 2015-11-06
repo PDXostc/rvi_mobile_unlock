@@ -31,19 +31,41 @@ public class ServerNode
 {
     private final static String TAG = "UnlockDemo:ServerNode";
 
+    /* Static objects */
+    private static Context applicationContext = UnlockApplication.getContext();
+
+    private static SharedPreferences        preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
+    private static SharedPreferences.Editor editor      = preferences.edit();
+    private static Gson                     gson        = new Gson();
+
+    private static RVINode rviNode = new RVINode(null);
+
+    /* SharedPreferences keys */
+    private final static String NEW_CERTIFICATE_DATA_KEY        = "NEW_CERTIFICATE_DATA_KEY";
+    private final static String CERTIFICATE_DATA_KEY            = "CERTIFICATE_DATA_KEY";
+    private final static String NEW_USER_CREDENTIALS_KEY        = "NEW_USER_CREDENTIALS_KEY";
+    private final static String USER_CREDENTIALS_KEY            = "USER_CREDENTIALS_KEY";
+    private final static String NEW_REMOTE_CREDENTIALS_LIST_KEY = "NEW_REMOTE_CREDENTIALS_LIST_KEY";
+    private final static String REMOTE_CREDENTIALS_LIST_KEY     = "REMOTE_CREDENTIALS_LIST_KEY";
+    private final static String NEW_INVOKED_SERVICE_REPORT_KEY  = "NEW_INVOKED_SERVICE_REPORT_KEY";
+    private final static String INVOKED_SERVICE_REPORT_KEY      = "INVOKED_SERVICE_REPORT_KEY";
+
+    /* RVI fully-qualified service identifier parts */
     private final static String RVI_DOMAIN       = "jlr.com";
     private final static String CERT_PROV_BUNDLE = "dm";
     private final static String REPORTING_BUNDLE = "report";
 
+    /* Remote service identifiers */
+    private final static String CERT_REQUESTALL = "cert_requestall";
+    private final static String CERT_CREATE     = "cert_create";
+    private final static String CERT_MODIFY     = "cert_modify";
+
+    /* Local service identifiers */
     private final static String CERT_PROVISION       = "cert_provision";
     private final static String CERT_RESPONSE        = "cert_response";
     private final static String CERT_ACCOUNT_DETAILS = "cert_accountdetails";
 
     private final static String SERVICE_INVOKED_BY_GUEST = "serviceinvokedbyguest";
-
-    private static Context applicationContext = UnlockApplication.getContext();
-
-    private static SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
 
     private final static ArrayList<String> certProvServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
@@ -55,17 +77,170 @@ public class ServerNode
             new ArrayList<>(Arrays.asList(
                     SERVICE_INVOKED_BY_GUEST));
 
-
-    private static       RVINode       rviNode                = new RVINode(null);
-
+    /* Service bundles */
     private final static ServiceBundle certProvServiceBundle  = new ServiceBundle(applicationContext, RVI_DOMAIN, CERT_PROV_BUNDLE, certProvServiceIdentifiers);
     private final static ServiceBundle reportingServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, REPORTING_BUNDLE, reportingServiceIdentifiers);
 
     private static ServerNode ourInstance = new ServerNode();
+
     public static ServerNode getInstance() {
         return ourInstance;
     }
 
+    private ServerNode() {
+        certProvServiceBundle.setListener(serviceBundleListener);
+        reportingServiceBundle.setListener(serviceBundleListener);
+
+        rviNode.setListener(nodeListener);
+
+        rviNode.addBundle(certProvServiceBundle);
+        rviNode.addBundle(reportingServiceBundle);
+    }
+
+    public static void connect() {
+        connectToServer();
+    }
+
+    private static void connectToServer() {
+        if (rviNode.isConnected()) rviNode.disconnect();
+
+        rviNode.setServerUrl(preferences.getString("pref_rvi_server", "38.129.64.40"));
+        rviNode.setServerPort(Integer.parseInt(preferences.getString("pref_rvi_server_port", "8807")));
+
+        rviNode.connect();
+    }
+
+    public void requestRemoteCredentials() {
+
+    }
+
+    public void modifyRemoteCredentials(UserCredentials remoteCredentials) {
+
+    }
+
+    public void createRemoteCredentials(UserCredentials remoteCredentials) {
+
+    }
+
+
+    public interface ServerNodeListener
+    {
+        void onReceivedCertificateResponse();
+
+        void onReceiveCertificateProvisioning();
+
+        void onReceivedCertificateAccountDetails();
+
+        void onServiceInvokedByGuest();
+    }
+
+    public static Certificate getCertificate() {
+        String certStr = preferences.getString(CERTIFICATE_DATA_KEY, null);
+
+        if (certStr == null) return null;
+
+        return gson.fromJson(certStr, Certificate.class);
+    }
+
+    public static void setCertificate(Certificate cert) {
+        String certStr = gson.toJson(cert, Certificate.class);
+        editor.putString(CERTIFICATE_DATA_KEY, certStr);
+        editor.commit();
+
+        ServerNode.setThereIsNewCertificateData(true);
+    }
+
+    public static UserCredentials getUserCredentials() {
+        String userStr = preferences.getString(USER_CREDENTIALS_KEY, null);
+
+        if (userStr == null) return null;
+
+        return gson.fromJson(userStr, UserCredentials.class);
+    }
+
+    public static void setUserCredentials(UserCredentials userCredentials) {
+        String userStr = gson.toJson(userCredentials, UserCredentials.class);
+        editor.putString(USER_CREDENTIALS_KEY, userStr);
+        editor.commit();
+
+        ServerNode.setThereAreNewUserCredentials(true);
+    }
+
+    public static Collection<UserCredentials> getRemoteCredentialsList() {
+        String credListStr = preferences.getString(REMOTE_CREDENTIALS_LIST_KEY, null);
+
+        if (credListStr == null) return null;
+
+        Type collectionType = new TypeToken<Collection<UserCredentials>>()
+        {
+        }.getType();
+        return gson.fromJson(credListStr, collectionType);
+    }
+
+    public static void setRemoteCredentialsList(Collection<UserCredentials> keys) {
+        Type collectionType = new TypeToken<Collection<UserCredentials>>()
+        {
+        }.getType();
+        String credListStr = gson.toJson(keys, collectionType);
+        editor.putString(REMOTE_CREDENTIALS_LIST_KEY, credListStr);
+        editor.commit();
+
+        ServerNode.setThereAreNewRemoteCredentials(true);
+    }
+
+    public static InvokedServiceReport getInvokedServiceReport() {
+        String reportStr = preferences.getString(INVOKED_SERVICE_REPORT_KEY, null);
+
+        if (reportStr == null) return null;
+
+        return gson.fromJson(reportStr, InvokedServiceReport.class);
+    }
+
+    public static void setInvokedServiceReport(InvokedServiceReport report) {
+        String reportStr = gson.toJson(report, InvokedServiceReport.class);
+        editor.putString(INVOKED_SERVICE_REPORT_KEY, reportStr);
+        editor.commit();
+
+        ServerNode.setThereIsNewInvokedServiceReport(true);
+    }
+
+    public static Boolean thereIsNewCertificateData() {
+        return preferences.getBoolean(NEW_CERTIFICATE_DATA_KEY, false);
+    }
+
+    public static void setThereIsNewCertificateData(Boolean isNewActivity) {
+        editor.putBoolean(NEW_CERTIFICATE_DATA_KEY, isNewActivity);
+        editor.commit();
+    }
+
+    public static Boolean thereAreNewUserCredentials() {
+        return preferences.getBoolean(NEW_USER_CREDENTIALS_KEY, false);
+    }
+
+    public static void setThereAreNewUserCredentials(Boolean areNewCredentials) {
+        editor.putBoolean(NEW_USER_CREDENTIALS_KEY, areNewCredentials);
+        editor.commit();
+    }
+
+    public static Boolean thereAreNewRemoteCredentials() {
+        return preferences.getBoolean(NEW_REMOTE_CREDENTIALS_LIST_KEY, false);
+    }
+
+    public static void setThereAreNewRemoteCredentials(Boolean areNewCredentials) {
+        editor.putBoolean(NEW_REMOTE_CREDENTIALS_LIST_KEY, areNewCredentials);
+        editor.commit();
+    }
+
+    public static Boolean thereIsNewInvokedServiceReport() {
+        return preferences.getBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, false);
+    }
+
+    public static void setThereIsNewInvokedServiceReport(Boolean isNewReport) {
+        editor.putBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, isNewReport);
+        editor.commit();
+    }
+
+    /* Listeners */
     private static RVINode.RVINodeListener nodeListener = new RVINode.RVINodeListener()
     {
         @Override
@@ -108,166 +283,5 @@ public class ServerNode
             }
         }
     };
-
-    private ServerNode() {
-        certProvServiceBundle.setListener(serviceBundleListener);
-        reportingServiceBundle.setListener(serviceBundleListener);
-
-        rviNode.setListener(nodeListener);
-
-        rviNode.addBundle(certProvServiceBundle);
-        rviNode.addBundle(reportingServiceBundle);
-    }
-
-    public static void connect() {
-        connectToServer();
-    }
-
-    private static void connectToServer() {
-        if (rviNode.isConnected()) rviNode.disconnect();
-
-        rviNode.setServerUrl(preferences.getString("pref_rvi_server", "38.129.64.40"));
-        rviNode.setServerPort(Integer.parseInt(preferences.getString("pref_rvi_server_port", "8807")));
-
-        rviNode.connect();
-    }
-
-    public interface ServerNodeListener
-    {
-        void onReceivedCertificateResponse();
-
-        void onReceiveCertificateProvisioning();
-
-        void onReceivedCertificateAccountDetails();
-
-        void onServiceInvokedByGuest();
-    }
-
-    private final static String NEW_CERTIFICATE_DATA_KEY        = "NEW_CERTIFICATE_DATA_KEY";
-    private final static String CERTIFICATE_DATA_KEY            = "CERTIFICATE_DATA_KEY";
-    private final static String NEW_USER_CREDENTIALS_KEY        = "NEW_USER_CREDENTIALS_KEY";
-    private final static String USER_CREDENTIALS_KEY            = "USER_CREDENTIALS_KEY";
-    private final static String NEW_REMOTE_CREDENTIALS_LIST_KEY = "NEW_REMOTE_CREDENTIALS_LIST_KEY";
-    private final static String REMOTE_CREDENTIALS_LIST_KEY     = "REMOTE_CREDENTIALS_LIST_KEY";
-    private final static String NEW_INVOKED_SERVICE_REPORT_KEY  = "NEW_INVOKED_SERVICE_REPORT_KEY";
-    private final static String INVOKED_SERVICE_REPORT_KEY      = "INVOKED_SERVICE_REPORT_KEY";
-
-    //private static PrefsWrapper             ourInstance = new PrefsWrapper();
-    private static SharedPreferences        prefs       = PreferenceManager.getDefaultSharedPreferences(UnlockApplication.getContext());
-    private static SharedPreferences.Editor editor      = prefs.edit();
-    private static Gson                     gson        = new Gson();
-
-    //public static PrefsWrapper getInstance() {
-    //    return ourInstance;
-    //}
-
-    //private PrefsWrapper() {
-    //}
-
-    public static Certificate getCertificate() {
-        String certStr = prefs.getString(CERTIFICATE_DATA_KEY, null);
-
-        if (certStr == null) return null;
-
-        return gson.fromJson(certStr, Certificate.class);
-    }
-
-    public static void setCertificate(Certificate cert) {
-        String certStr = gson.toJson(cert, Certificate.class);
-        editor.putString(CERTIFICATE_DATA_KEY, certStr);
-        editor.commit();
-
-        ServerNode.setThereIsNewCertificateData(true);
-    }
-
-    public static UserCredentials getUserCredentials() {
-        String userStr = prefs.getString(USER_CREDENTIALS_KEY, null);
-
-        if (userStr == null) return null;
-
-        return gson.fromJson(userStr, UserCredentials.class);
-    }
-
-    public static void setUserCredentials(UserCredentials userCredentials) {
-        String userStr = gson.toJson(userCredentials, UserCredentials.class);
-        editor.putString(USER_CREDENTIALS_KEY, userStr);
-        editor.commit();
-
-        ServerNode.setThereAreNewUserCredentials(true);
-    }
-
-    public static Collection<UserCredentials> getRemoteCredentialsList() {
-        String credListStr = prefs.getString(REMOTE_CREDENTIALS_LIST_KEY, null);
-
-        if (credListStr == null) return null;
-
-        Type collectionType = new TypeToken<Collection<UserCredentials>>()
-        {
-        }.getType();
-        return gson.fromJson(credListStr, collectionType);
-    }
-
-    public static void setRemoteCredentialsList(Collection<UserCredentials> keys) {
-        Type collectionType = new TypeToken<Collection<UserCredentials>>()
-        {
-        }.getType();
-        String credListStr = gson.toJson(keys, collectionType);
-        editor.putString(REMOTE_CREDENTIALS_LIST_KEY, credListStr);
-        editor.commit();
-
-        ServerNode.setThereAreNewRemoteCredentials(true);
-    }
-
-    public static InvokedServiceReport getInvokedServiceReport() {
-        String reportStr = prefs.getString(INVOKED_SERVICE_REPORT_KEY, null);
-
-        if (reportStr == null) return null;
-
-        return gson.fromJson(reportStr, InvokedServiceReport.class);
-    }
-
-    public static void setInvokedServiceReport(InvokedServiceReport report) {
-        String reportStr = gson.toJson(report, InvokedServiceReport.class);
-        editor.putString(INVOKED_SERVICE_REPORT_KEY, reportStr);
-        editor.commit();
-
-        ServerNode.setThereIsNewInvokedServiceReport(true);
-    }
-
-    public static Boolean thereIsNewCertificateData() {
-        return prefs.getBoolean(NEW_CERTIFICATE_DATA_KEY, false);
-    }
-
-    public static void setThereIsNewCertificateData(Boolean isNewActivity) {
-        editor.putBoolean(NEW_CERTIFICATE_DATA_KEY, isNewActivity);
-        editor.commit();
-    }
-
-    public static Boolean thereAreNewUserCredentials() {
-        return prefs.getBoolean(NEW_USER_CREDENTIALS_KEY, false);
-    }
-
-    public static void setThereAreNewUserCredentials(Boolean areNewCredentials) {
-        editor.putBoolean(NEW_USER_CREDENTIALS_KEY, areNewCredentials);
-        editor.commit();
-    }
-
-    public static Boolean thereAreNewRemoteCredentials() {
-        return prefs.getBoolean(NEW_REMOTE_CREDENTIALS_LIST_KEY, false);
-    }
-
-    public static void setThereAreNewRemoteCredentials(Boolean areNewCredentials) {
-        editor.putBoolean(NEW_REMOTE_CREDENTIALS_LIST_KEY, areNewCredentials);
-        editor.commit();
-    }
-
-    public static Boolean thereIsNewInvokedServiceReport() {
-        return prefs.getBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, false);
-    }
-
-    public static void setThereIsNewInvokedServiceReport(Boolean isNewReport) {
-        editor.putBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, isNewReport);
-        editor.commit();
-    }
 
 }
