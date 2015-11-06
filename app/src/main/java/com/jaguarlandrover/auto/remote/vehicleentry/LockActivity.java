@@ -234,7 +234,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                 break;
             case "keychange":
                 try {
-                    RviService.requestAll(Request(), LockActivity.this);
+                    ServerNode.requestRemoteCredentials();//RviService.requestAll(Request(), LockActivity.this);
                     requestProgress = ProgressDialog.show(LockActivity.this, "","Retrieving keys...",true);
 
                     requestProgress.setCancelable(true);

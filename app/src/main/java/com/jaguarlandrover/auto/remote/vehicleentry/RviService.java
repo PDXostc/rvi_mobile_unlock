@@ -209,160 +209,164 @@ public class RviService extends Service /* implements BeaconConsumer */{
     }
     private static final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
     private void _connectConnect() {
-        String rviServer = prefs.getString("pref_rvi_server", "38.129.64.40");//"54.172.25.254");//
-        int rviPort = Integer.parseInt(prefs.getString("pref_rvi_server_port","8807"));
+        ServerNode.
 
-        //Create service vector
-        final String certProv = "jlr.com/mobile/" + getLocalNodeIdentifier(this) + "/dm/cert_provision";
-        final String certRsp = "jlr.com/mobile/"+ getLocalNodeIdentifier(this) +"/dm/cert_response";
-        final String certAccountDetails = "jlr.com/mobile/"+ getLocalNodeIdentifier(this) +"/dm/cert_accountdetails";
-        final String serviceInvokedByGuest = "jlr.com/mobile/"+ getLocalNodeIdentifier(this) +"/report/serviceinvokedbyguest";
-        final String[] ss = {certProv, certRsp, certAccountDetails, serviceInvokedByGuest};
+        ServerNode.connect();
 
-        //final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
-
-        Observable<JSONObject> obs = connectCloud(ss, rviServer, rviPort , cm, cloudSender);
-
-        obs.subscribeOn(Schedulers.io()).subscribe(new Subscriber<JSONObject>() {
-
-            @Override
-            public void onCompleted() {
-                Log.e(TAG, "Cloud connection DONE");
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.e(TAG, "", e);
-            }
-
-            @Override
-            public void onNext(JSONObject s) {
-                //Log.i(TAG, "Received from Cloud JSON: " + s.toString());
-                if (!s.has("cmd")) {
-                    Log.w(TAG, "CMD is missing!");
-                    return; //Very strange
-                }
-
-                try {
-                    String cmd = s.getString("cmd");
-                    cmd.toLowerCase().trim();
-                    //TODO here add Cert validation!
-
-                    if ("rcv".equals(cmd)) {
-                        if (!s.has("data")) {
-                            Log.w(TAG, "DATA is missing!");
-                            return; //Very strange
-                        }
-                        JSONObject data = RviProtocol.parseData(s.getString("data"));
-                        String servicePtr = data.getString("service");
-                        //ADD SERVICE HERE----*************
-
-                        Log.i(TAG, "XX Received Service : " + servicePtr);
-                        Log.i(TAG, "XX Received Data : " + data);
-                        //CERT SERVICE
-                        if (servicePtr.equals(ss[0])) { /* "/dm/cert_provision" */
-                            JSONArray params = data.getJSONArray("parameters");
-                            Log.i(TAG, "Received Cert Params : " + params);
-                            JSONObject p1 = params.getJSONObject(0);
-                            JSONObject p2 = params.getJSONObject(1);
-                            String certId = p1.getString("certid");
-                            String jwt = p2.getString("certificate");
-                            Log.i(TAG, "Received from Cloud Cert ID: " + certId);
-                            Log.i(TAG, "JWT = " + jwt);
-
-                            certs.put(certId, jwt);
-                            //Debug
-                            // Errors seen here on parseAndValidateJWT. Should be getting Base64
-                            // from backend, but sometimes getting errors that it's not.
-                            // Should be fixed now, backend is sending URL safe Base64,
-                            // parseAndValidateJWT now using Base64.URL_SAFE
-                            String[] token = RviProtocol.parseAndValidateJWT(jwt);
-                            JSONObject key = new JSONObject(token[1]);
-                            Log.d(TAG, "Token = " + key.toString(2));
-
-                            Certificate certificate = gson.fromJson(key.toString(2), Certificate.class);
-                            ServerNode.setCertificate(certificate); // TODO: Maybe just pass in the string instead of deserializing it first, here?
-                            // TODO: Is saving things to prefs really the best way to pass new objects from the RVI layer to the ui??
-
-                            sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
-                                    "dialog", "New Key", key.getString("id"));
-
-                        } else if (servicePtr.equals(ss[1])) { /* "/dm/cert_response" */
-                            String params = data.getString("parameters");
-                            Log.i(TAG, "Received from Cloud Cert: " + params);
-
-                            SharedPreferences.Editor e = prefs.edit();
-                            e.putString("Certificates", params);
-                            e.putString("newKeyList", "true");
-                            e.apply();
-
-                            Type collectionType = new TypeToken<Collection<UserCredentials>>(){}.getType();
-                            Collection<UserCredentials> remoteCredentials = gson.fromJson(gson.toJson(gson.fromJson(params, HashMap.class).get("certificates")), collectionType);
-
-                            ServerNode.setRemoteCredentialsList(remoteCredentials);
-
-                        } else if (servicePtr.equals(ss[2])) { /* "/dm/cert_accountdetails" */
-                            JSONArray params = data.getJSONArray("parameters");
-                            JSONObject p1 = params.getJSONObject(0);
-                            Log.i(TAG, "User Data:" + p1);
-
-                            SharedPreferences.Editor e = prefs.edit();
-                            e.putString("Userdata", p1.toString());
-                            e.putString("newdata", "true");
-                            e.commit();
-
-                            UserCredentials userCredentials = gson.fromJson(p1.toString(), UserCredentials.class);
-                            ServerNode.setUserCredentials(userCredentials);
-
-                        } else if (servicePtr.equals(ss[3])) { /* "/report/serviceinvokedbyguest" */
-                            JSONArray params = data.getJSONArray("parameters");
-                            JSONObject p1 = params.getJSONObject(0);
-                            Log.i(TAG, "Service Invoked by Guest:" + p1);
-
-                            SharedPreferences.Editor e = prefs.edit();
-                            e.putString("guestInvokedService", p1.toString());
-                            e.putString("newguestactivity", "true");
-                            e.commit();
-
-                            InvokedServiceReport report = gson.fromJson(p1.toString(), InvokedServiceReport.class);
-                            ServerNode.setInvokedServiceReport(report);
-                        }
-
-                    } else if ("sa".equals(cmd)) {
-                        if (!s.has("svcs")) {
-                            Log.w(TAG, "SERVICES is missing!");
-                            return; //Very strange
-                        }
-                        JSONArray svcs = s.getJSONArray("svcs");
-                        String[] services = new String[svcs.length()];
-                        for (int i = 0; i < services.length; i++) {
-                            services[i] = svcs.getString(i);
-                        }
-                        //Just print
-                        for (String s1 : services) {
-                            Log.d(TAG, "Found service : " + s1);
-                        }
-
-
-                    } else if ("au".equals(cmd)) {
-                        String addr = s.getString("addr");
-                        int port = s.getInt("port");
-                        Log.d(TAG, "Authentication from server " + addr + " : " + port);
-
-                        JSONObject saData = RviProtocol.createServiceAnnouncement(
-                                1, ss, "av", "", "");
-                        cloudSender.onNext(saData);
-
-
-                    } else if ("ping".equals(cmd)) { //NOOP
-                    } else {
-                        Log.w(TAG, "Unknown command received - " + cmd);
-                    }
-                } catch (JSONException e) {
-                    Log.e(TAG, "", e);
-                }
-            }
-        });
+//        String rviServer = prefs.getString("pref_rvi_server", "38.129.64.40");//"54.172.25.254");//
+//        int rviPort = Integer.parseInt(prefs.getString("pref_rvi_server_port","8807"));
+//
+//        //Create service vector
+//        final String certProv = "jlr.com/mobile/" + getLocalNodeIdentifier(this) + "/dm/cert_provision";
+//        final String certRsp = "jlr.com/mobile/"+ getLocalNodeIdentifier(this) +"/dm/cert_response";
+//        final String certAccountDetails = "jlr.com/mobile/"+ getLocalNodeIdentifier(this) +"/dm/cert_accountdetails";
+//        final String serviceInvokedByGuest = "jlr.com/mobile/"+ getLocalNodeIdentifier(this) +"/report/serviceinvokedbyguest";
+//        final String[] ss = {certProv, certRsp, certAccountDetails, serviceInvokedByGuest};
+//
+//        //final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
+//
+//        Observable<JSONObject> obs = connectCloud(ss, rviServer, rviPort , cm, cloudSender);
+//
+//        obs.subscribeOn(Schedulers.io()).subscribe(new Subscriber<JSONObject>() {
+//
+//            @Override
+//            public void onCompleted() {
+//                Log.e(TAG, "Cloud connection DONE");
+//            }
+//
+//            @Override
+//            public void onError(Throwable e) {
+//                Log.e(TAG, "", e);
+//            }
+//
+//            @Override
+//            public void onNext(JSONObject s) {
+//                //Log.i(TAG, "Received from Cloud JSON: " + s.toString());
+//                if (!s.has("cmd")) {
+//                    Log.w(TAG, "CMD is missing!");
+//                    return; //Very strange
+//                }
+//
+//                try {
+//                    String cmd = s.getString("cmd");
+//                    cmd.toLowerCase().trim();
+//                    //TODO here add Cert validation!
+//
+//                    if ("rcv".equals(cmd)) {
+//                        if (!s.has("data")) {
+//                            Log.w(TAG, "DATA is missing!");
+//                            return; //Very strange
+//                        }
+//                        JSONObject data = RviProtocol.parseData(s.getString("data"));
+//                        String servicePtr = data.getString("service");
+//                        //ADD SERVICE HERE----*************
+//
+//                        Log.i(TAG, "XX Received Service : " + servicePtr);
+//                        Log.i(TAG, "XX Received Data : " + data);
+//                        //CERT SERVICE
+//                        if (servicePtr.equals(ss[0])) { /* "/dm/cert_provision" */
+//                            JSONArray params = data.getJSONArray("parameters");
+//                            Log.i(TAG, "Received Cert Params : " + params);
+//                            JSONObject p1 = params.getJSONObject(0);
+//                            JSONObject p2 = params.getJSONObject(1);
+//                            String certId = p1.getString("certid");
+//                            String jwt = p2.getString("certificate");
+//                            Log.i(TAG, "Received from Cloud Cert ID: " + certId);
+//                            Log.i(TAG, "JWT = " + jwt);
+//
+//                            certs.put(certId, jwt);
+//                            //Debug
+//                            // Errors seen here on parseAndValidateJWT. Should be getting Base64
+//                            // from backend, but sometimes getting errors that it's not.
+//                            // Should be fixed now, backend is sending URL safe Base64,
+//                            // parseAndValidateJWT now using Base64.URL_SAFE
+//                            String[] token = RviProtocol.parseAndValidateJWT(jwt);
+//                            JSONObject key = new JSONObject(token[1]);
+//                            Log.d(TAG, "Token = " + key.toString(2));
+//
+//                            Certificate certificate = gson.fromJson(key.toString(2), Certificate.class);
+//                            ServerNode.setCertificate(certificate); // TODO: Maybe just pass in the string instead of deserializing it first, here?
+//                            // TODO: Is saving things to prefs really the best way to pass new objects from the RVI layer to the ui??
+//
+//                            sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
+//                                    "dialog", "New Key", key.getString("id"));
+//
+//                        } else if (servicePtr.equals(ss[1])) { /* "/dm/cert_response" */
+//                            String params = data.getString("parameters");
+//                            Log.i(TAG, "Received from Cloud Cert: " + params);
+//
+//                            SharedPreferences.Editor e = prefs.edit();
+//                            e.putString("Certificates", params);
+//                            e.putString("newKeyList", "true");
+//                            e.apply();
+//
+//                            Type collectionType = new TypeToken<Collection<UserCredentials>>(){}.getType();
+//                            Collection<UserCredentials> remoteCredentials = gson.fromJson(gson.toJson(gson.fromJson(params, HashMap.class).get("certificates")), collectionType);
+//
+//                            ServerNode.setRemoteCredentialsList(remoteCredentials);
+//
+//                        } else if (servicePtr.equals(ss[2])) { /* "/dm/cert_accountdetails" */
+//                            JSONArray params = data.getJSONArray("parameters");
+//                            JSONObject p1 = params.getJSONObject(0);
+//                            Log.i(TAG, "User Data:" + p1);
+//
+//                            SharedPreferences.Editor e = prefs.edit();
+//                            e.putString("Userdata", p1.toString());
+//                            e.putString("newdata", "true");
+//                            e.commit();
+//
+//                            UserCredentials userCredentials = gson.fromJson(p1.toString(), UserCredentials.class);
+//                            ServerNode.setUserCredentials(userCredentials);
+//
+//                        } else if (servicePtr.equals(ss[3])) { /* "/report/serviceinvokedbyguest" */
+//                            JSONArray params = data.getJSONArray("parameters");
+//                            JSONObject p1 = params.getJSONObject(0);
+//                            Log.i(TAG, "Service Invoked by Guest:" + p1);
+//
+//                            SharedPreferences.Editor e = prefs.edit();
+//                            e.putString("guestInvokedService", p1.toString());
+//                            e.putString("newguestactivity", "true");
+//                            e.commit();
+//
+//                            InvokedServiceReport report = gson.fromJson(p1.toString(), InvokedServiceReport.class);
+//                            ServerNode.setInvokedServiceReport(report);
+//                        }
+//
+//                    } else if ("sa".equals(cmd)) {
+//                        if (!s.has("svcs")) {
+//                            Log.w(TAG, "SERVICES is missing!");
+//                            return; //Very strange
+//                        }
+//                        JSONArray svcs = s.getJSONArray("svcs");
+//                        String[] services = new String[svcs.length()];
+//                        for (int i = 0; i < services.length; i++) {
+//                            services[i] = svcs.getString(i);
+//                        }
+//                        //Just print
+//                        for (String s1 : services) {
+//                            Log.d(TAG, "Found service : " + s1);
+//                        }
+//
+//
+//                    } else if ("au".equals(cmd)) {
+//                        String addr = s.getString("addr");
+//                        int port = s.getInt("port");
+//                        Log.d(TAG, "Authentication from server " + addr + " : " + port);
+//
+//                        JSONObject saData = RviProtocol.createServiceAnnouncement(
+//                                1, ss, "av", "", "");
+//                        cloudSender.onNext(saData);
+//
+//
+//                    } else if ("ping".equals(cmd)) { //NOOP
+//                    } else {
+//                        Log.w(TAG, "Unknown command received - " + cmd);
+//                    }
+//                } catch (JSONException e) {
+//                    Log.e(TAG, "", e);
+//                }
+//            }
+//        });
     }
 
     // This is the object that receives interactions from clients.  See
@@ -977,108 +981,108 @@ public class RviService extends Service /* implements BeaconConsumer */{
         }
     }
 
-    public static void sendKey(JSONArray json) {
-        JSONObject send;
-        try{
-            send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_create",json,"","");
-            // Testing for dupe service invokes
-            //send = RviProtocol.createRequestData(3, "jlr.com/backend/dm/cert_create", json.getJSONObject(0), "", "");
-            Log.d(TAG, "Successfully sent" + send.toString());
-            // Testing for dupe service invokes
-            Log.d("stack cloud send: ", Thread.currentThread().getStackTrace().toString());
-            Thread.currentThread().getStackTrace();
-            cloudSender.onNext(send);
-        }catch(Exception e) {
-            e.printStackTrace();
-            cloudSender.onError(e);
-        }
-    }
+//    public static void sendKey(JSONArray json) {
+//        JSONObject send;
+//        try{
+//            send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_create",json,"","");
+//            // Testing for dupe service invokes
+//            //send = RviProtocol.createRequestData(3, "jlr.com/backend/dm/cert_create", json.getJSONObject(0), "", "");
+//            Log.d(TAG, "Successfully sent" + send.toString());
+//            // Testing for dupe service invokes
+//            Log.d("stack cloud send: ", Thread.currentThread().getStackTrace().toString());
+//            Thread.currentThread().getStackTrace();
+//            cloudSender.onNext(send);
+//        }catch(Exception e) {
+//            e.printStackTrace();
+//            cloudSender.onError(e);
+//        }
+//    }
+//
+//    public static void requestAll(JSONArray json, Context ctx){
+//        JSONObject request;
+//        JSONObject uuid = new JSONObject();
+//        try{
+//            uuid.put("mobileUUID", getLocalNodeIdentifier(ctx));
+//            json.put(uuid);
+//            request = RviProtocol.createReceiveData(4, "jlr.com/backend/dm/cert_requestall", json, "", "");
+//            // Testing for dupe service invokes
+//            Log.d(TAG, "Successfully sent" + request.toString());
+//            Log.d("stack cloud send: ", Thread.currentThread().getStackTrace().toString());
+//            Thread.currentThread().getStackTrace();
+//            // Testing for dupe service invokes
+//            //request = RviProtocol.createRequestData(4, "jlr.com/backend/dm/cert_requestall", json.getJSONObject(0), "", "");
+//            cloudSender.onNext(request);
+//
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            cloudSender.onError(e);}
+//    }
+//
+//    public static void revokeKey(JSONArray json){
+//        JSONObject send;
+//        try{
+//            send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_modify",json,"","");
+//            // Testing for dupe service invokes
+//            //send = RviProtocol.createRequestData(3, "jlr.com/backend/dm/cert_modify", json.getJSONObject(0), "", "");
+//            Log.d(TAG, "Successfully sent" + send.toString());
+//            Log.d("stack cloud send: ", Thread.currentThread().getStackTrace().toString());
+//            Thread.currentThread().getStackTrace();
+//            cloudSender.onNext(send);
+//        }catch(Exception e) {
+//            e.printStackTrace();
+//            cloudSender.onError(e);
+//        }
+//    }
+//    public static String JSONParser(String jsonString, String RqstData)
+//    {
+//        try {
+//            JSONObject json = new JSONObject(jsonString);
+//            String parameterVal = json.getString(RqstData);
+//            return parameterVal;
+//        }catch (Exception e){
+//            //e.printStackTrace();
+//        }
+//        return "0";
+//    }
 
-    public static void requestAll(JSONArray json, Context ctx){
-        JSONObject request;
-        JSONObject uuid = new JSONObject();
-        try{
-            uuid.put("mobileUUID", getLocalNodeIdentifier(ctx));
-            json.put(uuid);
-            request = RviProtocol.createReceiveData(4, "jlr.com/backend/dm/cert_requestall", json, "", "");
-            // Testing for dupe service invokes
-            Log.d(TAG, "Successfully sent" + request.toString());
-            Log.d("stack cloud send: ", Thread.currentThread().getStackTrace().toString());
-            Thread.currentThread().getStackTrace();
-            // Testing for dupe service invokes
-            //request = RviProtocol.createRequestData(4, "jlr.com/backend/dm/cert_requestall", json.getJSONObject(0), "", "");
-            cloudSender.onNext(request);
-
-        }catch (Exception e){
-            e.printStackTrace();
-            cloudSender.onError(e);}
-    }
-
-    public static void revokeKey(JSONArray json){
-        JSONObject send;
-        try{
-            send = RviProtocol.createReceiveData(3,"jlr.com/backend/dm/cert_modify",json,"","");
-            // Testing for dupe service invokes
-            //send = RviProtocol.createRequestData(3, "jlr.com/backend/dm/cert_modify", json.getJSONObject(0), "", "");
-            Log.d(TAG, "Successfully sent" + send.toString());
-            Log.d("stack cloud send: ", Thread.currentThread().getStackTrace().toString());
-            Thread.currentThread().getStackTrace();
-            cloudSender.onNext(send);
-        }catch(Exception e) {
-            e.printStackTrace();
-            cloudSender.onError(e);
-        }
-    }
-    public static String JSONParser(String jsonString, String RqstData)
-    {
-        try {
-            JSONObject json = new JSONObject(jsonString);
-            String parameterVal = json.getString(RqstData);
-            return parameterVal;
-        }catch (Exception e){
-            //e.printStackTrace();
-        }
-        return "0";
-    }
-
-    private final static String LOCAL_SERVICE_PREFIX_STRING = "deviceUUID";
-
-    // TODO: Test and verify this function
-    private static String uuidB58String() {
-        UUID uuid = UUID.randomUUID();
-        String b64Str;
-
-        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
-        bb.putLong(uuid.getMostSignificantBits());
-        bb.putLong(uuid.getLeastSignificantBits());
-
-        b64Str = Base64.encodeToString(bb.array(), Base64.DEFAULT);
-        b64Str = b64Str.split("=")[0];
-
-        b64Str = b64Str.replace('+', 'P');
-        b64Str = b64Str.replace('/', 'S'); /* Reduces likelihood of uniqueness but stops non-alphanumeric characters from screwing up any urls or anything */
-
-        return b64Str;
-    }
-
-    /**
-     * Gets the prefix of the local RVI node
-     *
-     * @param context the application context
-     * @return the local prefix
-     */
-    public static String getLocalNodeIdentifier(Context context) { // TODO: There is no easy way to reset this once it's stored, is there? Maybe an app version check?
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String localServicePrefix;
-
-        if ((localServicePrefix = prefs.getString(LOCAL_SERVICE_PREFIX_STRING, null)) == null)
-            localServicePrefix = uuidB58String();
-
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(LOCAL_SERVICE_PREFIX_STRING, localServicePrefix);
-        editor.apply();
-
-        return localServicePrefix;
-    }
+//    private final static String LOCAL_SERVICE_PREFIX_STRING = "deviceUUID";
+//
+//    // TODO: Test and verify this function
+//    private static String uuidB58String() {
+//        UUID uuid = UUID.randomUUID();
+//        String b64Str;
+//
+//        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+//        bb.putLong(uuid.getMostSignificantBits());
+//        bb.putLong(uuid.getLeastSignificantBits());
+//
+//        b64Str = Base64.encodeToString(bb.array(), Base64.DEFAULT);
+//        b64Str = b64Str.split("=")[0];
+//
+//        b64Str = b64Str.replace('+', 'P');
+//        b64Str = b64Str.replace('/', 'S'); /* Reduces likelihood of uniqueness but stops non-alphanumeric characters from screwing up any urls or anything */
+//
+//        return b64Str;
+//    }
+//
+//    /**
+//     * Gets the prefix of the local RVI node
+//     *
+//     * @param context the application context
+//     * @return the local prefix
+//     */
+//    public static String getLocalNodeIdentifier(Context context) { // TODO: There is no easy way to reset this once it's stored, is there? Maybe an app version check?
+//
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+//        String localServicePrefix;
+//
+//        if ((localServicePrefix = prefs.getString(LOCAL_SERVICE_PREFIX_STRING, null)) == null)
+//            localServicePrefix = uuidB58String();
+//
+//        SharedPreferences.Editor editor = prefs.edit();
+//        editor.putString(LOCAL_SERVICE_PREFIX_STRING, localServicePrefix);
+//        editor.apply();
+//
+//        return localServicePrefix;
+//    }
 }

@@ -14,10 +14,6 @@ import android.view.MenuItem;
 
 import java.util.ArrayList;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 public class KeyShareActivity extends ActionBarActivity implements KeyShareActivityFragment.ShareFragmentButtonListener {
     String TAG = "JSON DATA:";
     static final int dateDialog = 0;
@@ -66,7 +62,8 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
                         try{
-                            RviService.sendKey(share_fragment.getFormData());
+                            //RviService.sendKey(share_fragment.getRemoteCredentials());
+                            ServerNode.createRemoteCredentials(share_fragment.getRemoteCredentials());
                             confirmationMessage();
                         } catch (Exception e) {
 

@@ -17,15 +17,19 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.jaguarlandrover.rvi.RVINode;
 import com.jaguarlandrover.rvi.ServiceBundle;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 
 public class ServerNode
 {
@@ -110,21 +114,33 @@ public class ServerNode
         rviNode.connect();
     }
 
-    public void requestRemoteCredentials() {
+    public static void requestRemoteCredentials() {
+        JSONObject parameters = new JSONObject();
 
+        try {
+            parameters.put("mobileUUID", RVINode.getLocalNodeIdentifier(applicationContext));
+            parameters.put("vehicleVIN", ServerNode.getUserCredentials().getVehicleVin());
+        } catch (Exception e) {
+
+        }
+
+        certProvServiceBundle.invokeService(CERT_REQUESTALL, parameters, null);
     }
 
-    public void modifyRemoteCredentials(UserCredentials remoteCredentials) {
-
+    public static void modifyRemoteCredentials(UserCredentials remoteCredentials) {
+        certProvServiceBundle.invokeService(CERT_MODIFY, remoteCredentials, 5000);
     }
 
-    public void createRemoteCredentials(UserCredentials remoteCredentials) {
-
+    public static void createRemoteCredentials(UserCredentials remoteCredentials) {
+        certProvServiceBundle.invokeService(CERT_CREATE, remoteCredentials, 5000);
     }
-
 
     public interface ServerNodeListener
     {
+        void onServerDidConnect();
+
+        void onServerDidDisconnect();
+
         void onReceivedCertificateResponse();
 
         void onReceiveCertificateProvisioning();
@@ -153,7 +169,7 @@ public class ServerNode
     public static UserCredentials getUserCredentials() {
         String userStr = preferences.getString(USER_CREDENTIALS_KEY, null);
 
-        if (userStr == null) return null;
+        if (userStr == null) return new UserCredentials();
 
         return gson.fromJson(userStr, UserCredentials.class);
     }
@@ -245,7 +261,7 @@ public class ServerNode
     {
         @Override
         public void nodeDidConnect() {
-
+            
         }
 
         @Override
@@ -264,21 +280,92 @@ public class ServerNode
         @Override
         public void onServiceInvoked(ServiceBundle serviceBundle, String serviceIdentifier, Object parameters) {
             if (serviceBundle.getBundleIdentifier().equals(CERT_PROV_BUNDLE)) {
-                if (serviceIdentifier.equals(CERT_RESPONSE)) {
-                    // TODO: Copy updated code from RviService.java
+                switch (serviceIdentifier) {
+                    case CERT_RESPONSE:
+//                    String params = data.getString("parameters");
+//                    Log.i(TAG, "Received from Cloud Cert: " + params);
+//
+//                    SharedPreferences.Editor e = prefs.edit();
+//                    e.putString("Certificates", params);
+//                    e.putString("newKeyList", "true");
+//                    e.apply();
 
-                } else if (serviceIdentifier.equals(CERT_PROVISION)) {
-                    // TODO: Copy updated code from RviService.java
+                        Type collectionType = new TypeToken<Collection<UserCredentials>>()
+                        {
+                        }.getType();
+                        Collection<UserCredentials> remoteCredentials = gson
+                                .fromJson(gson.toJson(gson.fromJson((String) parameters, HashMap.class).get("certificates")), collectionType);
 
-                } else if (serviceIdentifier.equals(CERT_ACCOUNT_DETAILS)) {
-                    // TODO: Copy updated code from RviService.java
+                        ServerNode.setRemoteCredentialsList(remoteCredentials);
 
+                        break;
+                    case CERT_PROVISION: {
+                        JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
+                        Log.i(TAG, "Received Cert Params : " + params);
+
+                        try {
+                            JSONObject p1 = params.getJSONObject(0);
+                            JSONObject p2 = params.getJSONObject(1);
+                            String certId = p1.getString("certid");
+                            String jwt = p2.getString("certificate");
+
+                            Log.i(TAG, "Received from Cloud Cert ID: " + certId);
+                            Log.i(TAG, "JWT = " + jwt);
+
+
+                            //certs.put(certId, jwt);
+
+                            //Debug
+                            // Errors seen here on parseAndValidateJWT. Should be getting Base64
+                            // from backend, but sometimes getting errors that it's not.
+                            // Should be fixed now, backend is sending URL safe Base64,
+                            // parseAndValidateJWT now using Base64.URL_SAFE
+                            String[] token = RviProtocol.parseAndValidateJWT(jwt);
+                            JSONObject key = new JSONObject(token[1]);
+                            Log.d(TAG, "Token = " + key.toString(2));
+
+                            Certificate certificate = gson.fromJson(key.toString(2), Certificate.class);
+                            ServerNode.setCertificate(certificate); // TODO: Maybe just pass in the string instead of deserializing it first, here?
+
+                            // TODO: Is saving things to prefs really the best way to pass new objects from the RVI layer to the ui??
+
+//                            sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
+//                                    "dialog", "New Key", key.getString("id"));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        break;
+                    }
+                    case CERT_ACCOUNT_DETAILS: {
+                        JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
+
+                        try {
+                            JSONObject p1 = params.getJSONObject(0);
+                            Log.i(TAG, "User Data:" + p1);
+
+                            UserCredentials userCredentials = gson.fromJson(p1.toString(), UserCredentials.class);
+                            ServerNode.setUserCredentials(userCredentials);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        break;
+                    }
                 }
             } else if (serviceBundle.getBundleIdentifier().equals(REPORTING_BUNDLE)) {
                 if (serviceIdentifier.equals(SERVICE_INVOKED_BY_GUEST)) {
-                    // TODO: Copy updated code from RviService.java
+                    JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
 
+                    try {
+                        JSONObject p1 = params.getJSONObject(0);
+                        Log.i(TAG, "Service Invoked by Guest:" + p1);
 
+                        InvokedServiceReport report = gson.fromJson(p1.toString(), InvokedServiceReport.class);
+                        ServerNode.setInvokedServiceReport(report);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

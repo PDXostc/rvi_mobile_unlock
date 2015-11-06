@@ -205,11 +205,11 @@ public class ServiceBundle
      * @param parameters the parameters
      * @param timeout the timeout, in milliseconds. This is added to the current system time.
      */
-    public void invokeService(String serviceIdentifier, Object parameters, Long timeout) {
+    public void invokeService(String serviceIdentifier, Object parameters, Integer timeout) {
         Service service = getRemoteService(serviceIdentifier);
 
         service.setParameters(parameters);
-        service.setTimeout(System.currentTimeMillis() + timeout);
+        service.setTimeout(System.currentTimeMillis() + (timeout != 0 ? timeout : 5000));
 
         if (service.hasNodeIdentifier() && mNode != null) // TODO: Check the logic here
             /*RVINode*/ mNode.invokeService(service);
