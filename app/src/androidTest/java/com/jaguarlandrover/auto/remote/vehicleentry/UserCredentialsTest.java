@@ -9,13 +9,10 @@
 
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
-import android.app.Application;
-import android.test.ApplicationTestCase;
 import com.google.gson.Gson;
 import junit.framework.TestCase;
 
 import java.util.Date;
-import java.util.TimeZone;
 
 /**
  * <a href="http://d.android.com/tools/testing/testing_android.html">Testing Fundamentals</a>
@@ -54,7 +51,7 @@ public class UserCredentialsTest extends TestCase
                 "}";
 
         UserCredentials userCredentials = gson.fromJson(jsonString, UserCredentials.class);
-        PrefsWrapper.setUserCredentials(userCredentials);
+        ServerNode.setUserCredentials(userCredentials);
 
         /* Tests are going to fail when not in daylight savings or if not in Pacific timezone, but, frankly, I don't care */
         assertEquals("10/20/2015 3:20 AM PDT", userCredentials.getValidFrom());

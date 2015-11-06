@@ -2,8 +2,6 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,7 +16,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 
 public class KeyRevokeActivity extends ActionBarActivity {
@@ -76,7 +73,7 @@ public class KeyRevokeActivity extends ActionBarActivity {
         JSONArray revokeKey = new JSONArray();
 
         try {
-            ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(PrefsWrapper.getRemoteCredentialsList());
+            ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(ServerNode.getRemoteCredentialsList());
 
             UserCredentials selectedRemoteCredentials = remoteCredentialsList.get(mPosition);
 
@@ -116,7 +113,7 @@ public class KeyRevokeActivity extends ActionBarActivity {
 
     public void addUsers(RemoteCredentialsAdapter adapter){
         try {
-            ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(PrefsWrapper.getRemoteCredentialsList());
+            ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(ServerNode.getRemoteCredentialsList());
 
             adapter.addAll(remoteCredentialsList);
         } catch (Exception e) {

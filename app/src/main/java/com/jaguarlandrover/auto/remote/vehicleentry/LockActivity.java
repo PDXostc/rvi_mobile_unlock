@@ -256,7 +256,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
     public JSONArray Request() throws JSONException, java.lang.NullPointerException {
         JSONObject request = new JSONObject();
-        request.put("vehicleVIN", PrefsWrapper.getUserCredentials().getVehicleVin());
+        request.put("vehicleVIN", ServerNode.getUserCredentials().getVehicleVin());
 
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(request);
@@ -264,27 +264,27 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     }
 
     public void checkForKeys() {
-        UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
+        UserCredentials userCredentials = ServerNode.getUserCredentials();
 
-        if (userCredentials != null && PrefsWrapper.thereAreNewUserCredentials()) {
+        if (userCredentials != null && ServerNode.thereAreNewUserCredentials()) {
             keyUpdate(userCredentials);
-            PrefsWrapper.setThereAreNewUserCredentials(false);
+            ServerNode.setThereAreNewUserCredentials(false);
         }
     }
 
     public void checkForGuestActivity() {
-        InvokedServiceReport report = PrefsWrapper.getInvokedServiceReport();
+        InvokedServiceReport report = ServerNode.getInvokedServiceReport();
 
-        if (report != null && PrefsWrapper.thereIsNewInvokedServiceReport()) {
+        if (report != null && ServerNode.thereIsNewInvokedServiceReport()) {
             notififyGuestUsedKey(report.getUserName(), report.getServiceIdentifier());
-            PrefsWrapper.setThereIsNewInvokedServiceReport(false);
+            ServerNode.setThereIsNewInvokedServiceReport(false);
         }
     }
 
     public void requestComplete() {
-        if (PrefsWrapper.thereAreNewRemoteCredentials()) {
+        if (ServerNode.thereAreNewRemoteCredentials()) {
             done();
-            PrefsWrapper.setThereAreNewRemoteCredentials(false);
+            ServerNode.setThereAreNewRemoteCredentials(false);
             requestProgress.dismiss();
             Intent intent = new Intent();
             intent.setClass(LockActivity.this, KeyRevokeActivity.class);

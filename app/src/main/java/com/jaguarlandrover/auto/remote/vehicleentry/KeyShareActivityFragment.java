@@ -2,10 +2,8 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.SharedPreferences;
 import android.app.Fragment;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -73,7 +71,7 @@ public class KeyShareActivityFragment extends Fragment {
         carPages = (ViewPager) view.findViewById(R.id.vehiclescroll);
         userheader = (TextView) view.findViewById(R.id.user);
 
-        UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
+        UserCredentials userCredentials = ServerNode.getUserCredentials();
         if (userCredentials != null) {
             userheader.setText(userCredentials.getUserName());
         }
@@ -130,7 +128,7 @@ public class KeyShareActivityFragment extends Fragment {
             Date newEnd = inputformat.parse(end_date);
             start = outputformat.format(newStart);
             end = outputformat.format(newEnd);
-            }catch (Exception e){Log.d("DATE","ERROR IN DATE FORMAT");
+            }catch (Exception e){Log.d("DATE", "ERROR IN DATE FORMAT");
         e.printStackTrace();}
 
         Boolean lockSwitch = lock_unlock.isChecked();

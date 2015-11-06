@@ -46,8 +46,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -283,7 +281,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             Log.d(TAG, "Token = " + key.toString(2));
 
                             Certificate certificate = gson.fromJson(key.toString(2), Certificate.class);
-                            PrefsWrapper.setCertificate(certificate); // TODO: Maybe just pass in the string instead of deserializing it first, here?
+                            ServerNode.setCertificate(certificate); // TODO: Maybe just pass in the string instead of deserializing it first, here?
                             // TODO: Is saving things to prefs really the best way to pass new objects from the RVI layer to the ui??
 
                             sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
@@ -301,7 +299,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             Type collectionType = new TypeToken<Collection<UserCredentials>>(){}.getType();
                             Collection<UserCredentials> remoteCredentials = gson.fromJson(gson.toJson(gson.fromJson(params, HashMap.class).get("certificates")), collectionType);
 
-                            PrefsWrapper.setRemoteCredentialsList(remoteCredentials);
+                            ServerNode.setRemoteCredentialsList(remoteCredentials);
 
                         } else if (servicePtr.equals(ss[2])) { /* "/dm/cert_accountdetails" */
                             JSONArray params = data.getJSONArray("parameters");
@@ -314,7 +312,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             e.commit();
 
                             UserCredentials userCredentials = gson.fromJson(p1.toString(), UserCredentials.class);
-                            PrefsWrapper.setUserCredentials(userCredentials);
+                            ServerNode.setUserCredentials(userCredentials);
 
                         } else if (servicePtr.equals(ss[3])) { /* "/report/serviceinvokedbyguest" */
                             JSONArray params = data.getJSONArray("parameters");
@@ -327,7 +325,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             e.commit();
 
                             InvokedServiceReport report = gson.fromJson(p1.toString(), InvokedServiceReport.class);
-                            PrefsWrapper.setInvokedServiceReport(report);
+                            ServerNode.setInvokedServiceReport(report);
                         }
 
                     } else if ("sa".equals(cmd)) {
@@ -435,7 +433,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-            UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
+            UserCredentials userCredentials = ServerNode.getUserCredentials();
             if (userCredentials != null) {
                 try {
                     if (userCredentials.getUserType().equals("guest") && (userCredentials.getAuthorizedServices().isLock() || !userCredentials.isKeyValid())) { // TODO: Test
@@ -948,7 +946,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
     public static void service(String service, Context ctx) {
         Log.i(TAG, "Invoking service : "+service+" the car, conn = " + btSender);
 
-        UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
+        UserCredentials userCredentials = ServerNode.getUserCredentials();
 
         //final String cert = (certs.size() > 0)?certs.values().iterator().next():"";
         final String cert = "";
