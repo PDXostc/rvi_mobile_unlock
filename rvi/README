@@ -1,1 +1,21 @@
 This is the RVI Android SDK. Check out the docs folder for some API documentation.
+
+Clone the repo into the top-level directory of your project:
+$ git clone https://github.com/PDXostc/rvi_core_android.git
+
+Add the rvi module to your settings.build file:
+include <...>, ':rvi_core_android'
+
+Click your main module in the Project Window, right click and go to "Open Module Settings".
+
+Select your module from the list, if not already selected, then click the "Dependencies" tab.
+
+Click the '+' button, then select the menu option "Module dependency".
+
+Select ":rvi_core_android" from the list. This will add the rvi module as a dependency. The "Scope" should read "Compile".
+
+In your module's build.gradle, add:
+dependencies {
+    ...
+    compile project(':rvi')
+}
