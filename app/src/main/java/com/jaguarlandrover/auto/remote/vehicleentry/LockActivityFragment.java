@@ -122,8 +122,8 @@ public class LockActivityFragment extends Fragment {
         public void run() {
 
             UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
-            if (userCredentials != null && userCredentials.getUserType().equals("guest")) {
-                checkDate();
+            if (userCredentials != null && userCredentials.getUserType().equals("guest") && !userCredentials.isKeyValid()) {
+                setButtons(userCredentials);
             }
 
             // Revoke check at the beginning of every minute
@@ -287,9 +287,8 @@ public class LockActivityFragment extends Fragment {
         try {
             //JSONObject json = new JSONObject(authorizedServices);
             if (userCredentials.getUserType().equals("guest")) {
-                setDateLabel(userCredentials);
-
                 keylbl.setText("Key Valid To:");
+
                 keyManagementLayout.setVisibility(View.GONE);
                 lock.setEnabled(userCredentials.getAuthorizedServices().isLock());
                 unlock.setEnabled(userCredentials.getAuthorizedServices().isLock());
@@ -299,11 +298,10 @@ public class LockActivityFragment extends Fragment {
                 stop.setEnabled(userCredentials.getAuthorizedServices().isEngine());
                 panic.setEnabled(userCredentials.getAuthorizedServices().isHazard());
 
-                if (!userCredentials.getAuthorizedServices().isEngine()) {
-                    if (!userCredentials.getAuthorizedServices().isLock()) {
-                        validDate.setText("Revoked");
-                        //validTime.setVisibility(View.GONE);
-                    }
+                if (!userCredentials.hasAnyAuthorizedServices() || !userCredentials.isKeyValid()) {
+                    validDate.setText("Revoked");
+                } else {
+                    validDate.setText(userCredentials.getValidTo());
                 }
 
             } else if (userCredentials.getUserType().equals("owner")) {
@@ -349,48 +347,4 @@ public class LockActivityFragment extends Fragment {
         }
         return "0";
     }
-
-    public void setDateLabel(UserCredentials userCredentials) {
-        String date = userCredentials.getValidTo();
-
-//        String[] dateTime = JSONParser(sharedPref.getString("Userdata", "There's nothing"), "validTo").split("T");
-//        String userDate = dateTime[0];
-//        String userTime = dateTime[1];
-//        userTime.substring(0, userTime.length() - 5);
-//        String userDateTime = userDate + " " + userTime;
-//        SimpleDateFormat oldFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        oldFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-//        try {
-//            Date newDate = oldFormat.parse(userDateTime);
-//            oldFormat = new SimpleDateFormat("MM/dd/yyy\nh:mm a z");
-//            String date = oldFormat.format(newDate);
-            validDate.setText(date);
-//        }
-//        catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
-        //validTime.setVisibility(View.VISIBLE);
-        validDate.setVisibility(View.VISIBLE);
-    }
-
-    void checkDate() {
-        try {
-            SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyy\nh:mm a z");
-
-            String date = validDate.getText().toString();
-            Date date1 = formatter.parse(date);
-            String now = formatter.format(new Date());
-            Date date2 = formatter.parse(now);
-            if (date1.compareTo(date2) <= 0) {
-                setButtons(new UserCredentials());
-            }
-
-        }
-        catch (Exception e) {
-            Log.w(TAG, "EXCEPTION Check for Valid To Date: " + e.toString());
-        }
-
-    }
-
 }

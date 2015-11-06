@@ -127,6 +127,16 @@ public class UserCredentials
         }
     }
 
+    public Boolean hasAnyAuthorizedServices() {
+        return mAuthorizedServices.isLock()    ||
+                mAuthorizedServices.isEngine() ||
+                mAuthorizedServices.isHazard() ||
+                mAuthorizedServices.isHorn()   ||
+                mAuthorizedServices.isLights() ||
+                mAuthorizedServices.isTrunk()  ||
+                mAuthorizedServices.isWindows();
+    }
+
     public String getUserName() {
         return mUserName;
     }
@@ -160,6 +170,7 @@ public class UserCredentials
         }
     }
 
+    // TODO: Doesn't seem to be working correctly
     public void setValidFromAsDate(Date validFrom) {
         try {
             SimpleDateFormat formatter = new SimpleDateFormat(SERVER_DATE_TIME_FORMATTER);
@@ -192,6 +203,7 @@ public class UserCredentials
         }
     }
 
+    // TODO: Doesn't seem to be working correctly
     public void setValidToAsDate(Date validFrom) {
         try {
             SimpleDateFormat formatter = new SimpleDateFormat(SERVER_DATE_TIME_FORMATTER);
