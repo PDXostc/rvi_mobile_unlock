@@ -209,7 +209,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
     }
     private static final PublishSubject<JSONObject> cloudSender = PublishSubject.create();
     private void _connectConnect() {
-        ServerNode.
+        //ServerNode.
 
         ServerNode.connect();
 

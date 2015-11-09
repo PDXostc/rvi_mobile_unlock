@@ -118,13 +118,13 @@ public class ServerNode
         JSONObject parameters = new JSONObject();
 
         try {
-            parameters.put("mobileUUID", RVINode.getLocalNodeIdentifier(applicationContext));
+            parameters.put("mobileUUID", RVINode.getLocalNodeIdentifier(applicationContext).substring("android/".length()));
             parameters.put("vehicleVIN", ServerNode.getUserCredentials().getVehicleVin());
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
 
-        certProvServiceBundle.invokeService(CERT_REQUESTALL, parameters, null);
+        certProvServiceBundle.invokeService(CERT_REQUESTALL, parameters, 5000);
     }
 
     public static void modifyRemoteCredentials(UserCredentials remoteCredentials) {
@@ -261,7 +261,7 @@ public class ServerNode
     {
         @Override
         public void nodeDidConnect() {
-            
+
         }
 
         @Override

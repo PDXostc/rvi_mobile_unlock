@@ -143,12 +143,10 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     public void submit(View v){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);;
 
-
-
         BKTask task = new BKTask(this);
         task.setUser(login_fragment.userName.getEditableText().toString());
         task.setpWd(login_fragment.password.getEditableText().toString());
-        task.execute(new String[]{("http://" + prefs.getString("pref_rvi_server", "rvi-test2.nginfotpdx.net") + ":8000/token/new.json")});
+        task.execute(new String[]{prefs.getString("pref_login_url", "http://rvi-test2.nginfotpdx.net:8000/token/new.json")});
     }
 
     @Override

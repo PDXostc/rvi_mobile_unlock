@@ -32,6 +32,21 @@
 
     </PreferenceCategory>
     <PreferenceCategory
+        android:title="Login URL"
+        android:key="pref_key_login_url">
+        <EditTextPreference android:title="Login URL"
+            android:key="pref_login_url"
+            android:summary="Login URL"
+            android:defaultValue="http://rvi-test2.nginfotpdx.net:8000/token/new.json"
+            />
+        <!--<EditTextPreference android:title="Login URL Port"-->
+            <!--android:key="pref_login_url_port"-->
+            <!--android:summary="Login URL port"-->
+            <!--android:defaultValue="8807"-->
+            <!--android:inputType="numberDecimal"-->
+            <!--/>-->
+    </PreferenceCategory>
+    <PreferenceCategory
         android:title="Bluetooth"
         android:key="pref_key_bluetooth">
         <EditTextPreference android:title="Bluetooth Protocol"
