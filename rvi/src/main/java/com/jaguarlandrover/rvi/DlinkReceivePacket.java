@@ -58,7 +58,7 @@ class DlinkReceivePacket extends DlinkPacket
 
         mMod = "proto_json_rpc";
         mService = service; // TODO: With this paradigm, if one of the parameters of mService changes, mData string will still be the same.
-        mData = Base64.encodeToString(mService.jsonString().getBytes(), Base64.DEFAULT);
+        mData = Base64.encodeToString(mService.jsonString().getBytes(), Base64.NO_PADDING | Base64.NO_WRAP);//Base64.DEFAULT);
     }
 
 //    public DlinkReceivePacket(HashMap jsonHash) {
