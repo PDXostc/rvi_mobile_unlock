@@ -92,6 +92,91 @@ public class ServerNode
     }
 
     private ServerNode() {
+        ServiceBundle.ServiceBundleListener serviceBundleListener = new ServiceBundle.ServiceBundleListener()
+        {
+            @Override
+            public void onServiceInvoked(ServiceBundle serviceBundle, String serviceIdentifier, Object parameters) {
+                if (serviceBundle.getBundleIdentifier().equals(CERT_PROV_BUNDLE)) {
+                    switch (serviceIdentifier) {
+                        case CERT_RESPONSE:
+                            Type collectionType = new TypeToken<Collection<UserCredentials>>() {}.getType();
+                            Collection<UserCredentials> remoteCredentials =
+                                    gson.fromJson(gson.toJson(gson.fromJson((String) parameters, HashMap.class).get("certificates")), collectionType);
+
+                            ServerNode.setRemoteCredentialsList(remoteCredentials);
+
+                            break;
+                        case CERT_PROVISION: {
+                            JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
+                            Log.i(TAG, "Received Cert Params : " + params);
+
+                            try {
+                                JSONObject p1 = params.getJSONObject(0);
+                                JSONObject p2 = params.getJSONObject(1);
+                                String certId = p1.getString("certid");
+                                String jwt = p2.getString("certificate");
+
+                                Log.i(TAG, "Received from Cloud Cert ID: " + certId);
+                                Log.i(TAG, "JWT = " + jwt);
+
+
+                                //certs.put(certId, jwt);
+
+                                //Debug
+                                // Errors seen here on parseAndValidateJWT. Should be getting Base64
+                                // from backend, but sometimes getting errors that it's not.
+                                // Should be fixed now, backend is sending URL safe Base64,
+                                // parseAndValidateJWT now using Base64.URL_SAFE
+                                String[] token = RviProtocol.parseAndValidateJWT(jwt);
+                                JSONObject key = new JSONObject(token[1]);
+                                Log.d(TAG, "Token = " + key.toString(2));
+
+                                Certificate certificate = gson.fromJson(key.toString(2), Certificate.class);
+                                ServerNode.setCertificate(certificate); // TODO: Maybe just pass in the string instead of deserializing it first, here?
+
+                                // TODO: Is saving things to prefs really the best way to pass new objects from the RVI layer to the ui??
+
+//                            sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
+//                                    "dialog", "New Key", key.getString("id"));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                            break;
+                        }
+                        case CERT_ACCOUNT_DETAILS: {
+                            JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
+
+                            try {
+                                JSONObject p1 = params.getJSONObject(0);
+                                Log.i(TAG, "User Data:" + p1);
+
+                                UserCredentials userCredentials = gson.fromJson(p1.toString(), UserCredentials.class);
+                                ServerNode.setUserCredentials(userCredentials);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                            break;
+                        }
+                    }
+                } else if (serviceBundle.getBundleIdentifier().equals(REPORTING_BUNDLE)) {
+                    if (serviceIdentifier.equals(SERVICE_INVOKED_BY_GUEST)) {
+                        JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
+
+                        try {
+                            JSONObject p1 = params.getJSONObject(0);
+                            Log.i(TAG, "Service Invoked by Guest:" + p1);
+
+                            InvokedServiceReport report = gson.fromJson(p1.toString(), InvokedServiceReport.class);
+                            ServerNode.setInvokedServiceReport(report);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        };
         certProvServiceBundle.setListener(serviceBundleListener);
         reportingServiceBundle.setListener(serviceBundleListener);
 
@@ -115,7 +200,7 @@ public class ServerNode
     }
 
     public static void requestRemoteCredentials() {
-        JSONObject parameters = new JSONObject();
+        HashMap<String, String> parameters = new HashMap<>();
 
         try {
             parameters.put("mobileUUID", RVINode.getLocalNodeIdentifier(applicationContext).substring("android/".length()));
@@ -272,102 +357,6 @@ public class ServerNode
         @Override
         public void nodeDidDisconnect() {
 
-        }
-    };
-
-    private static ServiceBundle.ServiceBundleListener serviceBundleListener = new ServiceBundle.ServiceBundleListener()
-    {
-        @Override
-        public void onServiceInvoked(ServiceBundle serviceBundle, String serviceIdentifier, Object parameters) {
-            if (serviceBundle.getBundleIdentifier().equals(CERT_PROV_BUNDLE)) {
-                switch (serviceIdentifier) {
-                    case CERT_RESPONSE:
-//                    String params = data.getString("parameters");
-//                    Log.i(TAG, "Received from Cloud Cert: " + params);
-//
-//                    SharedPreferences.Editor e = prefs.edit();
-//                    e.putString("Certificates", params);
-//                    e.putString("newKeyList", "true");
-//                    e.apply();
-
-                        Type collectionType = new TypeToken<Collection<UserCredentials>>()
-                        {
-                        }.getType();
-                        Collection<UserCredentials> remoteCredentials = gson
-                                .fromJson(gson.toJson(gson.fromJson((String) parameters, HashMap.class).get("certificates")), collectionType);
-
-                        ServerNode.setRemoteCredentialsList(remoteCredentials);
-
-                        break;
-                    case CERT_PROVISION: {
-                        JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
-                        Log.i(TAG, "Received Cert Params : " + params);
-
-                        try {
-                            JSONObject p1 = params.getJSONObject(0);
-                            JSONObject p2 = params.getJSONObject(1);
-                            String certId = p1.getString("certid");
-                            String jwt = p2.getString("certificate");
-
-                            Log.i(TAG, "Received from Cloud Cert ID: " + certId);
-                            Log.i(TAG, "JWT = " + jwt);
-
-
-                            //certs.put(certId, jwt);
-
-                            //Debug
-                            // Errors seen here on parseAndValidateJWT. Should be getting Base64
-                            // from backend, but sometimes getting errors that it's not.
-                            // Should be fixed now, backend is sending URL safe Base64,
-                            // parseAndValidateJWT now using Base64.URL_SAFE
-                            String[] token = RviProtocol.parseAndValidateJWT(jwt);
-                            JSONObject key = new JSONObject(token[1]);
-                            Log.d(TAG, "Token = " + key.toString(2));
-
-                            Certificate certificate = gson.fromJson(key.toString(2), Certificate.class);
-                            ServerNode.setCertificate(certificate); // TODO: Maybe just pass in the string instead of deserializing it first, here?
-
-                            // TODO: Is saving things to prefs really the best way to pass new objects from the RVI layer to the ui??
-
-//                            sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
-//                                    "dialog", "New Key", key.getString("id"));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                        break;
-                    }
-                    case CERT_ACCOUNT_DETAILS: {
-                        JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
-
-                        try {
-                            JSONObject p1 = params.getJSONObject(0);
-                            Log.i(TAG, "User Data:" + p1);
-
-                            UserCredentials userCredentials = gson.fromJson(p1.toString(), UserCredentials.class);
-                            ServerNode.setUserCredentials(userCredentials);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                        break;
-                    }
-                }
-            } else if (serviceBundle.getBundleIdentifier().equals(REPORTING_BUNDLE)) {
-                if (serviceIdentifier.equals(SERVICE_INVOKED_BY_GUEST)) {
-                    JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
-
-                    try {
-                        JSONObject p1 = params.getJSONObject(0);
-                        Log.i(TAG, "Service Invoked by Guest:" + p1);
-
-                        InvokedServiceReport report = gson.fromJson(p1.toString(), InvokedServiceReport.class);
-                        ServerNode.setInvokedServiceReport(report);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
         }
     };
 

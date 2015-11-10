@@ -164,8 +164,8 @@ public class KeyShareActivityFragment extends Fragment {
         UserCredentials shareCredentials = new UserCredentials();
 
         try {
-            shareCredentials.setValidFrom(convertTime(starttime.getText().toString()));
-            shareCredentials.setValidTo(convertTime(endtime.getText().toString()));
+            shareCredentials.setValidFrom(start);//convertTime(starttime.getText().toString()));
+            shareCredentials.setValidTo(end);//convertTime(endtime.getText().toString()));
         } catch (Exception e) {
             e.printStackTrace();
         }
