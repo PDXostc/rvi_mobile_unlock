@@ -19,6 +19,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import com.jaguarlandrover.rvi.RVINode;
 import com.jaguarlandrover.rvi.ServiceBundle;
@@ -26,10 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 
 public class ServerNode
 {
@@ -106,18 +104,15 @@ public class ServerNode
                             ServerNode.setRemoteCredentialsList(remoteCredentials);
 
                             break;
-                        case CERT_PROVISION: {
-                            JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
-                            Log.i(TAG, "Received Cert Params : " + params);
+                        case CERT_PROVISION:
+                            Log.i(TAG, "Received Cert Params : " + parameters.toString());
 
                             try {
-                                JSONObject p1 = params.getJSONObject(0);
-                                JSONObject p2 = params.getJSONObject(1);
-                                String certId = p1.getString("certid");
-                                String jwt = p2.getString("certificate");
+                                String certId = ((HashMap<String, String>) parameters).get("certid");
+                                String certificateJwt = ((HashMap<String, String>) parameters).get("certificate");
 
                                 Log.i(TAG, "Received from Cloud Cert ID: " + certId);
-                                Log.i(TAG, "JWT = " + jwt);
+                                Log.i(TAG, "JWT = " + certificateJwt);
 
 
                                 //certs.put(certId, jwt);
@@ -127,7 +122,7 @@ public class ServerNode
                                 // from backend, but sometimes getting errors that it's not.
                                 // Should be fixed now, backend is sending URL safe Base64,
                                 // parseAndValidateJWT now using Base64.URL_SAFE
-                                String[] token = RviProtocol.parseAndValidateJWT(jwt);
+                                String[] token = RviProtocol.parseAndValidateJWT(certificateJwt);
                                 JSONObject key = new JSONObject(token[1]);
                                 Log.d(TAG, "Token = " + key.toString(2));
 
@@ -143,15 +138,15 @@ public class ServerNode
                             }
 
                             break;
-                        }
-                        case CERT_ACCOUNT_DETAILS: {
-                            JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
+
+                        case CERT_ACCOUNT_DETAILS:
+                            //JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
 
                             try {
-                                JSONObject p1 = params.getJSONObject(0);
-                                Log.i(TAG, "User Data:" + p1);
+                                //JSONObject p1 = params.getJSONObject(0);
+                                //Log.i(TAG, "User Data:" + p1);
 
-                                UserCredentials userCredentials = gson.fromJson(p1.toString(), UserCredentials.class);
+                                UserCredentials userCredentials = gson.fromJson(gson.toJson(parameters), UserCredentials.class);
                                 ServerNode.setUserCredentials(userCredentials);
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -159,7 +154,7 @@ public class ServerNode
 
                             break;
                         }
-                    }
+
                 } else if (serviceBundle.getBundleIdentifier().equals(REPORTING_BUNDLE)) {
                     if (serviceIdentifier.equals(SERVICE_INVOKED_BY_GUEST)) {
                         JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
