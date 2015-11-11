@@ -176,7 +176,7 @@ public class ServiceBundle
         if (pendingServiceInvocation != null) {
             if (pendingServiceInvocation.getTimeout() >= System.currentTimeMillis()) {
                 pendingServiceInvocation.setNodeIdentifier(remoteNodeIdentifier);
-                /*RVINode*/mNode.invokeService(pendingServiceInvocation);
+                mNode.invokeService(pendingServiceInvocation);
             }
 
             mPendingServiceInvocations.remove(serviceIdentifier);
@@ -205,14 +205,14 @@ public class ServiceBundle
      * @param parameters the parameters
      * @param timeout the timeout, in milliseconds. This is added to the current system time.
      */
-    public void invokeService(String serviceIdentifier, Object parameters, Long timeout) {
+    public void invokeService(String serviceIdentifier, Object parameters, Integer timeout) {
         Service service = getRemoteService(serviceIdentifier);
 
         service.setParameters(parameters);
         service.setTimeout(System.currentTimeMillis() + timeout);
 
         if (service.hasNodeIdentifier() && mNode != null) // TODO: Check the logic here
-            /*RVINode*/ mNode.invokeService(service);
+            mNode.invokeService(service);
         else
             mPendingServiceInvocations.put(serviceIdentifier, service);
     }

@@ -56,6 +56,15 @@ class Service
         mNodeIdentifier = prefix;
     }
 
+    HashMap unwrap(ArrayList<LinkedTreeMap> parameters) {
+        HashMap unwrapped = new HashMap();
+
+        for (LinkedTreeMap element : parameters)
+            for (Object key : element.keySet())
+                unwrapped.put(key, element.get(key));
+
+        return unwrapped;
+    }
     /**
      * Instantiates a new Vehicle service.
      *
@@ -77,8 +86,10 @@ class Service
         mServiceIdentifier = serviceParts[4];
 
         // TODO: Why are parameters arrays of object, not just an object? This should probably get fixed everywhere.
-        if  (jsonHash.get("parameters").getClass().equals(ArrayList.class))
+        if (jsonHash.get("parameters").getClass().equals(ArrayList.class) && ((ArrayList<LinkedTreeMap>)jsonHash.get("parameters")).size() == 1)
             mParameters = ((ArrayList<LinkedTreeMap>) jsonHash.get("parameters")).get(0);
+        else if (jsonHash.get("parameters").getClass().equals(ArrayList.class) && ((ArrayList<LinkedTreeMap>)jsonHash.get("parameters")).size() > 1)
+            mParameters = unwrap((ArrayList<LinkedTreeMap>) jsonHash.get("parameters"));
         else
             mParameters = jsonHash.get("parameters");
     }

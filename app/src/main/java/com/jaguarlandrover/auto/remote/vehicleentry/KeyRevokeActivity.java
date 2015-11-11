@@ -2,8 +2,6 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,7 +16,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 
 public class KeyRevokeActivity extends ActionBarActivity {
@@ -52,7 +49,8 @@ public class KeyRevokeActivity extends ActionBarActivity {
                 switch(which){
                     case DialogInterface.BUTTON_POSITIVE:
                         try{
-                            RviService.revokeKey(selectKey());//share_fragment.getFormData());
+                            //RviService.revokeKey(selectKey());//share_fragment.getRemoteCredentials());
+                            ServerNode.modifyRemoteCredentials(selectKey());
                         } catch (Exception e){
 
                         }
@@ -71,39 +69,41 @@ public class KeyRevokeActivity extends ActionBarActivity {
                 .setNegativeButton("Cancel", dialogClickListener).show();
     }
 
-    public JSONArray selectKey() {
+    public UserCredentials selectKey() {
         JSONArray revokeKeyOuter = new JSONArray();
         JSONArray revokeKey = new JSONArray();
 
+        UserCredentials revokingCredentials = new UserCredentials();
+
         try {
-            ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(PrefsWrapper.getRemoteCredentialsList());
+            ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(ServerNode.getRemoteCredentialsList());
 
             UserCredentials selectedRemoteCredentials = remoteCredentialsList.get(mPosition);
 
-            /* Old code */
-            JSONObject payload = new JSONObject();
-            JSONArray authServices = new JSONArray();
-
-            authServices.put(new JSONObject().put("lock", "false"));
-            authServices.put(new JSONObject().put("start", "false"));
-            authServices.put(new JSONObject().put("trunk", "false"));
-            authServices.put(new JSONObject().put("windows", "false"));
-            authServices.put(new JSONObject().put("lights", "false"));
-            authServices.put(new JSONObject().put("hazard", "false"));
-            authServices.put(new JSONObject().put("horn", "false"));
-
-            payload.put("authorizedServices", authServices);
-            payload.put("validTo", "1971-09-09T23:00:00.000Z");
-            payload.put("validFrom", "1971-09-09T22:00:00.000Z");
-            payload.put("certid", selectedRemoteCredentials.getCertId());
-
-            revokeKey.put(payload);
-            revokeKeyOuter.put(revokeKey);
-
-            Log.d("REVOKE_OLD", revokeKey.toString());
+//            /* Old code */
+//            JSONObject payload = new JSONObject();
+//            JSONArray authServices = new JSONArray();
+//
+//            authServices.put(new JSONObject().put("lock", "false"));
+//            authServices.put(new JSONObject().put("start", "false"));
+//            authServices.put(new JSONObject().put("trunk", "false"));
+//            authServices.put(new JSONObject().put("windows", "false"));
+//            authServices.put(new JSONObject().put("lights", "false"));
+//            authServices.put(new JSONObject().put("hazard", "false"));
+//            authServices.put(new JSONObject().put("horn", "false"));
+//
+//            payload.put("authorizedServices", authServices);
+//            payload.put("validTo", "1971-09-09T23:00:00.000Z");
+//            payload.put("validFrom", "1971-09-09T22:00:00.000Z");
+//            payload.put("certid", selectedRemoteCredentials.getCertId());
+//
+//            revokeKey.put(payload);
+//            revokeKeyOuter.put(revokeKey);
+//
+//            Log.d("REVOKE_OLD", revokeKey.toString());
 
             /* New code */
-            UserCredentials revokingCredentials = new UserCredentials();
+//            UserCredentials revokingCredentials = new UserCredentials();
 
             revokingCredentials.setCertId(selectedRemoteCredentials.getCertId());
 
@@ -111,12 +111,12 @@ public class KeyRevokeActivity extends ActionBarActivity {
 
         } catch (Exception e) { e.printStackTrace(); }
 
-        return revokeKey;
+        return revokingCredentials;//revokeKey;
     }
 
     public void addUsers(RemoteCredentialsAdapter adapter){
         try {
-            ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(PrefsWrapper.getRemoteCredentialsList());
+            ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(ServerNode.getRemoteCredentialsList());
 
             adapter.addAll(remoteCredentialsList);
         } catch (Exception e) {

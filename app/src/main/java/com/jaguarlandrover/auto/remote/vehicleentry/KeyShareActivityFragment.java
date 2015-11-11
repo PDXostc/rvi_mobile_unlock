@@ -2,10 +2,8 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.SharedPreferences;
 import android.app.Fragment;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -73,7 +71,7 @@ public class KeyShareActivityFragment extends Fragment {
         carPages = (ViewPager) view.findViewById(R.id.vehiclescroll);
         userheader = (TextView) view.findViewById(R.id.user);
 
-        UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
+        UserCredentials userCredentials = ServerNode.getUserCredentials();
         if (userCredentials != null) {
             userheader.setText(userCredentials.getUserName());
         }
@@ -104,7 +102,7 @@ public class KeyShareActivityFragment extends Fragment {
     };
 
 
-    public JSONArray getFormData() throws JSONException {
+    public UserCredentials getRemoteCredentials() throws JSONException {
         String centerUser = getResources().getResourceEntryName(users[userPages.getCurrentItem()]);
         String centerVehicle = vins[carPages.getCurrentItem()];
 
@@ -117,7 +115,7 @@ public class KeyShareActivityFragment extends Fragment {
         try {
             start_time = convertTime(starttime.getText().toString());
             end_time = convertTime(endtime.getText().toString());
-        }catch (Exception e){}
+        } catch (Exception e) {}
 
         String start_date = startdate.getText().toString() + " "+start_time;
         String end_date = enddate.getText().toString()+" "+end_time;
@@ -130,42 +128,44 @@ public class KeyShareActivityFragment extends Fragment {
             Date newEnd = inputformat.parse(end_date);
             start = outputformat.format(newStart);
             end = outputformat.format(newEnd);
-            }catch (Exception e){Log.d("DATE","ERROR IN DATE FORMAT");
-        e.printStackTrace();}
+        } catch (Exception e) {
+            Log.d("DATE", "ERROR IN DATE FORMAT");
+            e.printStackTrace();
+        }
 
-        Boolean lockSwitch = lock_unlock.isChecked();
-        Boolean engineSwitch = engine_start.isChecked();
-        Boolean trunkLights = trunk_lights.isChecked();
-
-        JSONArray authServ = new JSONArray();
-        authServ.put(new JSONObject().put("lock", lockSwitch.toString()));
-        authServ.put(new JSONObject().put("start", engineSwitch.toString()));
-
-        authServ.put(new JSONObject().put("trunk", trunkLights.toString()));
-        authServ.put(new JSONObject().put("windows", "false"));
-        authServ.put(new JSONObject().put("lights", trunkLights.toString()));
-        authServ.put(new JSONObject().put("hazard", "false"));
-        authServ.put(new JSONObject().put("horn", "false"));
-
-
-        JSONObject payload = new JSONObject();
-        payload.put("username", centerUser);
-        payload.put("vehicleVIN", centerVehicle);
-        payload.put("authorizedServices", authServ);
-        payload.put("validFrom", start);
-        payload.put("validTo", end);
-
-        JSONArray jsonArray = new JSONArray();
-        jsonArray.put(payload);
-
-        Log.d("SHARE_OLD", jsonArray.toString());
+//        Boolean lockSwitch = lock_unlock.isChecked();
+//        Boolean engineSwitch = engine_start.isChecked();
+//        Boolean trunkLights = trunk_lights.isChecked();
+//
+//        JSONArray authServ = new JSONArray();
+//        authServ.put(new JSONObject().put("lock", lockSwitch.toString()));
+//        authServ.put(new JSONObject().put("start", engineSwitch.toString()));
+//
+//        authServ.put(new JSONObject().put("trunk", trunkLights.toString()));
+//        authServ.put(new JSONObject().put("windows", "false"));
+//        authServ.put(new JSONObject().put("lights", trunkLights.toString()));
+//        authServ.put(new JSONObject().put("hazard", "false"));
+//        authServ.put(new JSONObject().put("horn", "false"));
+//
+//
+//        JSONObject payload = new JSONObject();
+//        payload.put("username", centerUser);
+//        payload.put("vehicleVIN", centerVehicle);
+//        payload.put("authorizedServices", authServ);
+//        payload.put("validFrom", start);
+//        payload.put("validTo", end);
+//
+//        JSONArray jsonArray = new JSONArray();
+//        jsonArray.put(payload);
+//
+//        Log.d("SHARE_OLD", jsonArray.toString());
 
         /* New code */
         UserCredentials shareCredentials = new UserCredentials();
 
         try {
-            shareCredentials.setValidFrom(convertTime(starttime.getText().toString()));
-            shareCredentials.setValidTo(convertTime(endtime.getText().toString()));
+            shareCredentials.setValidFrom(start);//convertTime(starttime.getText().toString()));
+            shareCredentials.setValidTo(end);//convertTime(endtime.getText().toString()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -180,7 +180,7 @@ public class KeyShareActivityFragment extends Fragment {
 
         Log.d("SHARE_NEW", shareCredentials.toString());
 
-        return jsonArray;
+        return shareCredentials;//jsonArray;
     }
 
     public String convertTime(String time) throws Exception{

@@ -24,10 +24,7 @@ import android.widget.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
 
 public class LockActivityFragment extends Fragment {
 
@@ -90,7 +87,7 @@ public class LockActivityFragment extends Fragment {
         keyManagementLayout = (LinearLayout) view.findViewById(R.id.key_management_layout);
 //        panicOn = (Button) view.findViewById(R.id.panicOn);
 
-        UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
+        UserCredentials userCredentials = ServerNode.getUserCredentials();
 
         if (userCredentials == null) {
             setButtons(new UserCredentials());
@@ -121,7 +118,7 @@ public class LockActivityFragment extends Fragment {
         @Override
         public void run() {
 
-            UserCredentials userCredentials = PrefsWrapper.getUserCredentials();
+            UserCredentials userCredentials = ServerNode.getUserCredentials();
             if (userCredentials != null && userCredentials.getUserType().equals("guest") && !userCredentials.isKeyValid()) {
                 setButtons(userCredentials);
             }
