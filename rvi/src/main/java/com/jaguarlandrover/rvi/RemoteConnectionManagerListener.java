@@ -17,7 +17,7 @@ package com.jaguarlandrover.rvi;
  * Created by Lilli Szafranski on 6/30/15.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-interface RemoteConnectionManagerListener
+interface RemoteConnectionManagerListener // TODO: Get rid of this middle man
 {
     /**
      * On RVI did connect.
@@ -25,16 +25,16 @@ interface RemoteConnectionManagerListener
     void onRVIDidConnect();
 
     /**
+     * On RVI did disconnect.
+     */
+    void onRVIDidDisconnect(Throwable error);
+
+    /**
      * On RVI did fail to connect.
      *
      * @param error the error
      */
-    void onRVIDidFailToConnect(Error error);
-
-    /**
-     * On RVI did disconnect.
-     */
-    void onRVIDidDisconnect();
+    void onRVIDidFailToConnect(Throwable error);
 
     /**
      * On RVI did receive packet.
@@ -53,5 +53,5 @@ interface RemoteConnectionManagerListener
      *
      * @param error the error
      */
-    void onRVIDidFailToSendPacket(Error error);
+    void onRVIDidFailToSendPacket(Throwable error);
 }

@@ -83,6 +83,15 @@ public class ServerNode
     private final static ServiceBundle certProvServiceBundle  = new ServiceBundle(applicationContext, RVI_DOMAIN, CERT_PROV_BUNDLE, certProvServiceIdentifiers);
     private final static ServiceBundle reportingServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, REPORTING_BUNDLE, reportingServiceIdentifiers);
 
+//    private enum ConnectionStatus
+//    {
+//        DISCONNECTED,
+//        CONNECTING,
+//        CONNECTED;
+//    }
+//
+//    private static ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
+
     private static ServerNode ourInstance = new ServerNode();
 
     public static ServerNode getInstance() {
@@ -90,6 +99,7 @@ public class ServerNode
     }
 
     private ServerNode() {
+        /* Listeners */
         ServiceBundle.ServiceBundleListener serviceBundleListener = new ServiceBundle.ServiceBundleListener()
         {
             @Override
@@ -139,8 +149,33 @@ public class ServerNode
             }
         };
 
+        RVINode.RVINodeListener nodeListener = new RVINode.RVINodeListener()
+        {
+            @Override
+            public void nodeDidConnect() {
+                Log.d(TAG, "Connected to RVI provisioning server!");
+                // TODO: If pending service invocations, invoke.
+            }
+
+            @Override
+            public void nodeDidFailToConnect(Throwable trigger) {
+                Log.d(TAG, "Failed to connect to RVI provisioning server!");
+
+            }
+
+            @Override
+            public void nodeDidDisconnect(Throwable trigger) {
+                Log.d(TAG, "Disconnected from RVI provisioning server!");
+//                connectionStatus = ConnectionStatus.DISCONNECTED;
+
+                /* Try and reconnect */
+                connect();
+            }
+        };
+
         certProvServiceBundle.setListener(serviceBundleListener);
         reportingServiceBundle.setListener(serviceBundleListener);
+
 
         rviNode.setListener(nodeListener);
 
@@ -149,12 +184,6 @@ public class ServerNode
     }
 
     public static void connect() {
-        connectToServer();
-    }
-
-    private static void connectToServer() {
-        if (rviNode.isConnected()) rviNode.disconnect();
-
         rviNode.setServerUrl(preferences.getString("pref_rvi_server", "38.129.64.40"));
         rviNode.setServerPort(Integer.parseInt(preferences.getString("pref_rvi_server_port", "8807")));
 
@@ -162,6 +191,8 @@ public class ServerNode
     }
 
     public static void requestRemoteCredentials() {
+        Log.d(TAG, "Requesting remote credentials from RVI provisioning server.");
+
         HashMap<String, String> parameters = new HashMap<>();
 
         try {
@@ -175,10 +206,12 @@ public class ServerNode
     }
 
     public static void modifyRemoteCredentials(UserCredentials remoteCredentials) {
+        Log.d(TAG, "Modifying remote credentials on RVI provisioning server.");
         certProvServiceBundle.invokeService(CERT_MODIFY, remoteCredentials, 5000);
     }
 
     public static void createRemoteCredentials(UserCredentials remoteCredentials) {
+        Log.d(TAG, "Creating remote credentials on RVI provisioning server.");
         certProvServiceBundle.invokeService(CERT_CREATE, remoteCredentials, 5000);
     }
 
@@ -301,23 +334,4 @@ public class ServerNode
         editor.putBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, isNewReport);
         editor.commit();
     }
-
-    /* Listeners */
-    private static RVINode.RVINodeListener nodeListener = new RVINode.RVINodeListener()
-    {
-        @Override
-        public void nodeDidConnect() {
-
-        }
-
-        @Override
-        public void nodeDidFailToConnect() {
-
-        }
-
-        @Override
-        public void nodeDidDisconnect() {
-
-        }
-    };
 }

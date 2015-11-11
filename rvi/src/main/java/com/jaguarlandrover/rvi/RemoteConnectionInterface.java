@@ -27,11 +27,18 @@ interface RemoteConnectionInterface
     void sendRviRequest(DlinkPacket dlinkPacket);
 
     /**
-     * Is the interface enabled.
+     * Is the interface configured.
      *
      * @return the boolean
      */
-    boolean isEnabled();
+    boolean isConfigured();
+
+//    /**
+//     * Is the interface available.
+//     *
+//     * @return the boolean
+//     */
+//    boolean isAvailable();
 
     /**
      * Is the interface connected.
@@ -48,7 +55,7 @@ interface RemoteConnectionInterface
     /**
      * Disconnect the interface.
      */
-    void disconnect();
+    void disconnect(Throwable trigger);
 
     /**
      * Sets remote connection listener.
@@ -56,7 +63,7 @@ interface RemoteConnectionInterface
      * @param remoteConnectionListener the remote connection listener
      */
     void setRemoteConnectionListener(RemoteConnectionListener remoteConnectionListener); // TODO: Probably bad architecture to expect interface implementations to correctly set and use an
-                                                                                         // TODO, cont: instance of the RemoteConnectionListener. Not sure what the best Java paradigm would be in this case
+                                                                                         // TODO, cont'd: instance of the RemoteConnectionListener. Not sure what the best Java paradigm would be in this case
 
     /**
      * The remote connection listener interface.
@@ -71,14 +78,14 @@ interface RemoteConnectionInterface
         /**
          * Callback method for when the remote connection did disconnect.
          */
-        void onRemoteConnectionDidDisconnect();
+        void onRemoteConnectionDidDisconnect(Throwable trigger);
 
         /**
          * Callback method for when the remote connection did fail to connect.
          *
          * @param error the error
          */
-        void onRemoteConnectionDidFailToConnect(Error error);
+        void onRemoteConnectionDidFailToConnect(Throwable error);
 
         /**
          * Callback method for when the remote connection did receive data.
@@ -97,6 +104,6 @@ interface RemoteConnectionInterface
          *
          * @param error the error
          */
-        void onDidFailToSendDataToRemoteConnection(Error error);
+        void onDidFailToSendDataToRemoteConnection(Throwable error);
     }
 }
