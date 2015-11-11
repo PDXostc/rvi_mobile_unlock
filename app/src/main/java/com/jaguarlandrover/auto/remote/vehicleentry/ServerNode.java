@@ -97,81 +97,48 @@ public class ServerNode
                 if (serviceBundle.getBundleIdentifier().equals(CERT_PROV_BUNDLE)) {
                     switch (serviceIdentifier) {
                         case CERT_RESPONSE:
-                            Type collectionType = new TypeToken<Collection<UserCredentials>>() {}.getType();
-                            Collection<UserCredentials> remoteCredentials =
-                                    gson.fromJson(gson.toJson(gson.fromJson((String) parameters, HashMap.class).get("certificates")), collectionType);
+//                            Type collectionType = new TypeToken<Collection<UserCredentials>>() {}.getType();
+//                            Collection<UserCredentials> remoteCredentials =
+//                                    gson.fromJson(gson.toJson(gson.fromJson((String) parameters, HashMap.class).get("certificates")), collectionType);
 
-                            ServerNode.setRemoteCredentialsList(remoteCredentials);
+                            ServerNode.setRemoteCredentialsList(gson.toJson(gson.fromJson((String) parameters, HashMap.class).get("certificates")));
 
                             break;
                         case CERT_PROVISION:
-                            Log.i(TAG, "Received Cert Params : " + parameters.toString());
+                            String certId = ((HashMap<String, String>) parameters).get("certid");
+                            String certificateJwt = ((HashMap<String, String>) parameters).get("certificate");
 
-                            try {
-                                String certId = ((HashMap<String, String>) parameters).get("certid");
-                                String certificateJwt = ((HashMap<String, String>) parameters).get("certificate");
+                            // TODO: Need to handle certs?
+                            //certs.put(certId, jwt);
 
-                                Log.i(TAG, "Received from Cloud Cert ID: " + certId);
-                                Log.i(TAG, "JWT = " + certificateJwt);
+                            //Debug
+                            // Errors seen here on parseAndValidateJWT. Should be getting Base64
+                            // from backend, but sometimes getting errors that it's not.
+                            // Should be fixed now, backend is sending URL safe Base64,
+                            // parseAndValidateJWT now using Base64.URL_SAFE
+                            String[] token = RviProtocol.parseAndValidateJWT(certificateJwt);
 
+                            ServerNode.setCertificate(token[1]);
 
-                                //certs.put(certId, jwt);
-
-                                //Debug
-                                // Errors seen here on parseAndValidateJWT. Should be getting Base64
-                                // from backend, but sometimes getting errors that it's not.
-                                // Should be fixed now, backend is sending URL safe Base64,
-                                // parseAndValidateJWT now using Base64.URL_SAFE
-                                String[] token = RviProtocol.parseAndValidateJWT(certificateJwt);
-                                JSONObject key = new JSONObject(token[1]);
-                                Log.d(TAG, "Token = " + key.toString(2));
-
-                                Certificate certificate = gson.fromJson(key.toString(2), Certificate.class);
-                                ServerNode.setCertificate(certificate); // TODO: Maybe just pass in the string instead of deserializing it first, here?
-
-                                // TODO: Is saving things to prefs really the best way to pass new objects from the RVI layer to the ui??
-
+                            // TODO: Set up notification system to notify UI that stuff is coming from the server instead of the current polling mechanism
 //                            sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
 //                                    "dialog", "New Key", key.getString("id"));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
                             break;
 
                         case CERT_ACCOUNT_DETAILS:
-                            //JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
-
-                            try {
-                                //JSONObject p1 = params.getJSONObject(0);
-                                //Log.i(TAG, "User Data:" + p1);
-
-                                UserCredentials userCredentials = gson.fromJson(gson.toJson(parameters), UserCredentials.class);
-                                ServerNode.setUserCredentials(userCredentials);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            ServerNode.setUserCredentials(gson.toJson(parameters));
 
                             break;
                         }
 
                 } else if (serviceBundle.getBundleIdentifier().equals(REPORTING_BUNDLE)) {
                     if (serviceIdentifier.equals(SERVICE_INVOKED_BY_GUEST)) {
-                        JSONArray params = (JSONArray) parameters;//data.getJSONArray("parameters");
-
-                        try {
-                            JSONObject p1 = params.getJSONObject(0);
-                            Log.i(TAG, "Service Invoked by Guest:" + p1);
-
-                            InvokedServiceReport report = gson.fromJson(p1.toString(), InvokedServiceReport.class);
-                            ServerNode.setInvokedServiceReport(report);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        ServerNode.setInvokedServiceReport(gson.toJson(parameters));
                     }
                 }
             }
         };
+
         certProvServiceBundle.setListener(serviceBundleListener);
         reportingServiceBundle.setListener(serviceBundleListener);
 
@@ -215,31 +182,20 @@ public class ServerNode
         certProvServiceBundle.invokeService(CERT_CREATE, remoteCredentials, 5000);
     }
 
-    public interface ServerNodeListener
-    {
-        void onServerDidConnect();
-
-        void onServerDidDisconnect();
-
-        void onReceivedCertificateResponse();
-
-        void onReceiveCertificateProvisioning();
-
-        void onReceivedCertificateAccountDetails();
-
-        void onServiceInvokedByGuest();
-    }
-
     public static Certificate getCertificate() {
         String certStr = preferences.getString(CERTIFICATE_DATA_KEY, null);
 
-        if (certStr == null) return null;
+        Certificate certificate = new Certificate();
+        try {
+            certificate = gson.fromJson(certStr, Certificate.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        return gson.fromJson(certStr, Certificate.class);
+        return certificate;
     }
 
-    public static void setCertificate(Certificate cert) {
-        String certStr = gson.toJson(cert, Certificate.class);
+    private static void setCertificate(String certStr) {
         editor.putString(CERTIFICATE_DATA_KEY, certStr);
         editor.commit();
 
@@ -249,14 +205,18 @@ public class ServerNode
     public static UserCredentials getUserCredentials() {
         String userStr = preferences.getString(USER_CREDENTIALS_KEY, null);
 
-        if (userStr == null) return new UserCredentials();
+        UserCredentials userCreds = new UserCredentials();
+        try {
+            userCreds = gson.fromJson(userStr, UserCredentials.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        return gson.fromJson(userStr, UserCredentials.class);
+        return userCreds;
     }
 
-    public static void setUserCredentials(UserCredentials userCredentials) {
-        String userStr = gson.toJson(userCredentials, UserCredentials.class);
-        editor.putString(USER_CREDENTIALS_KEY, userStr);
+    private static void setUserCredentials(String userCredsStr) {
+        editor.putString(USER_CREDENTIALS_KEY, userCredsStr);
         editor.commit();
 
         ServerNode.setThereAreNewUserCredentials(true);
@@ -267,18 +227,20 @@ public class ServerNode
 
         if (credListStr == null) return null;
 
-        Type collectionType = new TypeToken<Collection<UserCredentials>>()
-        {
-        }.getType();
-        return gson.fromJson(credListStr, collectionType);
+        Collection<UserCredentials> credsList = null;
+        Type collectionType = new TypeToken<Collection<UserCredentials>>() {}.getType();
+
+        try {
+            credsList = gson.fromJson(credListStr, collectionType);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return credsList;
     }
 
-    public static void setRemoteCredentialsList(Collection<UserCredentials> keys) {
-        Type collectionType = new TypeToken<Collection<UserCredentials>>()
-        {
-        }.getType();
-        String credListStr = gson.toJson(keys, collectionType);
-        editor.putString(REMOTE_CREDENTIALS_LIST_KEY, credListStr);
+    private static void setRemoteCredentialsList(String credsListStr) {
+        editor.putString(REMOTE_CREDENTIALS_LIST_KEY, credsListStr);
         editor.commit();
 
         ServerNode.setThereAreNewRemoteCredentials(true);
@@ -287,13 +249,17 @@ public class ServerNode
     public static InvokedServiceReport getInvokedServiceReport() {
         String reportStr = preferences.getString(INVOKED_SERVICE_REPORT_KEY, null);
 
-        if (reportStr == null) return null;
+        InvokedServiceReport report = null;
+        try {
+            report = gson.fromJson(reportStr, InvokedServiceReport.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        return gson.fromJson(reportStr, InvokedServiceReport.class);
+        return report;
     }
 
-    public static void setInvokedServiceReport(InvokedServiceReport report) {
-        String reportStr = gson.toJson(report, InvokedServiceReport.class);
+    private static void setInvokedServiceReport(String reportStr) {
         editor.putString(INVOKED_SERVICE_REPORT_KEY, reportStr);
         editor.commit();
 
@@ -354,5 +320,4 @@ public class ServerNode
 
         }
     };
-
 }
