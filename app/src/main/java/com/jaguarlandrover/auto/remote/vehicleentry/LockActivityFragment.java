@@ -287,6 +287,7 @@ public class LockActivityFragment extends Fragment {
                 keylbl.setText("Key Valid To:");
 
                 keyManagementLayout.setVisibility(View.GONE);
+                validDate.setVisibility(View.VISIBLE);
 
                 if (!userCredentials.hasAnyAuthorizedServices() || !userCredentials.isKeyValid()) {
                     lock.setEnabled(false);
