@@ -83,14 +83,14 @@ public class ServerNode
     private final static ServiceBundle certProvServiceBundle  = new ServiceBundle(applicationContext, RVI_DOMAIN, CERT_PROV_BUNDLE, certProvServiceIdentifiers);
     private final static ServiceBundle reportingServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, REPORTING_BUNDLE, reportingServiceIdentifiers);
 
-//    private enum ConnectionStatus
-//    {
-//        DISCONNECTED,
-//        CONNECTING,
-//        CONNECTED;
-//    }
-//
-//    private static ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
+    private enum ConnectionStatus
+    {
+        DISCONNECTED,
+        CONNECTING,
+        CONNECTED;
+    }
+
+    private static ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
 
     private static ServerNode ourInstance = new ServerNode();
 
@@ -154,19 +154,19 @@ public class ServerNode
             @Override
             public void nodeDidConnect() {
                 Log.d(TAG, "Connected to RVI provisioning server!");
-                // TODO: If pending service invocations, invoke.
+                connectionStatus = ConnectionStatus.CONNECTED;
             }
 
             @Override
             public void nodeDidFailToConnect(Throwable trigger) {
                 Log.d(TAG, "Failed to connect to RVI provisioning server!");
-
+                connectionStatus = ConnectionStatus.DISCONNECTED;
             }
 
             @Override
             public void nodeDidDisconnect(Throwable trigger) {
                 Log.d(TAG, "Disconnected from RVI provisioning server!");
-//                connectionStatus = ConnectionStatus.DISCONNECTED;
+                connectionStatus = ConnectionStatus.DISCONNECTED;
 
                 /* Try and reconnect */
                 connect();
@@ -187,11 +187,15 @@ public class ServerNode
         rviNode.setServerUrl(preferences.getString("pref_rvi_server", "38.129.64.40"));
         rviNode.setServerPort(Integer.parseInt(preferences.getString("pref_rvi_server_port", "8807")));
 
+        connectionStatus = ConnectionStatus.CONNECTING;
+
         rviNode.connect();
     }
 
     public static void requestRemoteCredentials() {
         Log.d(TAG, "Requesting remote credentials from RVI provisioning server.");
+
+        if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
         HashMap<String, String> parameters = new HashMap<>();
 
@@ -207,11 +211,17 @@ public class ServerNode
 
     public static void modifyRemoteCredentials(UserCredentials remoteCredentials) {
         Log.d(TAG, "Modifying remote credentials on RVI provisioning server.");
+
+        if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
+
         certProvServiceBundle.invokeService(CERT_MODIFY, remoteCredentials, 5000);
     }
 
     public static void createRemoteCredentials(UserCredentials remoteCredentials) {
         Log.d(TAG, "Creating remote credentials on RVI provisioning server.");
+
+        if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
+
         certProvServiceBundle.invokeService(CERT_CREATE, remoteCredentials, 5000);
     }
 
