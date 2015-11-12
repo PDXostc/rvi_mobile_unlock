@@ -16,6 +16,7 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import com.google.gson.Gson;
@@ -155,12 +156,16 @@ public class ServerNode
             public void nodeDidConnect() {
                 Log.d(TAG, "Connected to RVI provisioning server!");
                 connectionStatus = ConnectionStatus.CONNECTED;
+
+                stopRepeatingTask();
             }
 
             @Override
             public void nodeDidFailToConnect(Throwable trigger) {
                 Log.d(TAG, "Failed to connect to RVI provisioning server!");
                 connectionStatus = ConnectionStatus.DISCONNECTED;
+
+                //startRepeatingTask();
             }
 
             @Override
@@ -169,7 +174,7 @@ public class ServerNode
                 connectionStatus = ConnectionStatus.DISCONNECTED;
 
                 /* Try and reconnect */
-                connect();
+                startRepeatingTask();
             }
         };
 
@@ -183,7 +188,32 @@ public class ServerNode
         rviNode.addBundle(reportingServiceBundle);
     }
 
+
+    Handler  timerHandler  = new Handler();
+    Runnable timerRunnable = new Runnable()
+    {
+        @Override
+        public void run() {
+            if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
+
+            timerHandler.postDelayed(this, 3000);
+        }
+    };
+
+
+    void startRepeatingTask() {
+        timerHandler.postDelayed(timerRunnable, 0);
+    }
+
+    void stopRepeatingTask() {
+        timerHandler.removeCallbacks(timerRunnable);
+    }
+
+
+
     public static void connect() {
+        Log.d(TAG, "Attempting to connect to RVI provisioning server.");
+
         rviNode.setServerUrl(preferences.getString("pref_rvi_server", "38.129.64.40"));
         rviNode.setServerPort(Integer.parseInt(preferences.getString("pref_rvi_server_port", "8807")));
 
@@ -271,7 +301,9 @@ public class ServerNode
         if (credListStr == null) return null;
 
         Collection<UserCredentials> credsList = null;
-        Type collectionType = new TypeToken<Collection<UserCredentials>>() {}.getType();
+        Type collectionType = new TypeToken<Collection<UserCredentials>>()
+        {
+        }.getType();
 
         try {
             credsList = gson.fromJson(credListStr, collectionType);
