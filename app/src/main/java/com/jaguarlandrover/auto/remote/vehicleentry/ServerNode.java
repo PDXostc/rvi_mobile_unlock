@@ -88,7 +88,7 @@ public class ServerNode
     {
         DISCONNECTED,
         CONNECTING,
-        CONNECTED;
+        CONNECTED
     }
 
     private static ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
@@ -200,7 +200,6 @@ public class ServerNode
         }
     };
 
-
     void startRepeatingTask() {
         timerHandler.postDelayed(timerRunnable, 0);
     }
@@ -208,8 +207,6 @@ public class ServerNode
     void stopRepeatingTask() {
         timerHandler.removeCallbacks(timerRunnable);
     }
-
-
 
     public static void connect() {
         Log.d(TAG, "Attempting to connect to RVI provisioning server.");

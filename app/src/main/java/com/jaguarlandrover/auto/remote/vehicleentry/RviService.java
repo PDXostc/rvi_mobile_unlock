@@ -42,6 +42,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -67,8 +69,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
 
     private Gson gson = new Gson();
 
-    private static boolean connected  = false;
-    private static boolean connecting = false;
+    //private static boolean connected  = false;
+    //private static boolean connecting = false;
     private static boolean unlocked   = false;
 
     //ScheduledExecutorService executorService = null;
@@ -106,9 +108,9 @@ public class RviService extends Service /* implements BeaconConsumer */{
             public void onLocationChanged(Location location) {
                 latit = location.getLatitude();
                 longi = location.getLongitude();
-                SharedPreferences.Editor e = prefs.edit();
-                e.putString("moving", "true");
-                e.commit();
+//                SharedPreferences.Editor e = prefs.edit();
+//                e.putString("moving", "true");
+//                e.commit();
                 String myLocation = "Latitude = " + latit + " Longitude = " + longi;
 
                 //I make a log to see the results
@@ -248,6 +250,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
             }
 
             final double weightedCutoff = ((1.0 - grayArea) / 2.0);
+            final boolean connected = VehicleNode.isConnected();
+            final boolean connecting = VehicleNode.isConnecting();
 
             Log.d(TAG, "distance:" + ro.distance + ", weightedDistance:" + ro.weightedDistance + ", unlockDistance:" + unlockDistance + ", connectDistance:" + connectDistance);
             Log.d(TAG, "connected:" + connected + ", connecting:" + connecting + ", unlocked:" + unlocked);
@@ -299,249 +303,257 @@ public class RviService extends Service /* implements BeaconConsumer */{
                             //br.stop(); //stop reporting
                             return;
                         }
-                        SharedPreferences.Editor e = prefs.edit();
-                        e.putString("moving", "false");
-                        e.commit();
+//                        SharedPreferences.Editor e = prefs.edit();
+//                        e.putString("moving", "false");
+//                        e.commit();
                         //}
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+
+                    return;
                 }
+
+                connectBluetooth(ro.addr);
             }
 
-            //br.stop();
-            //connected = true;
-            connecting = true;
-            BluetoothDevice device = bluetoothAdapter.getRemoteDevice(ro.addr);
-            //INIT BT connection
-            String[] myServices = {"jlr.com/mobile/" + tm.getDeviceId() + "/control/status"};
-            Observable<JSONObject> obs = connectBluetooth(device, RviService.this, btSender);
-            obs.subscribeOn(Schedulers.newThread()).observeOn(Schedulers.io()).subscribe(new Subscriber<JSONObject>()
-            {
-                //obs.subscribeOn(Schedulers.io()).observeOn(Schedulers.newThread()).subscribe(new Subscriber<JSONObject>() {
-                @Override
-                public void onCompleted() {
-                    Log.i(TAG, "Done with BT connection.");
-                    br.start(); // Start looking again
-                }
 
-                @Override
-                public void onError(Throwable e) {
-                    Log.e(TAG, "", e);
-                    br.start(); // Start looking again
-                }
-
-                @Override
-                public void onNext(JSONObject s) {
-                    if (s.has("cmd")) {
-                        try {
-                            String cmd = s.getString("cmd");
-                            if (cmd != null && cmd.equalsIgnoreCase("sa")) {
-                                Log.d(TAG, "sa");
-                                if (s.has("svcs")) {
-                                    JSONArray services = s.getJSONArray("svcs");
-                                    for (int i = 0; i < services.length(); i++) {
-                                        commandSink.onNext(services.getString(i));
-                                    }
-                                }
-
-                                //btSender.onNext(RviProtocol.createReceiveData(1, "jlr.com/bt/stoffe/unlock",new JSONArray("[{\"X\":\"O\"}]"), "", ""));
-
-                                //Start a PING thread
-                                if (false) {
-                                    //if( prefs.getBoolean("pref_fire_bt_ping",true) ) {
-                                    //Allocate ping thread
-                                    long freq = Long.parseLong(prefs.getString("pref_bt_ping_time", "1000"));
-                                    Subscription subscription = Observable.timer(freq, freq, TimeUnit.MILLISECONDS).subscribe(new Action1<Long>()
-                                    {
-                                        @Override
-                                        public void call(Long l) {
-                                            Log.d(TAG, "Ping :" + l);
-                                            service("ping", RviService.this);
-                                        }
-                                    });
-                                }
-
-
-                            } else if (cmd != null && cmd.equalsIgnoreCase("ping")) {
-                                Log.d(TAG, "ping");
-                            }
-                        } catch (JSONException e) {
-                            Log.d(TAG, "JSON EXception on BT parsing.");
-                        }
-                    }
-
-                }
-            });
+//            //br.stop();
+//            //connected = true;
+//            connecting = true;
+//            BluetoothDevice device = bluetoothAdapter.getRemoteDevice(ro.addr);
+//            //INIT BT connection
+//            String[] myServices = {"jlr.com/mobile/" + tm.getDeviceId() + "/control/status"};
+//            Observable<JSONObject> obs = connectBluetooth(device, RviService.this, btSender);
+//            obs.subscribeOn(Schedulers.newThread()).observeOn(Schedulers.io()).subscribe(new Subscriber<JSONObject>()
+//            {
+//                //obs.subscribeOn(Schedulers.io()).observeOn(Schedulers.newThread()).subscribe(new Subscriber<JSONObject>() {
+//                @Override
+//                public void onCompleted() {
+//                    Log.i(TAG, "Done with BT connection.");
+//                    br.start(); // Start looking again
+//                }
+//
+//                @Override
+//                public void onError(Throwable e) {
+//                    Log.e(TAG, "", e);
+//                    br.start(); // Start looking again
+//                }
+//
+//                @Override
+//                public void onNext(JSONObject s) {
+//                    if (s.has("cmd")) {
+//                        try {
+//                            String cmd = s.getString("cmd");
+//                            if (cmd != null && cmd.equalsIgnoreCase("sa")) {
+//                                Log.d(TAG, "sa");
+//                                if (s.has("svcs")) {
+//                                    JSONArray services = s.getJSONArray("svcs");
+//                                    for (int i = 0; i < services.length(); i++) {
+//                                        commandSink.onNext(services.getString(i));
+//                                    }
+//                                }
+//
+//                                //btSender.onNext(RviProtocol.createReceiveData(1, "jlr.com/bt/stoffe/unlock",new JSONArray("[{\"X\":\"O\"}]"), "", ""));
+//
+//                                //Start a PING thread
+//                                if (false) {
+//                                    //if( prefs.getBoolean("pref_fire_bt_ping",true) ) {
+//                                    //Allocate ping thread
+//                                    long freq = Long.parseLong(prefs.getString("pref_bt_ping_time", "1000"));
+//                                    Subscription subscription = Observable.timer(freq, freq, TimeUnit.MILLISECONDS).subscribe(new Action1<Long>()
+//                                    {
+//                                        @Override
+//                                        public void call(Long l) {
+//                                            Log.d(TAG, "Ping :" + l);
+//                                            service("ping", RviService.this);
+//                                        }
+//                                    });
+//                                }
+//
+//
+//                            } else if (cmd != null && cmd.equalsIgnoreCase("ping")) {
+//                                Log.d(TAG, "ping");
+//                            }
+//                        } catch (JSONException e) {
+//                            Log.d(TAG, "JSON EXception on BT parsing.");
+//                        }
+//                    }
+//
+//                }
+//            });
         }
-
     };
 
-    public static Observable<JSONObject> connectBluetooth(final BluetoothDevice device, final Context ctx, final Observable<JSONObject> sender) {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-        Log.i(TAG, "Connecting to Bluetooth!" + Thread.currentThread().getName());
-        Observable<JSONObject> myObservable = Observable.create(
-                new Observable.OnSubscribe<JSONObject>()
-                {
-                    BluetoothSocket sock = null;
+    //    public static Observable<JSONObject> connectBluetooth(final BluetoothDevice device, final Context ctx, final Observable<JSONObject> sender) {
+    public static void connectBluetooth(String deviceAddress) {
+        VehicleNode.setDeviceAddress(deviceAddress);
+        VehicleNode.connect();
 
-                    @Override
-                    public void call(Subscriber<? super JSONObject> sub) {
-                        if (connected == true) return;
-
-                        connected = false;
-                        unlocked = false;
-
-                        //Config
-                        int btChannel = Integer.parseInt(prefs.getString("pref_bt_channel", "1"));
-
-                        // Commented out as part of BT reset connection issue. See,
-                        // https://github.com/PDXostc/rvi_mobile_unlock/issues/4
-                        /*
-                        try {
-                            sock = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB".toLowerCase())); //SerialPortServiceClass
-                            //00001105-0000-1000-8000-00805f9b34fb //OBEXObjectPushServiceClass
-                            //00001106-0000-1000-8000-00805f9b34fb //OBEXFileTransferServiceClass
-                            //0000112d-0000-1000-8000-00805f9b34fb //SIMAccessServiceClass
-                            //0000110e-0000-1000-8000-00805f9b34fb //AVRemoteControlServiceClass
-                            //00001112-0000-1000-8000-00805f9b34fb //HeadsetAudioGatewayServiceClass
-                            //0000111f-0000-1000-8000-00805f9b34fb //HandsfreeAudioGatewayServiceClass
-                            //00000000-0000-1000-8000-00805f9b34fb
-                            //BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
-                            //device.createBond();
-                            //Log.i(TAG,"3 "+socket+" : "device.createBond()");
-                            sock.connect();
-                        } catch (IOException e) {
-
-                            Log.d(TAG, "Excepption:" + e.getLocalizedMessage());
-*/
-                        try {
-                            Method m = device.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
-                            sock = (BluetoothSocket) m.invoke(device, btChannel);
-
-                            // Added as part of BT reset connection issue. See,
-                            // https://github.com/PDXostc/rvi_mobile_unlock/issues/4
-                            BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
-
-                            sock.connect();
-                        } catch (InvocationTargetException ite) {
-                            ite.printStackTrace();
-                        } catch (NoSuchMethodException ne) {
-                            ne.printStackTrace();
-                        } catch (IllegalAccessException ie) {
-                            ie.printStackTrace();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                        Subscription sendersub = null;
-                        try {
-                            Log.i(TAG, "Sending to socket auth" + sock);
-
-                            //notifyWatch("AutoUnlock");
-                            //Cert if in
-                            final String cert = (certs.size() > 0) ? certs.values().iterator().next() : "";
-                            JSONObject auth = RviProtocol.createAuth(1, device.getAddress(), 1, cert, "");
-                            final OutputStream out = sock.getOutputStream();
-
-                            // Added as part of BT reset connection issue. See,
-                            // https://github.com/PDXostc/rvi_mobile_unlock/issues/4
-                            SystemClock.sleep(500);
-                            Log.i(TAG, "BT reset - getState()" + BluetoothAdapter.getDefaultAdapter().getState());
-                            Log.i(TAG, "BT reset - isConnected()" + sock.isConnected());
-                            //out.write(auth.toString().getBytes());
-
-                            out.flush();
-
-                            connected = true;
-                            connecting = false;
-
-                            sendNotification(ctx, ctx.getResources().getString(R.string.not_connected_car));
-
-                            //If first passed meens socket is up, subscribe and let the flow start
-                            sendersub = sender.subscribeOn(Schedulers.io()).subscribe(new Action1<JSONObject>()
-                            {
-                                @Override
-                                public void call(JSONObject s) {
-                                    try {
-                                        out.write(s.toString().getBytes());
-                                        out.flush();
-                                    } catch (IOException ioe) {
-                                        //sub.onError(ioe);
-                                        Log.e(TAG, "", ioe);
-                                    }
-                                }
-                            });
-
-                            boolean running = true;
-                            BufferedInputStream input = new BufferedInputStream(sock.getInputStream());
-
-                            int cnt = 0;
-                            while (running) {
-
-                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                                Log.i(TAG, "Sent to socket - ready : " + input.available());
-                                int open = input.read();
-                                if (open != '{') {
-                                    running = false;
-                                    Log.i(TAG, "First char did not match : " + open);
-                                    break;
-                                }
-                                cnt++;
-                                baos.write(open); //Wait for the first then go
-                                Log.i(TAG, "Sent to socket - ready : " + input.available() + " open = " + open);
-
-                                while (input.available() > 0) {
-                                    try {
-                                        int tmp = input.read();
-                                        baos.write(tmp);
-                                        if (tmp == '{') cnt++;
-                                        else if (tmp == '}') {
-                                            cnt--;
-                                            if (cnt == 0) { //done
-                                                baos.flush();
-                                                String toparse = baos.toString();
-                                                baos.reset();
-                                                //Log.d(TAG, "Pre Obj: "+toparse);
-                                                JSONObject inObj = new JSONObject(toparse);
-                                                Log.d(TAG, "Done Obj: " + inObj.toString(2));
-                                                sub.onNext(inObj);
-                                            }
-                                        }
-                                        Log.i(TAG, "Sent to socket - ready loop : " + input.available());
-                                    } catch (IOException ioe) {
-                                        ioe.printStackTrace();
-                                    }
-                                }
-                            }
-                            sock.close();
-
-                        } catch (IOException ioe) {
-                            Log.e(TAG, "Resetting .....");
-                            connected = false;
-                            connecting = false;
-                            unlocked = false;
-                            sock = null;
-                            sub.onError(ioe);
-                        } catch (JSONException e1) {
-                            sub.onError(e1);
-                        } finally {
-                            connected = false;
-                            connecting = false;
-                            unlocked = false;
-                            sock = null;
-                            sub.onCompleted();
-                            if (sendersub != null) sendersub.unsubscribe();
-                        }
-
-                        //device.
-                        Log.i(TAG, "Baddr = " + device.getAddress());
-                    }
-                    //return;
-                }
-                //}
-        );
-
-        return myObservable;
+//        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+//        Log.i(TAG, "Connecting to Bluetooth!" + Thread.currentThread().getName());
+//        Observable<JSONObject> myObservable = Observable.create(
+//                new Observable.OnSubscribe<JSONObject>()
+//                {
+//                    BluetoothSocket sock = null;
+//
+//                    @Override
+//                    public void call(Subscriber<? super JSONObject> sub) {
+//                        if (connected == true) return;
+//
+//                        connected = false;
+//                        unlocked = false;
+//
+//                        //Config
+//                        int btChannel = Integer.parseInt(prefs.getString("pref_bt_channel", "1"));
+//
+//                        // Commented out as part of BT reset connection issue. See,
+//                        // https://github.com/PDXostc/rvi_mobile_unlock/issues/4
+//                        /*
+//                        try {
+//                            sock = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB".toLowerCase())); //SerialPortServiceClass
+//                            //00001105-0000-1000-8000-00805f9b34fb //OBEXObjectPushServiceClass
+//                            //00001106-0000-1000-8000-00805f9b34fb //OBEXFileTransferServiceClass
+//                            //0000112d-0000-1000-8000-00805f9b34fb //SIMAccessServiceClass
+//                            //0000110e-0000-1000-8000-00805f9b34fb //AVRemoteControlServiceClass
+//                            //00001112-0000-1000-8000-00805f9b34fb //HeadsetAudioGatewayServiceClass
+//                            //0000111f-0000-1000-8000-00805f9b34fb //HandsfreeAudioGatewayServiceClass
+//                            //00000000-0000-1000-8000-00805f9b34fb
+//                            //BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
+//                            //device.createBond();
+//                            //Log.i(TAG,"3 "+socket+" : "device.createBond()");
+//                            sock.connect();
+//                        } catch (IOException e) {
+//
+//                            Log.d(TAG, "Excepption:" + e.getLocalizedMessage());
+//*/
+//                        try {
+//                            Method m = device.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
+//                            sock = (BluetoothSocket) m.invoke(device, btChannel);
+//
+//                            // Added as part of BT reset connection issue. See,
+//                            // https://github.com/PDXostc/rvi_mobile_unlock/issues/4
+//                            BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
+//
+//                            sock.connect();
+//                        } catch (InvocationTargetException ite) {
+//                            ite.printStackTrace();
+//                        } catch (NoSuchMethodException ne) {
+//                            ne.printStackTrace();
+//                        } catch (IllegalAccessException ie) {
+//                            ie.printStackTrace();
+//                        } catch (IOException e1) {
+//                            e1.printStackTrace();
+//                        }
+//                        Subscription sendersub = null;
+//                        try {
+//                            Log.i(TAG, "Sending to socket auth" + sock);
+//
+//                            //notifyWatch("AutoUnlock");
+//                            //Cert if in
+//                            final String cert = (certs.size() > 0) ? certs.values().iterator().next() : "";
+//                            JSONObject auth = RviProtocol.createAuth(1, device.getAddress(), 1, cert, "");
+//                            final OutputStream out = sock.getOutputStream();
+//
+//                            // Added as part of BT reset connection issue. See,
+//                            // https://github.com/PDXostc/rvi_mobile_unlock/issues/4
+//                            SystemClock.sleep(500);
+//                            Log.i(TAG, "BT reset - getState()" + BluetoothAdapter.getDefaultAdapter().getState());
+//                            Log.i(TAG, "BT reset - isConnected()" + sock.isConnected());
+//                            //out.write(auth.toString().getBytes());
+//
+//                            out.flush();
+//
+//                            connected = true;
+//                            connecting = false;
+//
+//                            sendNotification(ctx, ctx.getResources().getString(R.string.not_connected_car));
+//
+//                            //If first passed meens socket is up, subscribe and let the flow start
+//                            sendersub = sender.subscribeOn(Schedulers.io()).subscribe(new Action1<JSONObject>()
+//                            {
+//                                @Override
+//                                public void call(JSONObject s) {
+//                                    try {
+//                                        out.write(s.toString().getBytes());
+//                                        out.flush();
+//                                    } catch (IOException ioe) {
+//                                        //sub.onError(ioe);
+//                                        Log.e(TAG, "", ioe);
+//                                    }
+//                                }
+//                            });
+//
+//                            boolean running = true;
+//                            BufferedInputStream input = new BufferedInputStream(sock.getInputStream());
+//
+//                            int cnt = 0;
+//                            while (running) {
+//
+//                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//                                Log.i(TAG, "Sent to socket - ready : " + input.available());
+//                                int open = input.read();
+//                                if (open != '{') {
+//                                    running = false;
+//                                    Log.i(TAG, "First char did not match : " + open);
+//                                    break;
+//                                }
+//                                cnt++;
+//                                baos.write(open); //Wait for the first then go
+//                                Log.i(TAG, "Sent to socket - ready : " + input.available() + " open = " + open);
+//
+//                                while (input.available() > 0) {
+//                                    try {
+//                                        int tmp = input.read();
+//                                        baos.write(tmp);
+//                                        if (tmp == '{') cnt++;
+//                                        else if (tmp == '}') {
+//                                            cnt--;
+//                                            if (cnt == 0) { //done
+//                                                baos.flush();
+//                                                String toparse = baos.toString();
+//                                                baos.reset();
+//                                                //Log.d(TAG, "Pre Obj: "+toparse);
+//                                                JSONObject inObj = new JSONObject(toparse);
+//                                                Log.d(TAG, "Done Obj: " + inObj.toString(2));
+//                                                sub.onNext(inObj);
+//                                            }
+//                                        }
+//                                        Log.i(TAG, "Sent to socket - ready loop : " + input.available());
+//                                    } catch (IOException ioe) {
+//                                        ioe.printStackTrace();
+//                                    }
+//                                }
+//                            }
+//                            sock.close();
+//
+//                        } catch (IOException ioe) {
+//                            Log.e(TAG, "Resetting .....");
+//                            connected = false;
+//                            connecting = false;
+//                            unlocked = false;
+//                            sock = null;
+//                            sub.onError(ioe);
+//                        } catch (JSONException e1) {
+//                            sub.onError(e1);
+//                        } finally {
+//                            connected = false;
+//                            connecting = false;
+//                            unlocked = false;
+//                            sock = null;
+//                            sub.onCompleted();
+//                            if (sendersub != null) sendersub.unsubscribe();
+//                        }
+//
+//                        //device.
+//                        Log.i(TAG, "Baddr = " + device.getAddress());
+//                    }
+//                    //return;
+//                }
+//                //}
+//        );
+//
+//        return myObservable;
     }
 
     static void sendNotification(Context ctx, String action, String ... extras) {
@@ -570,24 +582,28 @@ public class RviService extends Service /* implements BeaconConsumer */{
     }
 
     public static void service(String service, Context ctx) {
-        Log.i(TAG, "Invoking service : "+service+" the car, conn = " + btSender);
+        Log.i(TAG, "Invoking service : " + service + " the car, conn = " + btSender);
 
         UserCredentials userCredentials = ServerNode.getUserCredentials();
 
         //final String cert = (certs.size() > 0)?certs.values().iterator().next():"";
-        final String cert = "";
-        if (userCredentials != null && btSender != null && btSender.hasObservers()) {
-            Log.i(TAG, "Invoking service : " + service + " on car, we have a BT socket");
-            try {
-                JSONArray locationData = new JSONArray();
-                JSONObject location = new JSONObject();
-                location.put("username", userCredentials.getUserName());
-                location.put("vehicleVIN", userCredentials.getVehicleVin());
-                location.put("latitude", latit);
-                location.put("longitude", longi);
-                locationData.put(location);
-                JSONObject rcv = RviProtocol.createReceiveData(2, "jlr.com/vin/stoffe/" + service,
-                locationData, cert, "");
+        //final String cert = "";
+        //if (userCredentials != null && btSender != null && btSender.hasObservers()) {
+            //Log.i(TAG, "Invoking service : " + service + " on car, we have a BT socket");
+
+            //try {
+                //JSONArray locationData = new JSONArray();
+                //JSONObject location = new JSONObject();
+                HashMap<String, Object> params = new HashMap(4);
+                params.put("username", userCredentials.getUserName());
+                params.put("vehicleVIN", userCredentials.getVehicleVin());
+                params.put("latitude", latit);
+                params.put("longitude", longi);
+                //locationData.put(location);
+
+                //JSONObject rcv = RviProtocol.createReceiveData(2, "jlr.com/vin/stoffe/" + service, locationData, cert, "");
+                VehicleNode.sendFobSignal(service, params);
+
                 /*
                 try{
                     Thread.sleep(100);
@@ -595,11 +611,12 @@ public class RviService extends Service /* implements BeaconConsumer */{
                     System.out.println("got interrupted!");
                 }
                 */
-                btSender.onNext(rcv);
-            } catch (JSONException e) {
-                btSender.onError(e);
-            }
 
-        }
+                //btSender.onNext(rcv);
+            //} catch (JSONException e) {
+                //btSender.onError(e);
+            //}
+
+        //}
     }
 }

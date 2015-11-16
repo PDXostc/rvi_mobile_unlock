@@ -16,6 +16,8 @@ package com.jaguarlandrover.rvi;
 
 import android.util.Log;
 
+import java.util.UUID;
+
 /**
  * The remote connection manager of the RVI node.
  */
@@ -187,7 +189,34 @@ public class RemoteConnectionManager
      * @param serverPort the server port
      */
     void setServerPort(Integer serverPort) {
-        /*RemoteConnectionManager.ourInstance.*/mDirectServerConnection.setServerPort(serverPort);
+        mDirectServerConnection.setServerPort(serverPort);
+    }
+
+    /**
+     * Sets the device address of the remote Bluetooth receiver on the remote RVI node, when using a Bluetooth link to interface with a remote node.
+     *
+     * @param deviceAddress the Bluetooth device address
+     */
+    void setBluetoothDeviceAddress(String deviceAddress) {
+        mBluetoothConnection.setDeviceAddress(deviceAddress);
+    }
+
+    /**
+     * Sets the Bluetooth service record identifier of the remote RVI node, when using a Bluetooth link to interface with a remote node.
+     *
+     * @param serviceRecord the service record identifier
+     */
+    void setBluetoothServiceRecord(UUID serviceRecord) {
+        mBluetoothConnection.setServiceRecord(serviceRecord);
+    }
+
+    /**
+     * Sets the Bluetooth channel of the remote RVI node, when using a Bluetooth link to interface with a remote node.
+     *
+     * @param channel the channel
+     */
+    void setBluetoothChannel(Integer channel) {
+        /*RemoteConnectionManager.ourInstance.*/mBluetoothConnection.setChannel(channel);
     }
 
 //    /**
