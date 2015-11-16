@@ -287,17 +287,27 @@ public class LockActivityFragment extends Fragment {
                 keylbl.setText("Key Valid To:");
 
                 keyManagementLayout.setVisibility(View.GONE);
-                lock.setEnabled(userCredentials.getAuthorizedServices().isLock());
-                unlock.setEnabled(userCredentials.getAuthorizedServices().isLock());
-                trunk.setEnabled(userCredentials.getAuthorizedServices().isTrunk());
-                find.setEnabled(userCredentials.getAuthorizedServices().isLights());
-                start.setEnabled(userCredentials.getAuthorizedServices().isEngine());
-                stop.setEnabled(userCredentials.getAuthorizedServices().isEngine());
-                panic.setEnabled(userCredentials.getAuthorizedServices().isHazard());
+                validDate.setVisibility(View.VISIBLE);
 
                 if (!userCredentials.hasAnyAuthorizedServices() || !userCredentials.isKeyValid()) {
+                    lock.setEnabled(false);
+                    unlock.setEnabled(false);
+                    trunk.setEnabled(false);
+                    find.setEnabled(false);
+                    start.setEnabled(false);
+                    stop.setEnabled(false);
+                    panic.setEnabled(false);
+
                     validDate.setText("Revoked");
                 } else {
+                    lock.setEnabled(userCredentials.getAuthorizedServices().isLock());
+                    unlock.setEnabled(userCredentials.getAuthorizedServices().isLock());
+                    trunk.setEnabled(userCredentials.getAuthorizedServices().isTrunk());
+                    find.setEnabled(userCredentials.getAuthorizedServices().isLights());
+                    start.setEnabled(userCredentials.getAuthorizedServices().isEngine());
+                    stop.setEnabled(userCredentials.getAuthorizedServices().isEngine());
+                    panic.setEnabled(userCredentials.getAuthorizedServices().isHazard());
+
                     validDate.setText(userCredentials.getValidTo());
                 }
 

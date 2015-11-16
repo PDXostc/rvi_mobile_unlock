@@ -257,7 +257,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
             UserCredentials userCredentials = ServerNode.getUserCredentials();
             if (userCredentials != null) {
                 try {
-                    if (userCredentials.getUserType().equals("guest") && (userCredentials.getAuthorizedServices().isLock() || !userCredentials.isKeyValid())) { // TODO: Test
+                    if (userCredentials.getUserType().equals("guest") && (!userCredentials.getAuthorizedServices().isLock() || !userCredentials.isKeyValid())) { // TODO: Test
                         Log.d(TAG, "User is not authorized to lock/unlock car.");
 
                         return;

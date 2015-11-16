@@ -34,7 +34,7 @@ class BluetoothConnection implements RemoteConnectionInterface
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean isConfigured() {
         return false;
     }
 
@@ -43,7 +43,8 @@ class BluetoothConnection implements RemoteConnectionInterface
     }
 
     @Override
-    public void disconnect() {
+    public void disconnect(Throwable trigger) {
+        if (mRemoteConnectionListener != null) mRemoteConnectionListener.onRemoteConnectionDidDisconnect(trigger);
     }
 
     @Override

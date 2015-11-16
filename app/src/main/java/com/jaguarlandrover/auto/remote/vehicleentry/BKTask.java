@@ -52,7 +52,7 @@ public class BKTask extends AsyncTask <String, Void, String> {
             while ((s=buffer.readLine())!= null ){
                 output.append(s);
             }
-        }catch(IOException e1){
+        }catch(Exception e1){
             e1.printStackTrace();
             Log.i(TAG, "THIS FAILED IN STREAM");
         }

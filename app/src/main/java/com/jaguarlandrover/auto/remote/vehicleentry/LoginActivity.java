@@ -3,6 +3,8 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 import android.app.AlertDialog;
 import android.content.*;
 import android.graphics.Typeface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.http.HttpResponseCache;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -190,9 +192,15 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             startActivity(intent);
         }
         else{
-            login_fragment.userName.setText("");
-            login_fragment.password.setText("");
-            Toast.makeText(LoginActivity.this,"username and password don't match",Toast.LENGTH_LONG).show();
+            //login_fragment.userName.setText("");
+            //login_fragment.password.setText("");
+            ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+            if (networkInfo == null || networkInfo.getDetailedState() == NetworkInfo.DetailedState.DISCONNECTED) {
+               Toast.makeText(LoginActivity.this, "Network unavailable", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(LoginActivity.this, "username and password don't match", Toast.LENGTH_LONG).show();
+            }
         }
     }
 

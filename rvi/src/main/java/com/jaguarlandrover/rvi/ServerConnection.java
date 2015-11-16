@@ -22,7 +22,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 /**
  * The TCP/IP server @RemoteConnectionInterface implementation
@@ -38,11 +37,11 @@ class ServerConnection implements RemoteConnectionInterface
     /**
      * The socket.
      */
-    Socket mSocket;
+    private Socket mSocket;
 
     @Override
     public void sendRviRequest(DlinkPacket dlinkPacket) {
-        if (!isConnected() || !isEnabled()) // TODO: Call error on listener
+        if (!isConnected() || !isConfigured()) // TODO: Call error on listener
             return;
 
         new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, dlinkPacket.toJsonString());
@@ -54,26 +53,30 @@ class ServerConnection implements RemoteConnectionInterface
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean isConfigured() {
         return !(mServerUrl == null || mServerUrl.isEmpty() || mServerPort == 0);
     }
 
     @Override
     public void connect() {
+        if (isConnected()) disconnect(null);
+
         connectSocket();
     }
 
     @Override
-    public void disconnect() {
+    public void disconnect(Throwable trigger) {
         try {
             if (mSocket != null)
                 mSocket.close();
+
+            mSocket = null;
         }
         catch (IOException e) {
             e.printStackTrace();
         }
 
-        if (mRemoteConnectionListener != null) mRemoteConnectionListener.onRemoteConnectionDidDisconnect();
+        if (mRemoteConnectionListener != null && trigger != null) mRemoteConnectionListener.onRemoteConnectionDidDisconnect(trigger);
     }
 
     @Override
@@ -86,10 +89,10 @@ class ServerConnection implements RemoteConnectionInterface
 
         ConnectTask connectAndAuthorizeTask = new ConnectTask(mServerUrl, mServerPort);
         connectAndAuthorizeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
     }
 
-    private class ConnectTask extends AsyncTask<Void, String, Void> {
+    private class ConnectTask extends AsyncTask<Void, String, Throwable>
+    {
         /**
          * The destination address.
          */
@@ -98,11 +101,6 @@ class ServerConnection implements RemoteConnectionInterface
          * The destination port.
          */
         int    dstPort;
-
-        /**
-         * If the connection connected successfully or not.
-         */
-        boolean success = true;
 
         /**
          * Instantiates a new Connect task.
@@ -116,51 +114,45 @@ class ServerConnection implements RemoteConnectionInterface
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Throwable doInBackground(Void... params) {
 
             try {
                 mSocket = new Socket(dstAddress, dstPort);
 
-            }
-            catch (UnknownHostException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
 
-                success = false;
-
-                if (mRemoteConnectionListener != null) mRemoteConnectionListener
-                        .onRemoteConnectionDidFailToConnect(new Error("UnknownHostException: " + e.toString()));
-
+                return e;
             }
-            catch (IOException e) {
-                e.printStackTrace();
 
-                success = false;
-
-                if (mRemoteConnectionListener != null) mRemoteConnectionListener
-                        .onRemoteConnectionDidFailToConnect(new Error("IOException: " + e.toString()));
-
-            }
             return null;
         }
 
         @Override
-        protected void onPostExecute(Void result) {
+        protected void onPostExecute(Throwable result) {
             super.onPostExecute(result);
 
-            // TODO: Does the input buffer stream cache data in the case that my async thread sends the auth command before the listener is set up?
-            ListenTask listenTask = new ListenTask();
-            listenTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            if (result == null) {
+                // TODO: Does the input buffer stream cache data in the case that my async thread sends the auth command before the listener is set up?
+                ListenTask listenTask = new ListenTask();
+                listenTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-            if (success)
-                if (mRemoteConnectionListener != null) mRemoteConnectionListener.onRemoteConnectionDidConnect();
+
+                if (mRemoteConnectionListener != null)
+                    mRemoteConnectionListener.onRemoteConnectionDidConnect();
+            } else {
+                if (mRemoteConnectionListener != null)
+                    mRemoteConnectionListener.onRemoteConnectionDidFailToConnect(result);
+
+                mSocket = null;
+            }
         }
     }
 
-    private class ListenTask extends AsyncTask<Void, String, Void>
+    private class ListenTask extends AsyncTask<Void, String, Throwable>
     {
-
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Throwable doInBackground(Void... params) {
             Log.d(TAG, "Listening on socket...");
 
             try {
@@ -176,11 +168,10 @@ class ServerConnection implements RemoteConnectionInterface
                     publishProgress(byteArrayOutputStream.toString("UTF-8"));
                     byteArrayOutputStream.reset();
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
 
-                publishProgress("Exception: " + e.toString());
+                return e;
             }
 
             return null;
@@ -196,22 +187,17 @@ class ServerConnection implements RemoteConnectionInterface
         }
 
         @Override
-        protected void onPostExecute(Void result) {
+        protected void onPostExecute(Throwable result) {
             super.onPostExecute(result);
 
-            if (mRemoteConnectionListener != null) mRemoteConnectionListener.onRemoteConnectionDidDisconnect();
+            disconnect(result);
         }
     }
 
-    private class SendDataTask extends AsyncTask<String, Void, Void>
+    private class SendDataTask extends AsyncTask<String, Void, Throwable>
     {
-        /**
-         * If the connection sent the data successfully or not.
-         */
-        boolean success = true;
-
         @Override
-        protected Void doInBackground(String... params) {
+        protected Throwable doInBackground(String... params) {
 
             String data = params[0];
             Log.d(TAG, "Sending packet: " + data);
@@ -223,23 +209,24 @@ class ServerConnection implements RemoteConnectionInterface
 
                 wr.writeBytes(data);
                 wr.flush();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
 
-                success = false;
-
-                // TODO: Correctly catch and parse exceptions to detect if the socket is closed or if there was just an error
-                // sending the packet, and report through remoteConnectionListener interface appropriately
+                return e;
             }
 
             return null;
         }
 
         @Override
-        protected void onPostExecute(Void result) {
-            if (success)
+        protected void onPostExecute(Throwable result) {
+            if (result == null) {
                 if (mRemoteConnectionListener != null) mRemoteConnectionListener.onDidSendDataToRemoteConnection();
+            } else {
+                if (mRemoteConnectionListener != null) mRemoteConnectionListener.onDidFailToSendDataToRemoteConnection(result);
+
+                disconnect(result);
+            }
         }
     }
 
@@ -268,5 +255,4 @@ class ServerConnection implements RemoteConnectionInterface
     void setServerPort(Integer serverPort) {
         mServerPort = serverPort;
     }
-
 }
