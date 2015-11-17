@@ -18,6 +18,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Base64;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -29,12 +30,13 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerNode
 {
     private final static String TAG = "UnlockDemo:ServerNode";
 
-    /* Static objects */
+    /* Static variables */
     private static Context applicationContext = UnlockApplication.getContext();
 
     private static SharedPreferences        preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
@@ -42,6 +44,8 @@ public class ServerNode
     private static Gson                     gson        = new Gson();
 
     private static RVINode rviNode = new RVINode(null);
+
+    private static final ConcurrentHashMap<String, String> certs = new ConcurrentHashMap<String, String>(1);
 
     /* SharedPreferences keys */
     private final static String NEW_CERTIFICATE_DATA_KEY        = "NEW_CERTIFICATE_DATA_KEY";
@@ -119,21 +123,15 @@ public class ServerNode
                             String certId = ((HashMap<String, String>) parameters).get("certid");
                             String certificateJwt = ((HashMap<String, String>) parameters).get("certificate");
 
-                            // TODO: Need to handle certs?
+                            // TODO: Need to handle certs? Probably certs (potentially renamed 'credentials') should be stored and handled in lower-level RVI SDK
                             //certs.put(certId, jwt);
 
-                            //Debug
-                            // Errors seen here on parseAndValidateJWT. Should be getting Base64
-                            // from backend, but sometimes getting errors that it's not.
-                            // Should be fixed now, backend is sending URL safe Base64,
-                            // parseAndValidateJWT now using Base64.URL_SAFE
-                            String[] token = RviProtocol.parseAndValidateJWT(certificateJwt);
+                            String[] token = parseAndValidateJWT(certificateJwt);
 
                             ServerNode.setCertificate(token[1]);
 
                             // TODO: Set up notification system to notify UI that stuff is coming from the server instead of the current polling mechanism
-//                            sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"),
-//                                    "dialog", "New Key", key.getString("id"));
+                            //sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"), "dialog", "New Key", key.getString("id"));
                             break;
 
                         case CERT_ACCOUNT_DETAILS:
@@ -372,5 +370,16 @@ public class ServerNode
     public static void setThereIsNewInvokedServiceReport(Boolean isNewReport) {
         editor.putBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, isNewReport);
         editor.commit();
+    }
+
+    public static String[] parseAndValidateJWT(String encToken) {
+        String[] result = new String[3];
+
+        String [] jwtParts = encToken.split("\\.");
+        if (jwtParts[0] != null) result[0] = new String(Base64.decode(jwtParts[0], Base64.URL_SAFE));
+        if (jwtParts[1] != null) result[1] = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
+        if (jwtParts[2] != null) result[2] = new String(Base64.decode(jwtParts[2], Base64.URL_SAFE));
+
+        return result;
     }
 }

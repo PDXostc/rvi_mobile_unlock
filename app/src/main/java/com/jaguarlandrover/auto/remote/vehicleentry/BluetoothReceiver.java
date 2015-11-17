@@ -1,10 +1,8 @@
 /**
- *  Copyright (C) 2015, Jaguar Land Rover
+ * Copyright (C) 2015, Jaguar Land Rover
  *
- *  This program is licensed under the terms and conditions of the
- *  Mozilla Public License, version 2.0.  The full text of the
- *  Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
- *
+ * This program is licensed under the terms and conditions of the Mozilla Public License, version 2.0.  The full text of the Mozilla Public License is at
+ * https://www.mozilla.org/MPL/2.0/
  */
 
 package com.jaguarlandrover.auto.remote.vehicleentry;
@@ -24,8 +22,7 @@ public class BluetoothReceiver extends BroadcastReceiver
     public static boolean BluetoothConnected;
     private static final String TAG = "RVI";
 
-    public void onReceive(Context context, Intent intent)
-    {
+    public void onReceive(Context context, Intent intent) {
 
         Log.d(TAG, "Bluetooth Intent Recieved");
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -33,26 +30,25 @@ public class BluetoothReceiver extends BroadcastReceiver
         String action = intent.getAction();
         Log.d(TAG, "Bluetooth Called: Action: " + action);
 
-        if (action.equalsIgnoreCase("android.bluetooth.device.action.ACL_CONNECTED"))
-        {
+        if (action.equalsIgnoreCase("android.bluetooth.device.action.ACL_CONNECTED")) {
             Log.d(TAG, "BLUETOOTH CONNECTED RECIEVED");
             BluetoothConnected = true;
 
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            Log.d(TAG, "Device +"+device.getName()+" uu "+device.getUuids());
+            Log.d(TAG, "Device +" + device.getName() + " uu " + device.getUuids());
 
-            Parcelable[] uuidExtra =intent.getParcelableArrayExtra("android.bluetooth.device.extra.UUID");
-            if (BluetoothDevice.ACTION_UUID.equals(action)){
-                uuidExtra =intent.getParcelableArrayExtra("android.bluetooth.device.extra.UUID");
+            Parcelable[] uuidExtra = intent.getParcelableArrayExtra("android.bluetooth.device.extra.UUID");
+            if (BluetoothDevice.ACTION_UUID.equals(action)) {
+                uuidExtra = intent.getParcelableArrayExtra("android.bluetooth.device.extra.UUID");
             }
-            Log.d(TAG,"SDP has no errors: = "+uuidExtra);
-            if( uuidExtra == null ) return;
+            Log.d(TAG, "SDP has no errors: = " + uuidExtra);
+            if (uuidExtra == null) return;
             // if(found==false){
-            for(int i=0;i<uuidExtra.length;i++){
-                Log.d(TAG,"UUID:   "+ uuidExtra[i]);
+            for (int i = 0; i < uuidExtra.length; i++) {
+                Log.d(TAG, "UUID:   " + uuidExtra[i]);
 
-                if((uuidExtra[i].toString()).equals("00001101-0000-1000-8000-00805F9B34FB".toLowerCase())){
-                    Log.d(TAG,"Match found in loop");
+                if ((uuidExtra[i].toString()).equals("00001101-0000-1000-8000-00805F9B34FB".toLowerCase())) {
+                    Log.d(TAG, "Match found in loop");
 
                 }
 
@@ -60,8 +56,7 @@ public class BluetoothReceiver extends BroadcastReceiver
             //device.setPairingConfirmation(true);
         }
 
-        if (action.equalsIgnoreCase("android.bluetooth.device.action.ACL_DISCONNECTED"))
-        {
+        if (action.equalsIgnoreCase("android.bluetooth.device.action.ACL_DISCONNECTED")) {
             Log.d(TAG, "BLUETOOTH DISCONNECTED RECIEVED");
             BluetoothConnected = false;
         }
@@ -71,16 +66,16 @@ public class BluetoothReceiver extends BroadcastReceiver
                     BluetoothAdapter.ERROR);
             switch (state) {
                 case BluetoothAdapter.STATE_OFF:
-                    Log.d(TAG,"Bluetooth off");
+                    Log.d(TAG, "Bluetooth off");
                     Intent i = new Intent(context, RviService.class);
                     i.putExtra("bluetooth", state);
                     context.startService(i);
                     break;
                 case BluetoothAdapter.STATE_TURNING_OFF:
-                    Log.d(TAG,"Turning Bluetooth off");
+                    Log.d(TAG, "Turning Bluetooth off");
                     break;
                 case BluetoothAdapter.STATE_ON:
-                    Log.d(TAG,"Bluetooth on");
+                    Log.d(TAG, "Bluetooth on");
                     Intent j = new Intent(context, RviService.class);
                     j.putExtra("bluetooth", state);
                     context.startService(j);

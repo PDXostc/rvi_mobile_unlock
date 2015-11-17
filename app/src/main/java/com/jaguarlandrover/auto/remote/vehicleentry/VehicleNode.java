@@ -32,30 +32,15 @@ public class VehicleNode
     /* Static objects */
     private static Context applicationContext = UnlockApplication.getContext();
 
-    private static SharedPreferences        preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
-    private static SharedPreferences.Editor editor      = preferences.edit();
-    private static Gson                     gson        = new Gson();
+    private static SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
 
     private static RVINode rviNode = new RVINode(null);
-
-    /* SharedPreferences keys */
-    private final static String NEW_CERTIFICATE_DATA_KEY        = "NEW_CERTIFICATE_DATA_KEY";
-    private final static String CERTIFICATE_DATA_KEY            = "CERTIFICATE_DATA_KEY";
-    private final static String NEW_USER_CREDENTIALS_KEY        = "NEW_USER_CREDENTIALS_KEY";
-    private final static String USER_CREDENTIALS_KEY            = "USER_CREDENTIALS_KEY";
-    private final static String NEW_REMOTE_CREDENTIALS_LIST_KEY = "NEW_REMOTE_CREDENTIALS_LIST_KEY";
-    private final static String REMOTE_CREDENTIALS_LIST_KEY     = "REMOTE_CREDENTIALS_LIST_KEY";
-    private final static String NEW_INVOKED_SERVICE_REPORT_KEY  = "NEW_INVOKED_SERVICE_REPORT_KEY";
-    private final static String INVOKED_SERVICE_REPORT_KEY      = "INVOKED_SERVICE_REPORT_KEY";
 
     /* RVI fully-qualified service identifier parts */
     private final static String RVI_DOMAIN        = "jlr.com";
     private final static String FOB_SIGNAL_BUNDLE = "fob";
 
     /* Remote service identifiers */
-    private final static String CERT_REQUESTALL = "cert_requestall";
-    private final static String CERT_CREATE     = "cert_create";
-    private final static String CERT_MODIFY     = "cert_modify";
 
     /* Service bundles */
     private final static ServiceBundle fobSignalServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, FOB_SIGNAL_BUNDLE, null);

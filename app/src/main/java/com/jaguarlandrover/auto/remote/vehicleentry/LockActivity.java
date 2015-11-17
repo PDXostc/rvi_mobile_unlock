@@ -192,7 +192,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     public void onButtonCommand(String cmd) {
         //TODO send to RVI service
-        RviService.service(cmd, LockActivity.this);
+        RviService.triggerFobSignal(cmd, LockActivity.this);
     }
 
     public void keyUpdate(final UserCredentials userCredentials) {
