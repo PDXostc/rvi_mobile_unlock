@@ -16,24 +16,13 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.net.ConnectivityManager;
 import android.os.Binder;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import com.google.gson.Gson;
 import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -70,7 +59,7 @@ public class RviService extends Service {
 
         super.onCreate();
 
-        FobParams.startUpdatingLocation();
+        FobParamsManager.startUpdatingLocation();
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 

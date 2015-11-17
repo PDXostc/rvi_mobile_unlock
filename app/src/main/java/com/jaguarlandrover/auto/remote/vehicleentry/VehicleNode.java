@@ -16,10 +16,8 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import com.google.gson.Gson;
 import com.jaguarlandrover.rvi.RVINode;
 import com.jaguarlandrover.rvi.ServiceBundle;
 
@@ -148,7 +146,7 @@ public class VehicleNode
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
-        fobSignalServiceBundle.invokeService(fobSignal, FobParams.getSnapshot(), 5000);
+        fobSignalServiceBundle.invokeService(fobSignal, new FobParamsManager.FobParams(), 5000);
     }
 
     public static void setDeviceAddress(String deviceAddress) {

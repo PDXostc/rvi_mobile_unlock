@@ -14,7 +14,6 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-import android.app.Activity;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
@@ -23,31 +22,22 @@ import android.os.Bundle;
 import android.util.Log;
 import com.google.gson.annotations.SerializedName;
 
-public class FobParams
+public class FobParamsManager
 {
     private final static String TAG = "UnlockDemo:FobParams";
 
-    @SerializedName("latitude")
-    private double mLat = 0;
-
-    @SerializedName("longitude")
-    private double mLon = 0;
-
-    @SerializedName("username")
-    private String mUsername;
-
-    @SerializedName("vehicleVIN")
-    private String mVehicleVin;
+    private static double lat = 0;
+    private static double lon = 0;
 
     LocationManager  mLocationManager  = (LocationManager) UnlockApplication.getContext().getSystemService(Context.LOCATION_SERVICE);
-    LocationListener mLocationListener = new LocationListener()
+    private LocationListener mLocationListener = new LocationListener()
     {
         @Override
         public void onLocationChanged(Location location) {
-            ourInstance.mLat = location.getLatitude();
-            ourInstance.mLon = location.getLongitude();
+            lat = location.getLatitude();
+            lon = location.getLongitude();
 
-            Log.d(TAG, "MY CURRENT LOCATION - Latitude = " + ourInstance.mLat + " Longitude = " + ourInstance.mLon);
+            Log.d(TAG, "MY CURRENT LOCATION - Latitude = " + lat + " Longitude = " + lon);
         }
 
         @Override
@@ -66,10 +56,10 @@ public class FobParams
         }
     };
 
-    private static FobParams ourInstance = new FobParams();
+    private static FobParamsManager ourInstance = new FobParamsManager();
 
-    private FobParams() {
-    //    mLocationManager = (LocationManager) UnlockApplication.getContext().getSystemService(Context.LOCATION_SERVICE);
+    private FobParamsManager() {
+        //    mLocationManager = (LocationManager) UnlockApplication.getContext().getSystemService(Context.LOCATION_SERVICE);
     }
 
     public static void startUpdatingLocation() {
@@ -80,12 +70,39 @@ public class FobParams
         ourInstance.mLocationManager.removeUpdates(ourInstance.mLocationListener);
     }
 
-    public static FobParams getSnapshot() {
-        UserCredentials userCredentials = ServerNode.getUserCredentials();
+    static class FobParams
+    {
+        @SerializedName("latitude")
+        private double mLat = 0;
 
-        ourInstance.mUsername = userCredentials.getUserName();
-        ourInstance.mVehicleVin = userCredentials.getVehicleVin();
+        @SerializedName("longitude")
+        private double mLon = 0;
 
-        return ourInstance;
+        @SerializedName("username")
+        private String mUsername;
+
+        @SerializedName("vehicleVIN")
+        private String mVehicleVin;
+
+        public FobParams() {
+            UserCredentials userCredentials = ServerNode.getUserCredentials();
+            mLat = lat;
+            mLon = lon;
+            mUsername = userCredentials.getUserName();
+            mVehicleVin = userCredentials.getVehicleVin();
+        }
     }
+
+//    public static FobParamsManager getSnapshot() {
+//        Log.d(TAG, "getSnapshot()");
+//        UserCredentials userCredentials = ServerNode.getUserCredentials();
+//        FobParamsManager copy = new FobParamsManager();
+//
+//        copy.mLat = ourInstance.mLat;
+//        copy.mLon = ourInstance.mLon;
+//        copy.mUsername = userCredentials.getUserName();
+//        copy.mVehicleVin = userCredentials.getVehicleVin();
+//
+//        return copy;
+//    }
 }
