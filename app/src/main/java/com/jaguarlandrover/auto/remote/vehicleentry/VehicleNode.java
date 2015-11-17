@@ -41,6 +41,16 @@ public class VehicleNode
     private final static String FOB_SIGNAL_BUNDLE = "fob";
 
     /* Remote service identifiers */
+    public final static String FOB_SIGNAL_UNLOCK      = "unlock";
+    public final static String FOB_SIGNAL_LOCK        = "lock";
+    public final static String FOB_SIGNAL_AUTO_UNLOCK = "auto_unlock";
+    public final static String FOB_SIGNAL_AUTO_LOCK   = "auto_lock";
+    public final static String FOB_SIGNAL_START       = "start";
+    public final static String FOB_SIGNAL_STOP        = "stop";
+    public final static String FOB_SIGNAL_HORN        = "horn";
+    public final static String FOB_SIGNAL_TRUNK       = "trunk";
+    public final static String FOB_SIGNAL_PANIC       = "panic";
+    public final static String FOB_SIGNAL_LIGHTS      = "lights";
 
     /* Service bundles */
     private final static ServiceBundle fobSignalServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, FOB_SIGNAL_BUNDLE, null);
@@ -57,11 +67,13 @@ public class VehicleNode
 
     private static VehicleNode ourInstance = new VehicleNode();
 
-    public static VehicleNode getInstance() {
-        return ourInstance;
-    }
+    //public static VehicleNode getInstance() {
+    //    return ourInstance;
+    //}
 
     private VehicleNode() {
+        Log.d(TAG, "VehicleNode()");
+
         /* Listeners */
         ServiceBundle.ServiceBundleListener serviceBundleListener = new ServiceBundle.ServiceBundleListener()
         {
@@ -131,12 +143,12 @@ public class VehicleNode
         rviNode.disconnect();
     }
 
-    public static void sendFobSignal(String fobSignal, Object params) {
+    public static void sendFobSignal(String fobSignal) {//}, Object params) {
         Log.d(TAG, "Sending signal to car: " + fobSignal);
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
-        fobSignalServiceBundle.invokeService(fobSignal, params, 5000);
+        fobSignalServiceBundle.invokeService(fobSignal, FobParams.getSnapshot(), 5000);
     }
 
     public static void setDeviceAddress(String deviceAddress) {

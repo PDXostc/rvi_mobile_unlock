@@ -99,9 +99,9 @@ public class ServerNode
 
     private static ServerNode ourInstance = new ServerNode();
 
-    public static ServerNode getInstance() {
-        return ourInstance;
-    }
+    //public static ServerNode getInstance() {
+    //    return ourInstance;
+    //}
 
     private ServerNode() {
         /* Listeners */
@@ -112,9 +112,9 @@ public class ServerNode
                 if (serviceBundle.getBundleIdentifier().equals(CERT_PROV_BUNDLE)) {
                     switch (serviceIdentifier) {
                         case CERT_RESPONSE:
-//                            Type collectionType = new TypeToken<Collection<UserCredentials>>() {}.getType();
-//                            Collection<UserCredentials> remoteCredentials =
-//                                    gson.fromJson(gson.toJson(gson.fromJson((String) parameters, HashMap.class).get("certificates")), collectionType);
+                            //Type collectionType = new TypeToken<Collection<UserCredentials>>() {}.getType();
+                            //Collection<UserCredentials> remoteCredentials =
+                            //        gson.fromJson(gson.toJson(gson.fromJson((String) parameters, HashMap.class).get("certificates")), collectionType);
 
                             ServerNode.setRemoteCredentialsList(gson.toJson(gson.fromJson((String) parameters, HashMap.class).get("certificates")));
 
@@ -124,7 +124,7 @@ public class ServerNode
                             String certificateJwt = ((HashMap<String, String>) parameters).get("certificate");
 
                             // TODO: Need to handle certs? Probably certs (potentially renamed 'credentials') should be stored and handled in lower-level RVI SDK
-                            //certs.put(certId, jwt);
+                            certs.put(certId, certificateJwt);
 
                             String[] token = parseAndValidateJWT(certificateJwt);
 

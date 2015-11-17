@@ -129,11 +129,13 @@ class BluetoothConnection implements RemoteConnectionInterface
 
         @Override
         protected Throwable doInBackground(Void... params) {
+            Log.d(TAG, "Connecting Bluetooth socket: Checking Bluetooth adapter is enabled...");
 
             if (!mBluetoothAdapter.isEnabled()) {
                 mBluetoothAdapter.enable();
             }
 
+            Log.d(TAG, "Connecting Bluetooth socket: Getting remote device...");
             BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(btAddr);
 
             // TODO: Fix the raspi Bluetooth code so I can use the below code (and remove the java reflection hack)
@@ -153,12 +155,16 @@ class BluetoothConnection implements RemoteConnectionInterface
 
             // TODO: Fix the raspi Bluetooth code so I can remove the java reflection hack below (and use the above code above)
             try {
+                Log.d(TAG, "Connecting Bluetooth socket: Creating socket...");
+
                 Method m = device.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
                 mSocket = (BluetoothSocket) m.invoke(device, btChannel);
 
                 // Added as part of BT reset connection issue. See,
                 // https://github.com/PDXostc/rvi_mobile_unlock/issues/4
-                BluetoothAdapter.getDefaultAdapter().cancelDiscovery(); // TODO: Needed? Probably should be moved out of SDK and into unlock code
+                BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
+
+                Log.d(TAG, "Connecting Bluetooth socket: Connecting socket...");
 
                 mSocket.connect();
             } catch (Exception e) {
@@ -167,6 +173,7 @@ class BluetoothConnection implements RemoteConnectionInterface
                 return e;
             }
 
+            Log.d(TAG, "Connecting Bluetooth socket: Async task complete...");
             return null;
         }
 
@@ -176,16 +183,26 @@ class BluetoothConnection implements RemoteConnectionInterface
 
             if (result == null) {
                 // TODO: Does the input buffer stream cache data in the case that my async thread sends the auth command before the listener is set up?
+                Log.d(TAG, "Connecting Bluetooth socket: Creating listener...");
+
                 ListenTask listenTask = new ListenTask();
                 listenTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
                 if (mRemoteConnectionListener != null)
                     mRemoteConnectionListener.onRemoteConnectionDidConnect();
             } else {
-                if (mRemoteConnectionListener != null)
-                    mRemoteConnectionListener.onRemoteConnectionDidFailToConnect(result);
+                Log.d(TAG, "Connecting Bluetooth socket: Socket connection failed...");
+
+                try {
+                    mSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
                 mSocket = null;
+
+                if (mRemoteConnectionListener != null)
+                    mRemoteConnectionListener.onRemoteConnectionDidFailToConnect(result);
             }
         }
     }

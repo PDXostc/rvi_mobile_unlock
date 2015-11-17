@@ -40,13 +40,8 @@ import rx.Subscriber;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
-public class RviService extends Service /* implements BeaconConsumer */{
+public class RviService extends Service {
     private static final String TAG = "RVI:RVIService";
-
-    private static double latit = 0;
-    private static double longi = 0;
-
-    LocationManager locationManager;
 
     private static boolean unlocked = false;
 
@@ -72,36 +67,10 @@ public class RviService extends Service /* implements BeaconConsumer */{
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate Service");
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        LocationListener locationListener = new LocationListener()
-        {
-            @Override
-            public void onLocationChanged(Location location) {
-                latit = location.getLatitude();
-                longi = location.getLongitude();
 
-                String myLocation = "Latitude = " + latit + " Longitude = " + longi;
+        super.onCreate();
 
-                //I make a log to see the results
-                Log.e("MY CURRENT LOCATION", myLocation);
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-
-            }
-        };
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60, 1, locationListener);
+        FobParams.startUpdatingLocation();
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -220,7 +189,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         if (connected && (!unlocked) && ro.weightedDistance <= weightedCutoff) {
                             unlocked = true;
 
-                            RviService.triggerFobSignal("unlock", RviService.this);
+                            //RviService.triggerFobSignal("unlock", RviService.this);
+                            VehicleNode.sendFobSignal(VehicleNode.FOB_SIGNAL_UNLOCK);
                             sendNotification(RviService.this, getResources().getString(R.string.not_auto_unlock));
                             return;
                         }
@@ -228,7 +198,8 @@ public class RviService extends Service /* implements BeaconConsumer */{
                         if (connected && unlocked && ro.weightedDistance >= (1.0 - weightedCutoff)) {
                             unlocked = false;
 
-                            RviService.triggerFobSignal("lock", RviService.this);
+                            //RviService.triggerFobSignal("lock", RviService.this);
+                            VehicleNode.sendFobSignal(VehicleNode.FOB_SIGNAL_LOCK);
                             sendNotification(RviService.this, getResources().getString(R.string.not_auto_lock));
                             return;
                         }
@@ -256,7 +227,7 @@ public class RviService extends Service /* implements BeaconConsumer */{
         }
     };
 
-    public static void connectVehicleNode(String deviceAddress) {
+    public void connectVehicleNode(String deviceAddress) {
         VehicleNode.setDeviceAddress(deviceAddress);
         VehicleNode.connect();
     }
@@ -286,17 +257,17 @@ public class RviService extends Service /* implements BeaconConsumer */{
         nm.notify(0, builder.build());
     }
 
-    public static void triggerFobSignal(String service, Context ctx) {
-        Log.i(TAG, "Invoking service : " + service + " the car, conn = " + btSender);
-
-        UserCredentials userCredentials = ServerNode.getUserCredentials();
-
-        HashMap<String, Object> params = new HashMap(4);
-        params.put("username", userCredentials.getUserName());
-        params.put("vehicleVIN", userCredentials.getVehicleVin());
-        params.put("latitude", latit);
-        params.put("longitude", longi);
-
-        VehicleNode.sendFobSignal(service, params);
-    }
+//    public static void triggerFobSignal(String service, Context ctx) {
+//        Log.i(TAG, "Invoking service : " + service + " the car, conn = " + btSender);
+//
+//        UserCredentials userCredentials = ServerNode.getUserCredentials();
+//
+//        HashMap<String, Object> params = new HashMap(4);
+//        params.put("username", userCredentials.getUserName());
+//        params.put("vehicleVIN", userCredentials.getVehicleVin());
+//        params.put("latitude", latit);
+//        params.put("longitude", longi);
+//
+//        VehicleNode.sendFobSignal(service, params);
+//    }
 }
