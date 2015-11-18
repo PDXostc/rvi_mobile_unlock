@@ -21,12 +21,9 @@ import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import com.jaguarlandrover.rvi.RVINode;
 import com.jaguarlandrover.rvi.ServiceBundle;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.lang.reflect.Type;
 import java.util.*;

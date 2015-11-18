@@ -27,8 +27,10 @@ public class VehicleNode
 {
     private final static String TAG = "UnlockDemo:VehicleNode";
 
-    /* Static objects */
+    /* Static variables */
     private static Context applicationContext = UnlockApplication.getContext();
+
+    private static boolean isUnlocked;
 
     private static SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
 
@@ -41,8 +43,8 @@ public class VehicleNode
     /* Remote service identifiers */
     public final static String FOB_SIGNAL_UNLOCK      = "unlock";
     public final static String FOB_SIGNAL_LOCK        = "lock";
-    public final static String FOB_SIGNAL_AUTO_UNLOCK = "auto_unlock";
-    public final static String FOB_SIGNAL_AUTO_LOCK   = "auto_lock";
+//    public final static String FOB_SIGNAL_AUTO_UNLOCK = "auto_unlock";
+//    public final static String FOB_SIGNAL_AUTO_LOCK   = "auto_lock";
     public final static String FOB_SIGNAL_START       = "start";
     public final static String FOB_SIGNAL_STOP        = "stop";
     public final static String FOB_SIGNAL_HORN        = "horn";
@@ -122,6 +124,10 @@ public class VehicleNode
         return (connectionStatus == ConnectionStatus.CONNECTED);
     }
 
+    public static boolean isUnlocked() {
+        return isUnlocked;
+    }
+
     public static void connect() {
         if (connectionStatus == ConnectionStatus.CONNECTING) return; // TODO: Do we want to move this logic down into the SDK?
 
@@ -147,9 +153,14 @@ public class VehicleNode
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
         fobSignalServiceBundle.invokeService(fobSignal, new FobParamsManager.FobParams(), 5000);
+
+        if (fobSignal.equals(FOB_SIGNAL_LOCK)) isUnlocked = false;
+        if (fobSignal.equals(FOB_SIGNAL_UNLOCK)) isUnlocked = true;
     }
 
     public static void setDeviceAddress(String deviceAddress) {
         rviNode.setBluetoothDeviceAddress(deviceAddress);
     }
+
+
 }

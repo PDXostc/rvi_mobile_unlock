@@ -32,8 +32,6 @@ import rx.subjects.PublishSubject;
 public class RviService extends Service {
     private static final String TAG = "RVI:RVIService";
 
-    private static boolean unlocked = false;
-
     private SharedPreferences prefs;
 
     public RviService() {
@@ -100,12 +98,17 @@ public class RviService extends Service {
         ServerNode.connect();
     }
 
+    public void connectVehicleNode(String deviceAddress) {
+        VehicleNode.setDeviceAddress(deviceAddress);
+        VehicleNode.connect();
+    }
+
     // This is the object that receives interactions from clients.  See
     // RemoteService for a more complete example.
     private final IBinder mBinder = new RviBinder();
 
     @Override
-    public int onStartCommand (Intent intent, int flags, int startId) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
         connectServerNode();
         starting(intent);
@@ -141,18 +144,20 @@ public class RviService extends Service {
 
         @Override
         public void onNext(final RangeObject ro) {
-            final double unlockDistance = Double.parseDouble(prefs.getString("pref_auto_unlock_dist", "1"));
-            final double connectDistance = Double.parseDouble(prefs.getString("pref_auto_conn_dist", "3"));
-            double grayArea = Double.parseDouble(prefs.getString("pref_auto_lock_unlock_cutoff_gray_area", "0.4"));
+            final boolean connected  = VehicleNode.isConnected();
+            final boolean connecting = VehicleNode.isConnecting();
+            final boolean unlocked   = VehicleNode.isUnlocked();
 
+            final double unlockDistance  = Double.parseDouble(prefs.getString("pref_auto_unlock_dist", "1"));
+            final double connectDistance = Double.parseDouble(prefs.getString("pref_auto_conn_dist", "3"));
+
+            double grayArea = Double.parseDouble(prefs.getString("pref_auto_lock_unlock_cutoff_gray_area", "0.4"));
             if (grayArea > 1.0 || grayArea < 0.0) {
                 Log.d(TAG, "Invalid grayArea: " + grayArea + "! Resetting to default value of 0.4");
                 grayArea = 0.4;
             }
 
             final double weightedCutoff = ((1.0 - grayArea) / 2.0);
-            final boolean connected = VehicleNode.isConnected();
-            final boolean connecting = VehicleNode.isConnecting();
 
             Log.d(TAG, "distance:" + ro.distance + ", weightedDistance:" + ro.weightedDistance + ", unlockDistance:" + unlockDistance + ", connectDistance:" + connectDistance);
             Log.d(TAG, "connected:" + connected + ", connecting:" + connecting + ", unlocked:" + unlocked);
@@ -176,18 +181,12 @@ public class RviService extends Service {
                         }
 
                         if (connected && (!unlocked) && ro.weightedDistance <= weightedCutoff) {
-                            unlocked = true;
-
-                            //RviService.triggerFobSignal("unlock", RviService.this);
                             VehicleNode.sendFobSignal(VehicleNode.FOB_SIGNAL_UNLOCK);
                             sendNotification(RviService.this, getResources().getString(R.string.not_auto_unlock));
                             return;
                         }
 
                         if (connected && unlocked && ro.weightedDistance >= (1.0 - weightedCutoff)) {
-                            unlocked = false;
-
-                            //RviService.triggerFobSignal("lock", RviService.this);
                             VehicleNode.sendFobSignal(VehicleNode.FOB_SIGNAL_LOCK);
                             sendNotification(RviService.this, getResources().getString(R.string.not_auto_lock));
                             return;
@@ -212,14 +211,8 @@ public class RviService extends Service {
 
                 connectVehicleNode(ro.addr);
             }
-
         }
     };
-
-    public void connectVehicleNode(String deviceAddress) {
-        VehicleNode.setDeviceAddress(deviceAddress);
-        VehicleNode.connect();
-    }
 
     static void sendNotification(Context ctx, String action, String... extras) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
@@ -245,18 +238,4 @@ public class RviService extends Service {
         builder.setContentIntent(contentIntent);
         nm.notify(0, builder.build());
     }
-
-//    public static void triggerFobSignal(String service, Context ctx) {
-//        Log.i(TAG, "Invoking service : " + service + " the car, conn = " + btSender);
-//
-//        UserCredentials userCredentials = ServerNode.getUserCredentials();
-//
-//        HashMap<String, Object> params = new HashMap(4);
-//        params.put("username", userCredentials.getUserName());
-//        params.put("vehicleVIN", userCredentials.getVehicleVin());
-//        params.put("latitude", latit);
-//        params.put("longitude", longi);
-//
-//        VehicleNode.sendFobSignal(service, params);
-//    }
 }
