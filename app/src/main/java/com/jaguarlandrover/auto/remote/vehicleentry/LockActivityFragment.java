@@ -173,32 +173,32 @@ public class LockActivityFragment extends Fragment {
                 case R.id.lock:
                     Log.i(TAG, "LockBtn");
                     ed.putBoolean(LOCKED_LBL, true);
-                    buttonListener.onButtonCommand("lock");
+                    buttonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_LOCK);
                     break;
                 case R.id.unlock:
                     Log.i(TAG, "UnlockBtn");
                     ed.putBoolean(LOCKED_LBL, false);
-                    buttonListener.onButtonCommand("unlock");
+                    buttonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_UNLOCK);
                     break;
                 case R.id.trunk:
                     Log.i(TAG, "TrunkBtn");
                     ed.putBoolean("Gruka", false);
-                    buttonListener.onButtonCommand("trunk");
+                    buttonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_TRUNK);
                     break;
                 case R.id.find:
                     Log.i(TAG, "FindBtn");
                     ed.putBoolean("77", false);
-                    buttonListener.onButtonCommand("lights");
+                    buttonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_LIGHTS);
                     break;
                 case R.id.start:
                     Log.i(TAG, "StartBtn");
                     ed.putBoolean(STOPPED_LBL, true);
-                    buttonListener.onButtonCommand("start");
+                    buttonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_START);
                     break;
                 case R.id.stop:
                     Log.i(TAG, "StopBtn");
                     ed.putBoolean(STOPPED_LBL, false);
-                    buttonListener.onButtonCommand("stop");
+                    buttonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_STOP);
                     break;
                 case R.id.share:
                     Log.i(TAG, "ShareBtn");
@@ -216,7 +216,7 @@ public class LockActivityFragment extends Fragment {
 //                        isPanic = false;
 //
 //                    }
-//                    buttonListener.onButtonCommand("panic");
+//                    buttonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_PANIC);
 //                    Log.i(TAG, "PanicBtn swap 1 ");
 //                    Handler handler = new Handler(Looper.getMainLooper());
 //                    handler.postDelayed(new Runnable()

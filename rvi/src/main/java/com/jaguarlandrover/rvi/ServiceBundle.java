@@ -100,6 +100,8 @@ public class ServiceBundle
     }
 
     private HashMap<String, Service> makeServices(ArrayList<String> serviceIdentifiers) {
+        if (serviceIdentifiers == null) return new HashMap<>();
+
         HashMap<String, Service> services = new HashMap<>(serviceIdentifiers.size());
         for (String serviceIdentifier : serviceIdentifiers)
             services.put(validated(serviceIdentifier), new Service(serviceIdentifier, mDomain, mBundleIdentifier, mLocalNodeIdentifier));

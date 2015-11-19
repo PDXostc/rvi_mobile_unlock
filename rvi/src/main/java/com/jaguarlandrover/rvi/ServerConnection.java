@@ -137,7 +137,6 @@ class ServerConnection implements RemoteConnectionInterface
                 ListenTask listenTask = new ListenTask();
                 listenTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-
                 if (mRemoteConnectionListener != null)
                     mRemoteConnectionListener.onRemoteConnectionDidConnect();
             } else {
@@ -194,6 +193,7 @@ class ServerConnection implements RemoteConnectionInterface
         }
     }
 
+    // TODO: Extract SendDataTask and ListenTask to their own classes that can be called by both BluetoothConnection and ServerConnection
     private class SendDataTask extends AsyncTask<String, Void, Throwable>
     {
         @Override
@@ -202,10 +202,8 @@ class ServerConnection implements RemoteConnectionInterface
             String data = params[0];
             Log.d(TAG, "Sending packet: " + data);
 
-            DataOutputStream wr = null;
-
             try {
-                wr = new DataOutputStream(mSocket.getOutputStream());
+                DataOutputStream wr = new DataOutputStream(mSocket.getOutputStream());
 
                 wr.writeBytes(data);
                 wr.flush();

@@ -146,6 +146,34 @@ public class RVINode
         mRemoteConnectionManager.setServerPort(serverPort);
     }
 
+
+    /**
+     * Sets the device address of the remote Bluetooth receiver on the remote RVI node, when using a Bluetooth link to interface with a remote node.
+     *
+     * @param deviceAddress the Bluetooth device address
+     */
+    public void setBluetoothDeviceAddress(String deviceAddress) {
+        mRemoteConnectionManager.setBluetoothDeviceAddress(deviceAddress);
+    }
+
+    /**
+     * Sets the Bluetooth service record identifier of the remote RVI node, when using a Bluetooth link to interface with a remote node.
+     *
+     * @param serviceRecord the service record identifier
+     */
+    public void setBluetoothServiceRecord(UUID serviceRecord) {
+        /*RemoteConnectionManager.ourInstance.*/mRemoteConnectionManager.setBluetoothServiceRecord(serviceRecord);
+    }
+
+    /**
+     * Sets the Bluetooth channel of the remote RVI node, when using a Bluetooth link to interface with a remote node.
+     *
+     * @param channel the channel
+     */
+    public void setBluetoothChannel(Integer channel) {
+        /*RemoteConnectionManager.ourInstance.*/mRemoteConnectionManager.setBluetoothChannel(channel);
+    }
+
 //    public boolean isConnected() {
 //        return mConnected;
 //    }

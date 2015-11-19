@@ -43,8 +43,6 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate() Activity");
 
-//        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-
         handleExtra(getIntent());
 
         keyCheck = new Handler();
@@ -54,7 +52,6 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         setContentView(R.layout.activity_lock);
         lock_fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlock);
         startRepeatingTask();
-        //doBindService();
     }
 
     Runnable StatusCheck = new Runnable()
@@ -191,8 +188,8 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
     @Override
     public void onButtonCommand(String cmd) {
-        //TODO send to RVI service
-        RviService.service(cmd, LockActivity.this);
+        //RviService.triggerFobSignal(cmd, LockActivity.this);
+        VehicleNode.sendFobSignal(cmd);
     }
 
     public void keyUpdate(final UserCredentials userCredentials) {
@@ -234,7 +231,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                 break;
             case "keychange":
                 try {
-                    ServerNode.requestRemoteCredentials();//RviService.requestAll(Request(), LockActivity.this);
+                    ServerNode.requestRemoteCredentials();
                     requestProgress = ProgressDialog.show(LockActivity.this, "","Retrieving keys...",true);
 
                     requestProgress.setCancelable(true);
