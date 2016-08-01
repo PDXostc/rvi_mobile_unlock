@@ -153,7 +153,6 @@ public class RVINode
         mRemoteConnectionManager.setServerPort(serverPort);
     }
 
-
     /**
       * Method to pass the SDK your app's JWT-encoded json credentials for invoking services on a remote node and receiving service invocations from a remote node.
       *

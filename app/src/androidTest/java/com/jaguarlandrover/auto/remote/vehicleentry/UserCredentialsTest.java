@@ -51,7 +51,7 @@ public class UserCredentialsTest extends TestCase
                 "}";
 
         UserCredentials userCredentials = gson.fromJson(jsonString, UserCredentials.class);
-        ServerNode.setUserCredentials(userCredentials);
+        //ServerNode.setUserCredentials(userCredentials);
 
         /* Tests are going to fail when not in daylight savings or if not in Pacific timezone, but, frankly, I don't care */
         assertEquals("10/20/2015 3:20 AM PDT", userCredentials.getValidFrom());
