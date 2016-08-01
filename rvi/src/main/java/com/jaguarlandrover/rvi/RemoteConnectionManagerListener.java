@@ -46,7 +46,7 @@ interface RemoteConnectionManagerListener // TODO: Get rid of this middle man
     /**
      * On RVI did send packet.
      */
-    void onRVIDidSendPacket();
+    void onRVIDidSendPacket(DlinkPacket packet);
 
     /**
      * On RVI did fail to send packet.

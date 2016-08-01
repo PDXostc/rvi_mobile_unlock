@@ -74,11 +74,14 @@ class DlinkPacket
     @SerializedName("cmd")
     protected Command mCmd = null;
 
-    /**
-     * The signature.
-     */
-    @SerializedName("sign")
-    protected String mSig = null;
+//    /**
+//     * The signature.
+//     */
+//    @SerializedName("sign")
+//    protected String mSig = null;
+
+    @SerializedName("rvi_log_id") /* Note: try to keep less than 20 characters */
+    protected String mLogId = null;
 
     /**
      * Serializes the object into json strVal
@@ -108,7 +111,7 @@ class DlinkPacket
         mCmd = command;
 
         mTid = tidCounter++;
-        mSig = "";
+        //mSig = "";
     }
 
     // TODO: 47765, probably need to remove this constructor and update tests
@@ -129,8 +132,8 @@ class DlinkPacket
         if (jsonHash.containsKey("tid"))
             mTid = ((Double) jsonHash.get("tid")).intValue();
 
-        if (jsonHash.containsKey("sign"))
-            mSig = (String) jsonHash.get("sign"); // TODO: Push for sign->sig
+//        if (jsonHash.containsKey("sign"))
+//            mSig = (String) jsonHash.get("sign"); // TODO: Push for sign->sig
 
     }
 }

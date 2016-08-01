@@ -97,7 +97,7 @@ interface RemoteConnectionInterface
         /**
          * Callback method for when the remote connection did send data to the RVI node.
          */
-        void onDidSendDataToRemoteConnection();
+        void onDidSendDataToRemoteConnection(DlinkPacket packet);
 
         /**
          * Callback method for when the the remote connection did fail to send data to the RVI node.

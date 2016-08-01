@@ -34,13 +34,15 @@ class DlinkReceivePacket extends DlinkPacket
     /**
      * The Service used to create the request params.
      */
-    private transient Service mService;
+    @SerializedName("data")
+    private Service mService;
+//    private transient Service mService;
 
     /**
      * The service is converted to a json string, then base64 encoded to be embedded in the packet's json.
      */
-    @SerializedName("data")
-    private String mData;
+//    @SerializedName("data")
+//    private String mData;
 
     /**
      * Instantiates a new Dlink receive packet.
@@ -57,8 +59,11 @@ class DlinkReceivePacket extends DlinkPacket
         super(Command.RECEIVE);
 
         mMod = "proto_json_rpc";
-        mService = service; // TODO: With this paradigm, if one of the parameters of mService changes, mData string will still be the same.
-        mData = Base64.encodeToString(mService.jsonString().getBytes(), Base64.DEFAULT);
+        mService = service;
+
+
+        // TODO: With this paradigm, if one of the parameters of mService changes, mData string will still be the same.
+        //mData = mService.jsonString();//Base64.encodeToString(mService.jsonString().getBytes(), Base64.DEFAULT);
     }
 
 //    public DlinkReceivePacket(HashMap jsonHash) {
@@ -75,8 +80,8 @@ class DlinkReceivePacket extends DlinkPacket
      * @return the service that is being invoked
      */
     Service getService() {
-        if (mService == null && mData != null)
-            mService = new Service(new String(Base64.decode(mData, Base64.DEFAULT)));
+//        if (mService == null && mData != null)
+//            mService = new Service(mData);//new String(Base64.decode(mData, Base64.DEFAULT)));
 
         return mService;
     }
