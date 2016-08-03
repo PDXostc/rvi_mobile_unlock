@@ -277,7 +277,7 @@ class ServerConnection implements RemoteConnectionInterface
 
                 wr.writeBytes(data);
                 wr.flush();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
 
                 return e;
