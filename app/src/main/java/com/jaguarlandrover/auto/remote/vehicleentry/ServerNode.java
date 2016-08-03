@@ -220,7 +220,7 @@ public class ServerNode
     };
 
     void startRepeatingTask() {
-        timerHandler.postDelayed(timerRunnable, 0);
+        timerHandler.postDelayed(timerRunnable, 30 * 1000);
     }
 
     void stopRepeatingTask() {
