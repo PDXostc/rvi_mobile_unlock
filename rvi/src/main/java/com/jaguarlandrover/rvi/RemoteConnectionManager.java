@@ -16,6 +16,7 @@ package com.jaguarlandrover.rvi;
 
 import android.util.Log;
 
+import java.security.KeyStore;
 import java.util.UUID;
 
 /**
@@ -73,8 +74,8 @@ public class RemoteConnectionManager
             }
 
             @Override
-            public void onDidSendDataToRemoteConnection() {
-                if (mListener != null) mListener.onRVIDidSendPacket();
+            public void onDidSendDataToRemoteConnection(DlinkPacket packet) {
+                if (mListener != null) mListener.onRVIDidSendPacket(packet);
             }
 
             @Override
@@ -119,7 +120,9 @@ public class RemoteConnectionManager
      * @param dlinkPacket the dlink packet
      */
     void sendPacket(DlinkPacket dlinkPacket) {
-        Log.d(TAG, Util.getMethodName());
+        if (dlinkPacket == null) return;
+
+        Log.d(TAG, Util.getMethodName() + ": " + dlinkPacket.getClass().toString());
 
 //        RemoteConnectionInterface remoteConnection = selectConnectedRemoteConnection();
 //
@@ -190,6 +193,18 @@ public class RemoteConnectionManager
      */
     void setServerPort(Integer serverPort) {
         mDirectServerConnection.setServerPort(serverPort);
+    }
+
+    /**
+     * Sets the trusted server certificate of the remote RVI node, when using a TCP/IP link to interface with a remote node.
+     *
+     * @param clientKeyStore the server certificate key store
+     * @param serverKeyStore the server certificate key store
+     */
+    void setKeyStores(KeyStore serverKeyStore, KeyStore clientKeyStore, String clientKeyStorePassword) {
+        mDirectServerConnection.setServerKeyStore(serverKeyStore);
+        mDirectServerConnection.setClientKeyStore(clientKeyStore);
+        mDirectServerConnection.setClientKeyStorePassword(clientKeyStorePassword);
     }
 
     /**

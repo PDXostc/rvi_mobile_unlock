@@ -54,7 +54,7 @@ class BluetoothConnection implements RemoteConnectionInterface
         if (!isConnected() || !isConfigured()) // TODO: Call error on listener
             return;
 
-        new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, dlinkPacket.toJsonString());
+        new SendDataTask(dlinkPacket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);//, dlinkPacket.toJsonString());
     }
 
     @Override
@@ -252,12 +252,17 @@ class BluetoothConnection implements RemoteConnectionInterface
         }
     }
 
-    private class SendDataTask extends AsyncTask<String, Void, Throwable>
+    private class SendDataTask extends AsyncTask<Void, Void, Throwable>
     {
-        @Override
-        protected Throwable doInBackground(String... params) {
+        private DlinkPacket mPacket;
+        SendDataTask(DlinkPacket packet) {
+            mPacket = packet;
+        }
 
-            String data = params[0];
+        @Override
+        protected Throwable doInBackground(Void... params) {
+
+            String data = mPacket.toJsonString();//params[0];
             Log.d(TAG, "Sending packet: " + data);
 
             try {
@@ -277,7 +282,7 @@ class BluetoothConnection implements RemoteConnectionInterface
         @Override
         protected void onPostExecute(Throwable result) {
             if (result == null) {
-                if (mRemoteConnectionListener != null) mRemoteConnectionListener.onDidSendDataToRemoteConnection();
+                if (mRemoteConnectionListener != null) mRemoteConnectionListener.onDidSendDataToRemoteConnection(mPacket);
             } else {
                 if (mRemoteConnectionListener != null) mRemoteConnectionListener.onDidFailToSendDataToRemoteConnection(result);
 

@@ -17,8 +17,10 @@ package com.jaguarlandrover.rvi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
@@ -32,42 +34,46 @@ public class RVINode
 {
     private final static String TAG = "RVI:RVINode";
 
+    private ArrayList<String>              mCredentials             = new ArrayList<>();
     private HashMap<String, ServiceBundle> mAllServiceBundles       = new HashMap<>();
     private RemoteConnectionManager        mRemoteConnectionManager = new RemoteConnectionManager();
 
-//    private boolean mConnected = false;
+    private boolean mIsConnected = false;
 
     public RVINode(Context context) {
         mRemoteConnectionManager.setListener(new RemoteConnectionManagerListener()
         {
             @Override
             public void onRVIDidConnect() {
-//                mConnected = true;
+                Log.d(TAG, Util.getMethodName());
 
-                mRemoteConnectionManager.sendPacket(new DlinkAuthPacket());
-
-                announceServices();
-
+                mIsConnected = true;
                 if (mListener != null) mListener.nodeDidConnect();
+
+                mRemoteConnectionManager.sendPacket(new DlinkAuthPacket(mCredentials));
             }
 
             @Override
             public void onRVIDidFailToConnect(Throwable error) {
-//                mConnected = false;
+                Log.d(TAG, Util.getMethodName() + ": " + ((error == null) ? "(null)" : error.getLocalizedMessage()));
 
+                mIsConnected = false;
                 if (mListener != null) mListener.nodeDidFailToConnect(error);
             }
 
             @Override
             public void onRVIDidDisconnect(Throwable trigger) {
-//                mConnected = false;
+                Log.d(TAG, Util.getMethodName() + ": " + ((trigger == null) ? "(null)" : trigger.getLocalizedMessage()));
 
+                mIsConnected = false;
                 if (mListener != null) mListener.nodeDidDisconnect(trigger);
             }
 
             @Override
             public void onRVIDidReceivePacket(DlinkPacket packet) {
                 if (packet == null) return;
+
+                Log.d(TAG, Util.getMethodName() + ": " + packet.getClass().toString());
 
                 if (packet.getClass().equals(DlinkReceivePacket.class)) {
                     handleReceivePacket((DlinkReceivePacket) packet);
@@ -82,13 +88,17 @@ public class RVINode
             }
 
             @Override
-            public void onRVIDidSendPacket() {
+            public void onRVIDidSendPacket(DlinkPacket packet) {
+                if (packet == null) return;
 
+                Log.d(TAG, Util.getMethodName() + ": " + packet.getClass().toString());
+                if (packet.getClass().equals(DlinkAuthPacket.class))
+                    announceServices();
             }
 
             @Override
             public void onRVIDidFailToSendPacket(Throwable error) {
-
+                Log.d(TAG, Util.getMethodName() + ": " + ((error == null) ? "(null)" : error.getLocalizedMessage()));
             }
         });
     }
@@ -121,9 +131,6 @@ public class RVINode
          * Called when the local RVI node disconnects from a remote RVI node.
          */
         void nodeDidDisconnect(Throwable trigger);
-
-
-
     }
 
     private RVINodeListener mListener;
@@ -146,6 +153,35 @@ public class RVINode
         mRemoteConnectionManager.setServerPort(serverPort);
     }
 
+    /**
+      * Method to pass the SDK your app's JWT-encoded json credentials for invoking services on a remote node and receiving service invocations from a remote node.
+      *
+      * @param jwtString a jwt-encoded credentials string
+      */
+    public void addJWTCredentials(String jwtString) {
+        mCredentials.add(jwtString);
+    }
+
+    /**
+     * Sets the server port of the remote RVI node, when using a TCP/IP link to interface with a remote node.
+     *
+     * @param serverKeyStore the KeyStore object that contains your server's self-signed certificate that the TLS connection should accept.
+     *                 To make this KeyStore object, use BouncyCastle (http://www.bouncycastle.org/download/bcprov-jdk15on-146.jar), and
+     *                 this command-line command:
+     *                 $ keytool -import -v -trustcacerts -alias 0 \
+     *                 -file [PATH_TO_SELF_CERT.PEM] \
+     *                 -keystore [PATH_TO_KEYSTORE] \
+     *                 -storetype BKS \
+     *                 -provider org.bouncycastle.jce.provider.BouncyCastleProvider \
+     *                 -providerpath [PATH_TO_bcprov-jdk15on-146.jar] \
+     *                 -storepass [STOREPASS]
+     * @param clientKeyStore the KeyStore object that contains your client's self-signed certificate that the TLS connection sends to the server.
+     *                       // TODO: openssl pkcs12 -export -in insecure_device_cert.crt -inkey insecure_device_key.pem -out client.p12 -name "client-certs"
+     * @param clientKeyStorePassword the password of the client key store
+     */
+    public void setKeyStores(KeyStore serverKeyStore, KeyStore clientKeyStore, String clientKeyStorePassword) {
+        mRemoteConnectionManager.setKeyStores(serverKeyStore, clientKeyStore, clientKeyStorePassword);
+    }
 
     /**
      * Sets the device address of the remote Bluetooth receiver on the remote RVI node, when using a Bluetooth link to interface with a remote node.
@@ -174,9 +210,9 @@ public class RVINode
         /*RemoteConnectionManager.ourInstance.*/mRemoteConnectionManager.setBluetoothChannel(channel);
     }
 
-//    public boolean isConnected() {
-//        return mConnected;
-//    }
+    public boolean isConnected() {
+        return mIsConnected;
+    }
 
     private void connect(RemoteConnectionManager.ConnectionType type) {
         mRemoteConnectionManager.connect(type);//, RemoteConnection.Status.NA, RemoteConnection.Descriptor.NONE));

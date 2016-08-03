@@ -54,21 +54,21 @@ public class DlinkPacketTest extends AndroidTestCase
         mPacket = new DlinkPacket(DlinkPacket.Command.AUTHORIZE);
 
         assertEquals(mPacket.mCmd, DlinkPacket.Command.AUTHORIZE);
-        assertEquals(mPacket.mSig, "");
+        //assertEquals(mPacket.mSig, "");
     }
 
     public final void testConstructorCommandServiceAnnounce() {
         mPacket = new DlinkPacket(DlinkPacket.Command.SERVICE_ANNOUNCE);
 
         assertEquals(mPacket.mCmd, DlinkPacket.Command.SERVICE_ANNOUNCE);
-        assertEquals(mPacket.mSig, "");
+        //assertEquals(mPacket.mSig, "");
     }
 
     public final void testConstructorCommandReceive() {
         mPacket = new DlinkPacket(DlinkPacket.Command.RECEIVE);
 
         assertEquals(mPacket.mCmd, DlinkPacket.Command.RECEIVE);
-        assertEquals(mPacket.mSig, "");
+        //assertEquals(mPacket.mSig, "");
     }
 
     public final void testConstructorCommandAuthorizeGoodJson() {
@@ -78,7 +78,7 @@ public class DlinkPacketTest extends AndroidTestCase
 
         assertEquals(mPacket.mTid, Integer.valueOf(1));
         assertEquals(mPacket.mCmd, DlinkPacket.Command.AUTHORIZE);
-        assertEquals(mPacket.mSig, "");
+        //assertEquals(mPacket.mSig, "");
     }
 
     public final void testConstructorCommandServiceAnnounceGoodJson() {
@@ -88,7 +88,7 @@ public class DlinkPacketTest extends AndroidTestCase
 
         assertEquals(mPacket.mTid, Integer.valueOf(1));
         assertEquals(mPacket.mCmd, DlinkPacket.Command.SERVICE_ANNOUNCE);
-        assertEquals(mPacket.mSig, "");
+        //assertEquals(mPacket.mSig, "");
     }
 
     public final void testConstructorCommandReceiveGoodJson() {
@@ -98,7 +98,7 @@ public class DlinkPacketTest extends AndroidTestCase
 
         assertEquals(mPacket.mTid, Integer.valueOf(1));
         assertEquals(mPacket.mCmd, DlinkPacket.Command.RECEIVE);
-        assertEquals(mPacket.mSig, "");
+        //assertEquals(mPacket.mSig, "");
     }
 
     public final void testConstructorNullCommand() {
@@ -143,7 +143,7 @@ public class DlinkPacketTest extends AndroidTestCase
         mPacket = new DlinkPacket(DlinkPacket.Command.AUTHORIZE, jsonObjectFromString(jsonString));
 
         assertNull(mPacket.mTid);
-        assertNull(mPacket.mSig);
+        //assertNull(mPacket.mSig);
     }
 
     public final void testJsonString() {

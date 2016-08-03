@@ -16,7 +16,8 @@ package com.jaguarlandrover.rvi;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * The Dlink "authorization" packet. This request is used to authorize an RVI node.
@@ -34,18 +35,18 @@ class DlinkAuthPacket extends DlinkPacket
     @SerializedName("ver")
     private String mVer;
 
-    @SerializedName("cert")
-    private String mCert;
+    @SerializedName("creds")
+    private ArrayList<String> mCreds;
 
     /**
      * Default constructor
      */
-    DlinkAuthPacket() {
+    DlinkAuthPacket(ArrayList<String> creds) {
         super(Command.AUTHORIZE);
 
         mAddr = "0.0.0.0";
         mPort = 0;
         mVer = "1.0";
-        mCert = "";
+        mCreds = creds;
     }
 }
