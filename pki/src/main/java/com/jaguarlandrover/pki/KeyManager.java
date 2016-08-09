@@ -51,7 +51,7 @@ public class KeyManager {
 
     private final static Integer KEY_SIZE = 4096;
 
-    public static byte [] startNewCSR(String commonName) {
+    public static byte [] getCSR(String commonName) {
         //Generate KeyPair
         KeyPairGenerator keyGen = null;
         try {

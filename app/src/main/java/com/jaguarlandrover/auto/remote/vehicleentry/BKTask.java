@@ -4,7 +4,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.apache.http.protocol.HTTP;
+
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
