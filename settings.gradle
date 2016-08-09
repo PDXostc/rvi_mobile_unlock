@@ -1,1 +1,1 @@
-include ':app', ':rvi', ':wear'
+include ':app', ':rvi', ':wear', ':pki'
