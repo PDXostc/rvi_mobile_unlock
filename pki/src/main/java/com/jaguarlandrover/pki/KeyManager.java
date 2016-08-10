@@ -14,6 +14,8 @@ package com.jaguarlandrover.pki;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import android.util.Log;
+
 import org.spongycastle.asn1.ASN1ObjectIdentifier;
 
 import org.spongycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -58,10 +60,22 @@ public class KeyManager {
             keyGen = KeyPairGenerator.getInstance("RSA");
             keyGen.initialize(KEY_SIZE, new SecureRandom());
 
+            Log.d(TAG, "Generating key pair...");
+
             KeyPair keyPair = keyGen.generateKeyPair();
+
+            Log.d(TAG, "Key pair generated: " + keyPair.getPrivate().toString() + "/" + keyPair.getPublic().toString());
+
+            Log.d(TAG, "Generating CSR...");
+
             PKCS10CertificationRequest csr = generateCSR(keyPair, commonName);
 
+            Log.d(TAG, "CSR generated: " + csr.toString());
+
             //Generate CSR in PKCS#10 format encoded in DER
+
+            Log.d(TAG, "Encoding CSR...");
+
             return csr.getEncoded();
 
         } catch (Exception e) {

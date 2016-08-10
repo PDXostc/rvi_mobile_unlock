@@ -14,6 +14,9 @@ package com.jaguarlandrover.pki;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import android.os.AsyncTask;
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
@@ -21,53 +24,83 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.KeyStore;
 
+import javax.net.SocketFactory;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.TrustManagerFactory;
 
 public class ProvisioningServerInterface {
-    private final static String TAG = "UnlockDemo:ProvisioningServerInterface";
-
+    private final static String TAG = "UnlockDemo:ProvServIntr";
 
     public static void sendCSR() {
-        byte [] csr = KeyManager.getCSR("test1");
+        new CSRSendTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
 
-        if (csr == null) return;
+    private static class CSRSendTask extends AsyncTask<Void, String, Void>
+    {
+        CSRSendTask() {
 
-        char[] chars = new String(csr).toCharArray();
+        }
 
-        URL url;
-        String response = "";
-        try {
-            url = new URL("192.168.16.245:5000/csr");
+        @Override
+        protected Void doInBackground(Void... params) {
+            byte [] csr = KeyManager.getCSR("test1");
 
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setReadTimeout(15000);
-            conn.setConnectTimeout(15000);
-            conn.setRequestMethod("POST");
-            conn.setDoInput(true);
-            conn.setDoOutput(true);
+            if (csr == null) return null;
 
-            OutputStream os = conn.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-            writer.write(chars);
+            char[] chars = new String(csr).toCharArray();
 
-            writer.flush();
-            writer.close();
-            os.close();
-            int responseCode=conn.getResponseCode();
+            Log.d(TAG, "CSR encoded: " + new String(chars));
 
-            if (responseCode == HttpsURLConnection.HTTP_OK) {
-                String line;
-                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                while ((line=br.readLine()) != null) {
-                    response+=line;
+            URL url;
+            String response = "";
+            try {
+                url = new URL("http://192.168.16.245:5000/csr");
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                Log.d(TAG, "Sending CSR...");
+
+//                String hello = "hello";
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                writer.write(chars);
+
+                writer.flush();
+                writer.close();
+                os.close();
+
+                Log.d(TAG, "CSR sent.");
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    String line;
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    while ((line = br.readLine()) != null) {
+                        response += line;
+                    }
+                } else {
+                    response = "";
                 }
-            } else {
-                response = "";
 
+                Log.d(TAG, "Response from server: " + response);
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+            return null;
         }
     }
 }
