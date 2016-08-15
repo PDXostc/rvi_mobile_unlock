@@ -231,7 +231,7 @@ public class ServerNode
     public static void connect() {
         Log.d(TAG, "Attempting to connect to RVI provisioning server.");
 
-        ProvisioningServerInterface.sendCSR();
+        ProvisioningServerInterface.sendCSR(UnlockApplication.getContext());
 
         rviNode.setServerUrl(preferences.getString("pref_rvi_server", "38.129.64.40"));
         rviNode.setServerPort(Integer.parseInt(preferences.getString("pref_rvi_server_port", "8807")));

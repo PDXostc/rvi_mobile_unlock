@@ -14,17 +14,32 @@ package com.jaguarlandrover.pki;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONObject;
+import org.spongycastle.util.encoders.Base64;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+//import java.net.URL;
+import java.net.URI;
 import java.net.URL;
 import java.security.KeyStore;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.HttpsURLConnection;
@@ -36,29 +51,32 @@ import javax.net.ssl.TrustManagerFactory;
 public class ProvisioningServerInterface {
     private final static String TAG = "UnlockDemo:ProvServIntr";
 
-    public static void sendCSR() {
-        new CSRSendTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    public static void sendCSR(Context context) {
+        new CSRSendTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private static class CSRSendTask extends AsyncTask<Void, String, Void>
     {
-        CSRSendTask() {
+        Context mContext;
 
+        CSRSendTask(Context context) {
+            mContext = context;
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-            byte [] csr = KeyManager.getCSR("test1");
+            byte [] csr = KeyManager.getCSR(mContext, "test1");
 
             if (csr == null) return null;
 
-            char[] chars = new String(csr).toCharArray();
-
-            Log.d(TAG, "CSR encoded: " + new String(chars));
-
             URL url;
             String response = "";
+
             try {
+                String string = convertToPem(csr);
+
+                Log.d(TAG, "CSR encoded: " + string);
+
                 url = new URL("http://192.168.16.245:5000/csr");
 
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -70,11 +88,9 @@ public class ProvisioningServerInterface {
 
                 Log.d(TAG, "Sending CSR...");
 
-//                String hello = "hello";
-
                 OutputStream os = conn.getOutputStream();
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-                writer.write(chars);
+                writer.write(string);
 
                 writer.flush();
                 writer.close();
@@ -101,6 +117,14 @@ public class ProvisioningServerInterface {
             }
 
             return null;
+        }
+
+        static String convertToPem(byte [] derCert) throws CertificateEncodingException {
+            String cert_begin = "-----BEGIN CERTIFICATE-----\n";
+            String end_cert = "-----END CERTIFICATE-----";
+
+            String pemCertPre = new String(Base64.encode(derCert));
+            return cert_begin + pemCertPre + end_cert;
         }
     }
 }
