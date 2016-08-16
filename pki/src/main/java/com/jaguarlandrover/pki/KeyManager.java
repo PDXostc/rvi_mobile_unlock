@@ -59,47 +59,127 @@ import javax.security.auth.x500.X500Principal;
 public class KeyManager {
     private final static String TAG = "UnlockDemo:KeyManager";
 
-    private final static String KEYSTORE_ALIAS = "RVI_KEYPAIR";
+    private final static String KEYSTORE_ALIAS = "RVI_KEYPAIR_4096_2";
     private final static String DEFAULT_SIGNATURE_ALGORITHM = "SHA256withRSA";
     private final static String CN_PATTERN = "CN=%s, O=Aralink, OU=OrgUnit";
 
     private final static Integer KEY_SIZE = 4096;
 
-    public static byte [] getCSR(Context context, String commonName) {
-        //Generate KeyPair
-        KeyPairGenerator keyGen = null;
-        String principal = String.format(CN_PATTERN, commonName);
+    static byte [] getCSR(Context context, String commonName) {
+
+        String   principal = String.format(CN_PATTERN, commonName);
+        KeyStore keyStore  = null;
+        KeyPair  keyPair   = null;
+
+        java.security.cert.Certificate cert = null;
 
         try {
-//            keyGen = KeyPairGenerator.getInstance("RSA");
-//            keyGen.initialize(KEY_SIZE, new SecureRandom());
+            keyStore = KeyStore.getInstance("AndroidKeyStore");
+            keyStore.load(null);
 
-            Log.d(TAG, "Generating key pair...");
+            if (!keyStore.containsAlias(KEYSTORE_ALIAS)) {
+                Calendar start = Calendar.getInstance();
+                Calendar end = Calendar.getInstance();
+                end.add(Calendar.YEAR, 1);
 
-//            KeyPair keyPair = keyGen.generateKeyPair();
+                KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
+                        .setAlias(KEYSTORE_ALIAS)
+                        .setKeySize(KEY_SIZE)
+                        .setSubject(new X500Principal(principal))
+                        .setSerialNumber(BigInteger.ONE)
+                        .setStartDate(start.getTime())
+                        .setEndDate(end.getTime())
+                        .build();
+                KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
+                generator.initialize(spec);
 
-            KeyPair keyPair = getKeyPair(context, principal);
+                keyPair = generator.generateKeyPair();
+                cert = keyStore.getCertificate(KEYSTORE_ALIAS);
 
-            Log.d(TAG, "Key pair generated: " + keyPair.getPrivate().toString() + "/" + keyPair.getPublic().toString());
+            } else {
+                Key key = keyStore.getKey(KEYSTORE_ALIAS, null);
 
-            Log.d(TAG, "Generating CSR...");
+                cert = keyStore.getCertificate(KEYSTORE_ALIAS);
+                PublicKey publicKey = cert.getPublicKey();
 
-            PKCS10CertificationRequest csr = generateCSR(keyPair, principal);
+                keyPair = new KeyPair(publicKey, (PrivateKey) key);
+            }
 
-            Log.d(TAG, "CSR generated: " + csr.toString());
+            return cert.getEncoded();
 
-            //Generate CSR in PKCS#10 format encoded in DER
-
-            Log.d(TAG, "Encoding CSR...");
-
-            return csr.getEncoded();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+
+
+
+//        try {
+////            keyGen = KeyPairGenerator.getInstance("RSA");
+////            keyGen.initialize(KEY_SIZE, new SecureRandom());
+//
+//            Log.d(TAG, "Generating key pair...");
+//
+////            KeyPair keyPair = keyGen.generateKeyPair();
+//
+//            KeyPair keyPair = getKeyPair(context, principal);
+//
+//            Log.d(TAG, "Key pair generated: " + keyPair.getPrivate().toString() + "/" + keyPair.getPublic().toString());
+//
+//            Log.d(TAG, "Generating CSR...");
+//
+//            PKCS10CertificationRequest csr = generateCSR(keyPair, principal);
+//
+//            Log.d(TAG, "CSR generated: " + csr.toString());
+//
+//            //Generate CSR in PKCS#10 format encoded in DER
+//
+//            Log.d(TAG, "Encoding CSR...");
+//
+//            return csr.getEncoded();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
         return null;
     }
+//
+//        //Generate KeyPair
+//        KeyPairGenerator keyGen = null;
+//        String principal = String.format(CN_PATTERN, commonName);
+//
+//        try {
+////            keyGen = KeyPairGenerator.getInstance("RSA");
+////            keyGen.initialize(KEY_SIZE, new SecureRandom());
+//
+//            Log.d(TAG, "Generating key pair...");
+//
+////            KeyPair keyPair = keyGen.generateKeyPair();
+//
+//            KeyPair keyPair = getKeyPair(context, principal);
+//
+//            Log.d(TAG, "Key pair generated: " + keyPair.getPrivate().toString() + "/" + keyPair.getPublic().toString());
+//
+//            Log.d(TAG, "Generating CSR...");
+//
+//            PKCS10CertificationRequest csr = generateCSR(keyPair, principal);
+//
+//            Log.d(TAG, "CSR generated: " + csr.toString());
+//
+//            //Generate CSR in PKCS#10 format encoded in DER
+//
+//            Log.d(TAG, "Encoding CSR...");
+//
+//            return csr.getEncoded();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        return null;
+//    }
 
     private static KeyPair getKeyPair(Context context, String principal) {
         KeyStore keyStore = null;
