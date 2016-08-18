@@ -5,6 +5,7 @@ import android.content.*;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.net.http.HttpResponseCache;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -54,6 +55,15 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         login_fragment = (LoginActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlogin);
 
         doBindService();
+
+        Intent intent = getIntent();
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            Uri uri = intent.getData();
+            String valueOne = uri.getQueryParameter("keyOne");
+            String valueTwo = uri.getQueryParameter("keyTwo");
+
+            Log.d(TAG, "valueOne: " + valueOne + ", valueTwo: " + valueTwo);
+            }
     }
 
     @Override
@@ -130,8 +140,6 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             bound = false;
         }
     }
-
-
 
     public void submit(View v){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);;
