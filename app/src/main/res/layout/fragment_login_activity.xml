@@ -14,11 +14,11 @@
 
 
     <com.rengwuxian.materialedittext.MaterialEditText
-        android:id="@+id/username"
+        android:id="@+id/email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Username"
-        android:inputType="textPersonName"
+        android:hint="Please enter a valid email address"
+        android:inputType="textEmailAddress"
         android:textCursorDrawable="@color/white"
         android:textSize="20sp"
         app:met_baseColor="@android:color/white"
@@ -27,28 +27,28 @@
         app:met_singleLineEllipsis="true" />
 
 
-    <com.rengwuxian.materialedittext.MaterialEditText
-        android:id="@+id/password"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="-10dp"
-        android:hint="Password"
-        android:inputType="textPassword"
-        android:textCursorDrawable="@color/white"
-        android:textSize="20sp"
-        app:met_baseColor="@android:color/white"
-        app:met_floatingLabel="highlight"
-        app:met_maxCharacters="20"
-        app:met_primaryColor="?colorAccent"
-        app:met_singleLineEllipsis="true" />
+    <!--<com.rengwuxian.materialedittext.MaterialEditText-->
+        <!--android:id="@+id/password"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="-10dp"-->
+        <!--android:hint="Password"-->
+        <!--android:inputType="textPassword"-->
+        <!--android:textCursorDrawable="@color/white"-->
+        <!--android:textSize="20sp"-->
+        <!--app:met_baseColor="@android:color/white"-->
+        <!--app:met_floatingLabel="highlight"-->
+        <!--app:met_maxCharacters="20"-->
+        <!--app:met_primaryColor="?colorAccent"-->
+        <!--app:met_singleLineEllipsis="true" />-->
 
 
     <Button
-        android:id="@+id/loginBtn"
+        android:id="@+id/verifyButton"
         android:layout_width="140dp"
         android:layout_height="60dp"
         android:clickable="true"
         android:layout_column="1"
-        android:text="Login"/>
+        android:text="Verify"/>
 
 </LinearLayout>

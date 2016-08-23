@@ -66,15 +66,15 @@ public class KeyManager {
 
     private final static String KEYSTORE_ALIAS = "RVI_KEYPAIR_4096_6";
     private final static String DEFAULT_SIGNATURE_ALGORITHM = "SHA256withRSA";
-    private final static String CN_PATTERN = "CN=%s, O=Genivi, OU=OrgUnit, EMAILADDRESS=pdxostc.android@gmail.com";
+    private final static String CN_PATTERN = "CN=%s, O=Genivi, OU=OrgUnit, EMAILADDRESS=%s";
 
     private final static Integer KEY_SIZE = 4096;
 
-    static byte [] getCSR(Context context, String commonName) {
+    static byte [] getCSR(Context context, String commonName, String email) {
 
-        String principal = String.format(CN_PATTERN, commonName);
-        KeyStore keyStore = null;
-        KeyPair keyPair = null;
+        String   principal = String.format(CN_PATTERN, commonName, email);
+        KeyStore keyStore  = null;
+        KeyPair  keyPair   = null;
 
         java.security.cert.Certificate cert = null;
 

@@ -1,9 +1,7 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
-import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.preference.PreferenceManager;
@@ -12,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.rengwuxian.materialedittext.MaterialEditText;
@@ -27,9 +24,9 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 public class LoginActivityFragment extends Fragment {
 
     //private OnFragmentInteractionListener mListener;
-    private Button login;
-    public MaterialEditText userName;
-    public MaterialEditText password;
+    private Button mVerifyButton;
+    public MaterialEditText mEmail;
+
     private LoginFragmentButtonListener buttonListener;
     private SharedPreferences sharedPref;
     private ImageView logo;
@@ -48,20 +45,16 @@ public class LoginActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_login_activity, container, false);
         Typeface fontawesome = Typeface.createFromAsset(getActivity().getAssets(), "fonts/fontawesome-webfont.ttf");
-        login = (Button)view.findViewById(R.id.loginBtn);
-//        login.setTypeface(fontawesome);
-        userName = (MaterialEditText) view.findViewById(R.id.username);
-        password = (MaterialEditText) view.findViewById(R.id.password);
+        mVerifyButton = (Button)view.findViewById(R.id.verifyButton);
+        mEmail = (MaterialEditText) view.findViewById(R.id.email);
 
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-        userName.setText(sharedPref.getString("savedUserName", ""));
-        password.setText(sharedPref.getString("savedPassword", ""));
+        mEmail.setText(sharedPref.getString("savedEmail", ""));
 
-        userName.setCursorVisible(true);
-        password.setCursorVisible(true);
+        mEmail.setCursorVisible(true);
 
-        login.setOnClickListener(l);
+        mVerifyButton.setOnClickListener(l);
             /*@Override
             public void onClick(View v) {
                 submit(v);
@@ -77,14 +70,13 @@ public class LoginActivityFragment extends Fragment {
         public void onClick(View v) {
             SharedPreferences.Editor ed = sharedPref.edit();
 
-            ed.putString("savedUserName", userName.getText().toString());
-            ed.putString("savedPassword", password.getText().toString());
+            ed.putString("savedEmail", mEmail.getText().toString());
 
             ed.commit();
 
             switch(v.getId()) {
-                case R.id.loginBtn:
-                    Log.i("RVI", "LockBtn");
+                case R.id.verifyButton:
+                    Log.i("RVI", "Verify button clicked.");
                     //ed.putBoolean("Share", true);
                     buttonListener.onButtonCommand(v);
                     break;

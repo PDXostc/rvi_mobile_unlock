@@ -28,7 +28,6 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 //import java.net.URL;
 import java.net.URL;
-import java.security.Key;
 import java.security.cert.CertificateEncodingException;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -36,8 +35,8 @@ import javax.net.ssl.HttpsURLConnection;
 public class ProvisioningServerInterface {
     private final static String TAG = "UnlockDemo:ProvServIntr";
 
-    public static void sendCSR(Context context) {
-        new CSRSendTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    public static void sendCSR(Context context, String commonName, String email) {
+        new CSRSendTask(context, commonName, email).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public static void validateToken(Context context, String token, String certId) {
@@ -47,14 +46,18 @@ public class ProvisioningServerInterface {
     private static class CSRSendTask extends AsyncTask<Void, String, Void>
     {
         Context mContext;
+        String mCommonName;
+        String  mEmail;
 
-        CSRSendTask(Context context) {
-            mContext = context;
+        CSRSendTask(Context context, String commonName, String email) {
+            mContext    = context;
+            mCommonName = commonName;
+            mEmail      = email;
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-            byte [] csr = KeyManager.getCSR(mContext, "test1");
+            byte [] csr = KeyManager.getCSR(mContext, mCommonName, mEmail);
 
             if (csr == null) return null;
 
@@ -131,8 +134,6 @@ public class ProvisioningServerInterface {
 
         @Override
         protected Void doInBackground(Void... params) {
-            //byte [] csr = KeyManager.getCSR(mContext, "test1");
-
             Log.d(TAG, "Signing token...");
 
             String tokenJwt = KeyManager.getJwt(mContext, mToken, mCertId);

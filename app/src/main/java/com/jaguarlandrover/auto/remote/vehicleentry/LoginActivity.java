@@ -146,12 +146,17 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     }
 
     public void submit(View v){
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);;
 
-        BKTask task = new BKTask(this);
-        task.setUser(login_fragment.userName.getEditableText().toString());
-        task.setpWd(login_fragment.password.getEditableText().toString());
-        task.execute(new String[]{prefs.getString("pref_login_url", "http://rvi-test2.nginfotpdx.net:8000/token/new.json")});
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String email = prefs.getString("savedEmail", "");
+        ProvisioningServerInterface.sendCSR(this, "Android Unlock App", email);
+
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+//
+//        BKTask task = new BKTask(this);
+//        task.setUser(login_fragment.mEmail.getEditableText().toString());
+//        task.setpWd(login_fragment.password.getEditableText().toString());
+//        task.execute(new String[]{prefs.getString("pref_login_url", "http://rvi-test2.nginfotpdx.net:8000/token/new.json")});
     }
 
     @Override
@@ -195,7 +200,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             startActivity(intent);
         }
         else{
-            //login_fragment.userName.setText("");
+            //login_fragment.mEmail.setText("");
             //login_fragment.password.setText("");
             ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = cm.getActiveNetworkInfo();
