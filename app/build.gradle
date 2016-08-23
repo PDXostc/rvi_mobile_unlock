@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 22
-    buildToolsVersion "21.1.1"
+    buildToolsVersion "21.1.2"
 
     defaultConfig {
         applicationId "com.jaguarlandrover.auto.remote.vehicleentry"
@@ -10,6 +10,10 @@ android {
         targetSdkVersion 22
         versionCode 7
         versionName "1.0.6"
+
+
+
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -23,9 +27,16 @@ android {
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/LICENSE'
     }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+
 }
 
 dependencies {
+    compile 'com.android.support:multidex:1.0.1'
+
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'org.altbeacon:android-beacon-library:2+@aar'
     compile 'io.reactivex:rxandroid:0.24.0'
@@ -39,6 +50,7 @@ dependencies {
     compile 'com.rengwuxian.materialedittext:library:2.1.4'
     compile 'com.google.guava:guava:18.0'
     compile project(':rvi')
+    compile project(path: ':pki')
 }
 
 repositories {

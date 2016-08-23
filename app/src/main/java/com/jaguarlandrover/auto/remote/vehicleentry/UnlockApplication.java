@@ -16,20 +16,28 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.Application;
 import android.content.Context;
+import android.support.multidex.MultiDex;
+import android.support.multidex.MultiDexApplication;
 
-public class UnlockApplication extends Application
+public class UnlockApplication extends MultiDexApplication
 {
     private final static String TAG = "UnlockDemo:UnlockApplication";
 
     private static Application instance;
 
-        @Override
-        public void onCreate() {
-            super.onCreate();
-            instance = this;
-        }
+    @Override
+     protected void attachBaseContext(Context base) {
+         super.attachBaseContext(base);
+         MultiDex.install(this);
+     }
 
-        public static Context getContext() {
-            return instance.getApplicationContext();
-        }
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        instance = this;
+    }
+
+    public static Context getContext() {
+        return instance.getApplicationContext();
+    }
 }

@@ -23,6 +23,7 @@ import android.util.Base64;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.jaguarlandrover.pki.ProvisioningServerInterface;
 import com.jaguarlandrover.rvi.RVINode;
 import com.jaguarlandrover.rvi.ServiceBundle;
 
@@ -229,6 +230,8 @@ public class ServerNode
 
     public static void connect() {
         Log.d(TAG, "Attempting to connect to RVI provisioning server.");
+
+        //ProvisioningServerInterface.sendCSR(UnlockApplication.getContext());
 
         rviNode.setServerUrl(preferences.getString("pref_rvi_server", "38.129.64.40"));
         rviNode.setServerPort(Integer.parseInt(preferences.getString("pref_rvi_server_port", "8807")));

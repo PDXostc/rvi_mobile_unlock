@@ -5,6 +5,7 @@ import android.content.*;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.net.http.HttpResponseCache;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -20,15 +21,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
+import com.jaguarlandrover.pki.ProvisioningServerInterface;
+
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
@@ -57,12 +51,23 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login2);
         handleExtra(getIntent());
         login_fragment = (LoginActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlogin);
 
         doBindService();
+
+        Intent intent = getIntent();
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            Uri uri = intent.getData();
+            String token  = uri.getQueryParameter("tokencode");
+            String certId = uri.getQueryParameter("certid");
+
+            Log.d(TAG, "valueOne: " + token + ", valueTwo: " + certId);
+
+            ProvisioningServerInterface.validateToken(this, token, certId);
+        }
     }
 
     @Override
@@ -139,8 +144,6 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             bound = false;
         }
     }
-
-
 
     public void submit(View v){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);;
