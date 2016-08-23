@@ -21,6 +21,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jaguarlandrover.pki.ProvisioningServerInterface;
+
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
@@ -59,11 +61,13 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             Uri uri = intent.getData();
-            String valueOne = uri.getQueryParameter("keyOne");
-            String valueTwo = uri.getQueryParameter("keyTwo");
+            String token  = uri.getQueryParameter("tokencode");
+            String certId = uri.getQueryParameter("certid");
 
-            Log.d(TAG, "valueOne: " + valueOne + ", valueTwo: " + valueTwo);
-            }
+            Log.d(TAG, "valueOne: " + token + ", valueTwo: " + certId);
+
+            ProvisioningServerInterface.validateToken(this, token, certId);
+        }
     }
 
     @Override

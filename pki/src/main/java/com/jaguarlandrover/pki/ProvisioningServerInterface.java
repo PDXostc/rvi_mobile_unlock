@@ -18,41 +18,30 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONObject;
 import org.spongycastle.util.encoders.Base64;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 //import java.net.URL;
-import java.net.URI;
 import java.net.URL;
-import java.security.KeyStore;
+import java.security.Key;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
 
-import javax.net.SocketFactory;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.TrustManagerFactory;
 
 public class ProvisioningServerInterface {
     private final static String TAG = "UnlockDemo:ProvServIntr";
 
     public static void sendCSR(Context context) {
         new CSRSendTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    public static void validateToken(Context context, String token, String certId) {
+        new TokenVerificationTask(context, token, certId).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private static class CSRSendTask extends AsyncTask<Void, String, Void>
@@ -125,6 +114,76 @@ public class ProvisioningServerInterface {
 
             String pemCertPre = new String(Base64.encode(derCert));
             return cert_begin + pemCertPre + end_cert;
+        }
+    }
+
+    private static class TokenVerificationTask extends AsyncTask<Void, String, Void>
+    {
+        Context mContext;
+        String  mToken;
+        String  mCertId;
+
+        TokenVerificationTask(Context context, String token, String certId) {
+            mContext = context;
+            mToken   = token;
+            mCertId  = certId;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            //byte [] csr = KeyManager.getCSR(mContext, "test1");
+
+            Log.d(TAG, "Signing token...");
+
+            String tokenJwt = KeyManager.getJwt(mContext, mToken, mCertId);
+
+            if (tokenJwt == null) return null;
+
+            URL url;
+            String response = "";
+
+            try {
+
+                url = new URL("http://192.168.16.245:5000/verification");
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                Log.d(TAG, "Sending verification: " + tokenJwt);
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                writer.write(tokenJwt);
+
+                writer.flush();
+                writer.close();
+                os.close();
+
+                Log.d(TAG, "Verification sent.");
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    String line;
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    while ((line = br.readLine()) != null) {
+                        response += line;
+                    }
+                } else {
+                    response = "";
+                }
+
+                Log.d(TAG, "Response from server: " + response);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return null;
         }
     }
 }

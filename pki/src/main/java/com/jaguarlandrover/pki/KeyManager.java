@@ -18,6 +18,11 @@ import android.content.Context;
 import android.security.KeyPairGeneratorSpec;
 import android.util.Log;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.crypto.MacProvider;
+import java.security.Key;
+
 import org.spongycastle.asn1.ASN1ObjectIdentifier;
 
 import org.spongycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -115,4 +120,24 @@ public class KeyManager {
         return null;
     }
 
+    static String  getJwt(Context context, String token, String certId) {
+        String json = "{ \"token\":\"" + token + "\", \"certId\":\"" + certId + "\"}";
+
+        Log.d(TAG, "token json: " + json);
+
+        KeyStore keyStore = null;
+        try {
+            keyStore = KeyStore.getInstance("AndroidKeyStore");
+            keyStore.load(null);
+
+            Key key = keyStore.getKey(KEYSTORE_ALIAS, null);
+
+            return Jwts.builder().setSubject(json).signWith(SignatureAlgorithm.RS256, key).compact();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }
