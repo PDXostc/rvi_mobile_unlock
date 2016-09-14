@@ -73,7 +73,7 @@ public class RviService extends Service {
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroy()     {
         Log.i(TAG, "onDestroy() Service");
 
         br.stop();

@@ -277,7 +277,7 @@ public class ServerNode
 
         Certificate certificate = new Certificate();
         try {
-            certificate = gson.fromJson(certStr, Certificate.class);
+            certificate =  gson.fromJson(certStr, Certificate.class);
         } catch (Exception e) {
             e.printStackTrace();
         }

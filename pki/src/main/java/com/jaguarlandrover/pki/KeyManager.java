@@ -18,6 +18,7 @@ import android.content.Context;
 import android.security.KeyPairGeneratorSpec;
 import android.util.Log;
 
+import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.crypto.MacProvider;
@@ -56,6 +57,7 @@ import java.security.SecureRandom;
 import java.security.Signature;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
