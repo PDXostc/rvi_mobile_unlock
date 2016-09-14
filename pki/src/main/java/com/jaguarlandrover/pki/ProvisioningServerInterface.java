@@ -112,8 +112,8 @@ public class ProvisioningServerInterface {
         }
 
         static String convertToPem(byte [] derCert) throws CertificateEncodingException {
-            String cert_begin = "-----BEGIN CERTIFICATE-----\n";
-            String end_cert = "\n-----END CERTIFICATE-----";
+            String cert_begin = "-----BEGIN CERTIFICATE REQUEST-----\n";
+            String end_cert = "\n-----END CERTIFICATE REQUEST-----";
 
             String pemCertPre = new String(Base64.encode(derCert));
             return cert_begin + pemCertPre + end_cert;
