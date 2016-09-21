@@ -18,10 +18,9 @@ import android.content.Context;
 import android.security.KeyPairGeneratorSpec;
 import android.util.Log;
 
-import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.impl.crypto.MacProvider;
+
 import java.security.Key;
 
 import org.spongycastle.asn1.ASN1ObjectIdentifier;
@@ -41,23 +40,18 @@ import org.spongycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Signature;
+import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
@@ -66,7 +60,8 @@ import javax.security.auth.x500.X500Principal;
 public class KeyManager {
     private final static String TAG = "UnlockDemo:KeyManager";
 
-    private final static String KEYSTORE_ALIAS = "RVI_KEYPAIR_4096_6";
+    private final static String KEYSTORE_CLIENT_ALIAS = "RVI_CLIENT_KEYSTORE_ALIAS";
+    private final static String KEYSTORE_SERVER_ALIAS = "RVI_SERVER_KEYSTORE_ALIAS";
     private final static String DEFAULT_SIGNATURE_ALGORITHM = "SHA256withRSA";
     private final static String CN_PATTERN = "CN=%s, O=Genivi, OU=OrgUnit, EMAILADDRESS=%s";
 
@@ -85,13 +80,13 @@ public class KeyManager {
             keyStore = KeyStore.getInstance("AndroidKeyStore");
             keyStore.load(null);
 
-            if (!keyStore.containsAlias(KEYSTORE_ALIAS)) {
+            if (!keyStore.containsAlias(KEYSTORE_CLIENT_ALIAS)) {
                 Calendar start = Calendar.getInstance();
                 Calendar end = Calendar.getInstance();
                 end.add(Calendar.YEAR, 1);
 
                 KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
-                        .setAlias(KEYSTORE_ALIAS)
+                        .setAlias(KEYSTORE_CLIENT_ALIAS)
                         .setKeySize(KEY_SIZE)
                         .setSubject(new X500Principal(principal))
                         .setSerialNumber(BigInteger.ONE)
@@ -102,14 +97,14 @@ public class KeyManager {
                 generator.initialize(spec);
 
                 keyPair = generator.generateKeyPair();
-                //cert = keyStore.getCertificate(KEYSTORE_ALIAS);
+                //cert = keyStore.getCertificate(KEYSTORE_CLIENT_ALIAS);
 
 
 
             } else {
-                Key key = keyStore.getKey(KEYSTORE_ALIAS, null);
+                Key key = keyStore.getKey(KEYSTORE_CLIENT_ALIAS, null);
 
-                cert = keyStore.getCertificate(KEYSTORE_ALIAS);
+                cert = keyStore.getCertificate(KEYSTORE_CLIENT_ALIAS);
                 PublicKey publicKey = cert.getPublicKey();
 
                 keyPair = new KeyPair(publicKey, (PrivateKey) key);
@@ -192,7 +187,7 @@ public class KeyManager {
         return csr;
     }
 
-    static String  getJwt(Context context, String token, String certId) {
+    static String getJwt(Context context, String token, String certId) {
         String json = "{ \"token\":\"" + token + "\", \"certId\":\"" + certId + "\"}";
 
         Log.d(TAG, "token json: " + json);
@@ -202,9 +197,48 @@ public class KeyManager {
             keyStore = KeyStore.getInstance("AndroidKeyStore");
             keyStore.load(null);
 
-            Key key = keyStore.getKey(KEYSTORE_ALIAS, null);
+            Key key = keyStore.getKey(KEYSTORE_CLIENT_ALIAS, null);
 
             return Jwts.builder().setSubject(json).signWith(SignatureAlgorithm.RS256, key).compact();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    static KeyStore addServerCertToKeyStore(X509Certificate serverCert) {
+        KeyStore keyStore = null;
+
+        try {
+            keyStore = KeyStore.getInstance("AndroidKeyStore");
+            keyStore.load(null);
+            keyStore.setCertificateEntry(KEYSTORE_SERVER_ALIAS, serverCert);
+
+            return keyStore;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    static KeyStore addDeviceCertToKeyStore(X509Certificate deviceCert) {
+        KeyStore keyStore = null;
+
+        try {
+            keyStore = KeyStore.getInstance("AndroidKeyStore");
+            keyStore.load(null);
+
+            X509Certificate[] arr = {deviceCert};
+
+            keyStore.setKeyEntry(KEYSTORE_CLIENT_ALIAS, keyStore.getKey(KEYSTORE_CLIENT_ALIAS, null), null, arr);
+
+//            keyStore.setCertificateEntry(KEYSTORE_CLIENT_ALIAS, deviceCert);
+
+            return keyStore;
 
         } catch (Exception e) {
             e.printStackTrace();

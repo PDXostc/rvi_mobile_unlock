@@ -2,38 +2,25 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
 import android.content.*;
-import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.net.http.HttpResponseCache;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jaguarlandrover.pki.ProvisioningServerInterface;
 
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.security.KeyStore;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
@@ -66,7 +53,19 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
             Log.d(TAG, "valueOne: " + token + ", valueTwo: " + certId);
 
-            ProvisioningServerInterface.validateToken(this, token, certId);
+            ProvisioningServerInterface.validateToken(this, token, certId, new ProvisioningServerInterface.ProvisioningServerListener() {
+                @Override
+                public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges) {
+                    Log.d(TAG, "Got server stuff, trying to connect");
+
+                    rviService.setServerKeyStore(serverCertificateKeyStore);
+                    rviService.setDeviceKeyStore(deviceCertificateKeyStore);
+                    rviService.setDeviceKeyStorePassword(deviceKeyStorePassword);
+                    rviService.setPrivileges(defaultPrivileges);
+
+                    rviService.tryConnectingServerNode();
+                }
+            });
         }
     }
 

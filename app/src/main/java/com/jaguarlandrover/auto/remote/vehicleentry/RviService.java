@@ -24,6 +24,9 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+import java.security.KeyStore;
+import java.util.ArrayList;
+
 import rx.Observable;
 import rx.Subscriber;
 import rx.schedulers.Schedulers;
@@ -34,7 +37,44 @@ public class RviService extends Service {
 
     private SharedPreferences prefs;
 
+    private KeyStore          mServerKeyStore         = null;
+    private KeyStore          mDeviceKeyStore         = null;
+    private String            mDeviceKeyStorePassword = null;
+    private ArrayList<String> mPrivileges             = null;
+
     public RviService() {
+    }
+
+    public KeyStore getServerKeyStore() {
+        return mServerKeyStore;
+    }
+
+    public void setServerKeyStore(KeyStore serverKeyStore) {
+        mServerKeyStore = serverKeyStore;
+    }
+
+    public KeyStore getDeviceKeyStore() {
+        return mDeviceKeyStore;
+    }
+
+    public void setDeviceKeyStore(KeyStore deviceKeyStore) {
+        mDeviceKeyStore = deviceKeyStore;
+    }
+
+    public String getDeviceKeyStorePassword() {
+        return mDeviceKeyStorePassword;
+    }
+
+    public void setDeviceKeyStorePassword(String deviceKeyStorePassword) {
+        mDeviceKeyStorePassword = deviceKeyStorePassword;
+    }
+
+    public ArrayList<String> getPrivileges() {
+        return mPrivileges;
+    }
+
+    public void setPrivileges(ArrayList<String> privileges) {
+        mPrivileges = privileges;
     }
 
     /**
@@ -89,17 +129,26 @@ public class RviService extends Service {
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind");
 
-        connectServerNode();
+        //connectServerNode();
 
         return mBinder;
     }
 
+    public void tryConnectingServerNode() {
+        Log.d(TAG, "Trying to connect to RVI server");
+        connectServerNode();
+    }
+
     private void connectServerNode() {
+        ServerNode.setKeyStoresAndPrivileges(mServerKeyStore, mDeviceKeyStore, mDeviceKeyStorePassword, mPrivileges);
+
         ServerNode.connect();
     }
 
     public void connectVehicleNode(String deviceAddress) {
-        VehicleNode.setDeviceAddress(deviceAddress);
+        VehicleNode.setKeyStoresAndPrivileges(mServerKeyStore, mDeviceKeyStore, mDeviceKeyStorePassword, mPrivileges);
+
+//        VehicleNode.setDeviceAddress(deviceAddress);
         VehicleNode.connect();
     }
 
