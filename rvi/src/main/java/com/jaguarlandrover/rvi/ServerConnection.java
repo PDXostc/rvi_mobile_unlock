@@ -171,7 +171,7 @@ class ServerConnection implements RemoteConnectionInterface
 
                 String keyManagerAlgorithm = "X509";//KeyManagerFactory.getDefaultAlgorithm();
                 KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(keyManagerAlgorithm);
-                keyManagerFactory.init(clientKeyStore, clientKeyStorePassword.toCharArray());
+                keyManagerFactory.init(clientKeyStore, null);//clientKeyStorePassword.toCharArray());
 
                 SSLContext context = SSLContext.getInstance("TLS");
                 context.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
