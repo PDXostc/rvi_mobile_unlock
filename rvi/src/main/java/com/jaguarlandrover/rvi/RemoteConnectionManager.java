@@ -49,6 +49,11 @@ public class RemoteConnectionManager
             public void onPacketParsed(DlinkPacket packet) {
                 if (mListener != null) mListener.onRVIDidReceivePacket(packet);
             }
+
+            @Override
+            public void onPacketFailedToParse(Throwable error) {
+                if (mListener != null) mListener.onRVIDidFailToReceivePacket(error);
+            }
         });
 
         RemoteConnectionInterface.RemoteConnectionListener connectionListener = new RemoteConnectionInterface.RemoteConnectionListener()
