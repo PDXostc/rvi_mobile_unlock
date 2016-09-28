@@ -40,6 +40,14 @@ class DlinkPacketParser
          * @param packet the dlink packet
          */
         void onPacketParsed(DlinkPacket packet);
+
+        /**
+         * Failed when trying to parse the packet. Callback method that notifies listener when a dlink packet was unable to
+         * be parsed out of the input stream coming from an rvi node over the network.
+         *
+         * @param error the error
+         */
+        void onPacketFailedToParse(Throwable error);
     }
 
     /**
@@ -110,26 +118,28 @@ class DlinkPacketParser
 
         try {
             packet = gson.fromJson(string, DlinkPacket.class);
+
+            if (mDataParserListener instanceof DlinkPacketParserTestCaseListener)
+                ((DlinkPacketParserTestCaseListener) mDataParserListener).onJsonObjectParsed(packet);
+
+            DlinkPacket.Command command = packet.mCmd;
+
+            if (command == null)
+                return null;
+
+            if (command == DlinkPacket.Command.AUTHORIZE) {
+                return gson.fromJson(string, DlinkAuthPacket.class);
+            } else if (command == DlinkPacket.Command.SERVICE_ANNOUNCE) {
+                return gson.fromJson(string, DlinkServiceAnnouncePacket.class);
+            } else if (command == DlinkPacket.Command.RECEIVE) {
+                return gson.fromJson(string, DlinkReceivePacket.class);
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
-        }
+            mDataParserListener.onPacketFailedToParse(e);
 
-        if (mDataParserListener instanceof DlinkPacketParserTestCaseListener)
-            ((DlinkPacketParserTestCaseListener) mDataParserListener).onJsonObjectParsed(packet);
-
-        DlinkPacket.Command command = packet.mCmd;
-
-        if (command == null)
-            return null;
-
-        if (command == DlinkPacket.Command.AUTHORIZE) {
-            return gson.fromJson(string, DlinkAuthPacket.class);
-        } else if (command == DlinkPacket.Command.SERVICE_ANNOUNCE) {
-            return gson.fromJson(string, DlinkServiceAnnouncePacket.class);
-        } else if (command == DlinkPacket.Command.RECEIVE) {
-            return gson.fromJson(string, DlinkReceivePacket.class);
-        } else {
             return null;
         }
     }
