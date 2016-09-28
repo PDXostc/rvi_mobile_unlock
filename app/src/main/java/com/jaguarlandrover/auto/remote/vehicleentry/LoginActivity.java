@@ -15,12 +15,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.jaguarlandrover.pki.ProvisioningServerInterface;
+import com.jaguarlandrover.pki.PKIManager;
 
 import org.json.JSONObject;
 
 import java.security.KeyStore;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
@@ -35,6 +36,14 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     private RviService rviService = null;
     private LoginActivityFragment login_fragment = null;
     private boolean bound = false;
+
+    private final static String X509_PRINCIPAL_PATTERN = "CN=%s, O=Genivi, OU=OrgUnit, EMAILADDRESS=%s";
+    private final static String X509_COMMON_NAME       = "Android Unlock App";
+
+    private final static String DEFAULT_PROVISIONING_SERVER_BASE_URL         = "http://192.168.16.245:5000";
+    private final static String DEFAULT_PROVISIONING_SERVER_CSR_URL          = "/csr";
+    private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification"; // TODO: 'Verification' or 'validation'?
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +62,19 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
             Log.d(TAG, "valueOne: " + token + ", valueTwo: " + certId);
 
-            ProvisioningServerInterface.validateToken(this, token, certId, new ProvisioningServerInterface.ProvisioningServerListener() {
+            String tokenString = "{ \"token\":\"" + token + "\", \"certId\":\"" + certId + "\"}";
+
+            PKIManager.sendTokenVerificationRequest(this, new PKIManager.ProvisioningServerListener() {
+                @Override
+                public void certificateSigningRequestSuccessfullySent() {
+
+                }
+
+                @Override
+                public void certificateSigningRequestSuccessfullyReceived() {
+
+                }
+
                 @Override
                 public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges) {
                     Log.d(TAG, "Got server stuff, trying to connect");
@@ -65,7 +86,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
                     rviService.tryConnectingServerNode();
                 }
-            });
+            }, DEFAULT_PROVISIONING_SERVER_BASE_URL, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, tokenString);
         }
     }
 
@@ -86,8 +107,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
             rviService = ((RviService.RviBinder)service).getService();
 
-            rviService.servicesAvailable().
-                    subscribeOn(Schedulers.newThread())
+            rviService.servicesAvailable()
+                    .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Observer<String>() {
                         @Override
@@ -144,11 +165,42 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         }
     }
 
-    public void submit(View v){
+    public void submit(View v) {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String email = prefs.getString("savedEmail", "");
-        ProvisioningServerInterface.sendCSR(this, "Android Unlock App", email);
+
+        Calendar start = Calendar.getInstance();
+        Calendar end = Calendar.getInstance();
+        end.add(Calendar.YEAR, 1);
+
+        PKIManager.generateKeyPairAndCertificateSigningRequest(this, new PKIManager.CertificateSigningRequestGeneratorListener() {
+            @Override
+            public void generateCertificateSigningRequestSucceeded(String certificateSigningRequest) {
+                PKIManager.sendCertificateSigningRequest(LoginActivity.this, new PKIManager.ProvisioningServerListener() {
+                    @Override
+                    public void certificateSigningRequestSuccessfullySent() {
+
+                    }
+
+                    @Override
+                    public void certificateSigningRequestSuccessfullyReceived() {
+
+                    }
+
+                    @Override
+                    public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges) {
+
+                    }
+                }, DEFAULT_PROVISIONING_SERVER_BASE_URL, DEFAULT_PROVISIONING_SERVER_CSR_URL, certificateSigningRequest, true);
+            }
+
+            @Override
+            public void generateCertificateSigningRequestFailed(Throwable reason) {
+                // TODO: Update ui with failure message
+            }
+
+        }, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, X509_COMMON_NAME, email);
 
 //        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 //

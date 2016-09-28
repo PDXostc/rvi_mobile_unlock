@@ -23,13 +23,11 @@ import android.util.Base64;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.jaguarlandrover.pki.ProvisioningServerInterface;
 import com.jaguarlandrover.rvi.RVINode;
 import com.jaguarlandrover.rvi.ServiceBundle;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -37,8 +35,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-import io.jsonwebtoken.Jwt;
 
 public class ServerNode
 {

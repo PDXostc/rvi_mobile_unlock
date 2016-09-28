@@ -15,12 +15,14 @@ package com.jaguarlandrover.pki;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.security.KeyPairGeneratorSpec;
 import android.util.Log;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+import java.io.InputStream;
 import java.security.Key;
 
 import org.spongycastle.asn1.ASN1ObjectIdentifier;
@@ -29,7 +31,6 @@ import org.spongycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.spongycastle.asn1.x500.X500Name;
 import org.spongycastle.asn1.x509.AlgorithmIdentifier;
 import org.spongycastle.asn1.x509.BasicConstraints;
-import org.spongycastle.asn1.x509.Certificate;
 import org.spongycastle.asn1.x509.Extension;
 import org.spongycastle.asn1.x509.ExtensionsGenerator;
 import org.spongycastle.operator.ContentSigner;
@@ -37,6 +38,7 @@ import org.spongycastle.operator.OperatorCreationException;
 import org.spongycastle.pkcs.PKCS10CertificationRequest;
 import org.spongycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.spongycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
+import org.spongycastle.util.encoders.Base64;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,13 +53,14 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
 
 /* Code from here: http://stackoverflow.com/a/37898553 */
-public class KeyManager {
+class KeyStoreManager {
     private final static String TAG = "UnlockDemo:KeyManager";
 
     private final static String KEYSTORE_CLIENT_ALIAS = "RVI_CLIENT_KEYSTORE_ALIAS";
@@ -65,11 +68,16 @@ public class KeyManager {
     private final static String DEFAULT_SIGNATURE_ALGORITHM = "SHA256withRSA";
     private final static String CN_PATTERN = "CN=%s, O=Genivi, OU=OrgUnit, EMAILADDRESS=%s";
 
+    private final static String PEM_HEADER_PATTERN = "-----BEGIN %s-----\n";
+    private final static String PEM_FOOTER_PATTERN = "\n-----END %s-----";
+
+    private final static String PEM_CERTIFICATE_SIGNING_REQUEST_HEADER_FOOTER_STRING = "CERTIFICATE REQUEST";
+
     private final static Integer KEY_SIZE = 4096;
 
-    static byte [] getCSR(Context context, String commonName, String email) {
+    static String generateCertificateSigningRequest(Context context, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
 
-        String   principal = String.format(CN_PATTERN, commonName, email);
+        String   principal = String.format(principalFormatterPattern, principalFormatterArgs);
         KeyStore keyStore  = null;
         KeyPair  keyPair   = null;
 
@@ -81,25 +89,23 @@ public class KeyManager {
             keyStore.load(null);
 
             if (!keyStore.containsAlias(KEYSTORE_CLIENT_ALIAS)) {
-                Calendar start = Calendar.getInstance();
-                Calendar end = Calendar.getInstance();
-                end.add(Calendar.YEAR, 1);
+//                Calendar start = Calendar.getInstance();
+//                Calendar end = Calendar.getInstance();
+//                end.add(Calendar.YEAR, 1);
 
                 KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
                         .setAlias(KEYSTORE_CLIENT_ALIAS)
                         .setKeySize(KEY_SIZE)
                         .setSubject(new X500Principal(principal))
                         .setSerialNumber(BigInteger.ONE)
-                        .setStartDate(start.getTime())
-                        .setEndDate(end.getTime())
+                        .setStartDate(startDate)//start.getTime())
+                        .setEndDate(endDate)//end.getTime())
                         .build();
                 KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
                 generator.initialize(spec);
 
                 keyPair = generator.generateKeyPair();
                 //cert = keyStore.getCertificate(KEYSTORE_CLIENT_ALIAS);
-
-
 
             } else {
                 Key key = keyStore.getKey(KEYSTORE_CLIENT_ALIAS, null);
@@ -112,7 +118,7 @@ public class KeyManager {
 
             PKCS10CertificationRequest csr = generateCSR(keyPair, principal);
 
-            return csr.getEncoded();//cert.getEncoded();
+            return convertToPem(PEM_CERTIFICATE_SIGNING_REQUEST_HEADER_FOOTER_STRING, csr.getEncoded());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -121,25 +127,34 @@ public class KeyManager {
         return null;
     }
 
+    private static String convertToPem(String headerFooterString, byte [] derCert) {
+        String pemHeader = String.format(PEM_HEADER_PATTERN, headerFooterString);
+        String pemFooter = String.format(PEM_FOOTER_PATTERN, headerFooterString);
+
+        String encodedCert = new String(Base64.encode(derCert));
+        return pemHeader + encodedCert + pemFooter;
+    }
+
+    /* Lots of the code below adapted from pedrofb's answer found here: http://stackoverflow.com/a/37898553/955856 */
     private static class JCESigner implements ContentSigner {
 
-        private static Map<String, AlgorithmIdentifier> ALGOS = new HashMap<String, AlgorithmIdentifier>();
+        private static Map<String, AlgorithmIdentifier> ALGORITHMS = new HashMap<String, AlgorithmIdentifier>();
 
         static {
-            ALGOS.put("SHA256withRSA".toLowerCase(), new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.2.840.113549.1.1.11")));
-            ALGOS.put("SHA1withRSA".toLowerCase(), new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.2.840.113549.1.1.5")));
+            ALGORITHMS.put("SHA256withRSA".toLowerCase(), new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.2.840.113549.1.1.11")));
+            ALGORITHMS.put("SHA1withRSA".toLowerCase(), new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.2.840.113549.1.1.5")));
         }
 
-        private String mAlgo;
+        private String mAlgorithm;
         private Signature signature;
         private ByteArrayOutputStream outputStream;
 
-        public JCESigner(PrivateKey privateKey, String sigAlgo) {
-            //Utils.throwIfNull(privateKey, sigAlgo);
-            mAlgo = sigAlgo.toLowerCase();
+        JCESigner(PrivateKey privateKey, String sigAlgorithm) {
+            //Utils.throwIfNull(privateKey, sigAlgorithm);
+            mAlgorithm = sigAlgorithm.toLowerCase();
             try {
                 this.outputStream = new ByteArrayOutputStream();
-                this.signature = Signature.getInstance(sigAlgo);
+                this.signature = Signature.getInstance(sigAlgorithm);
                 this.signature.initSign(privateKey);
             } catch (GeneralSecurityException gse) {
                 throw new IllegalArgumentException(gse.getMessage());
@@ -148,9 +163,9 @@ public class KeyManager {
 
         @Override
         public AlgorithmIdentifier getAlgorithmIdentifier() {
-            AlgorithmIdentifier id = ALGOS.get(mAlgo);
+            AlgorithmIdentifier id = ALGORITHMS.get(mAlgorithm);
             if (id == null) {
-                throw new IllegalArgumentException("Does not support algo: " + mAlgo);
+                throw new IllegalArgumentException("Does not support algo: " + mAlgorithm);
             }
             return id;
         }
@@ -187,10 +202,9 @@ public class KeyManager {
         return csr;
     }
 
-    static String getJwt(Context context, String token, String certId) {
-        String json = "{ \"token\":\"" + token + "\", \"certId\":\"" + certId + "\"}";
+    static String createJwt(Context context, String data) {//String token, String certId) {
 
-        Log.d(TAG, "token json: " + json);
+        Log.d(TAG, "data: " + data);
 
         KeyStore keyStore = null;
         try {
@@ -199,7 +213,7 @@ public class KeyManager {
 
             Key key = keyStore.getKey(KEYSTORE_CLIENT_ALIAS, null);
 
-            return Jwts.builder().setSubject(json).signWith(SignatureAlgorithm.RS256, key).compact();
+            return Jwts.builder().setSubject(data).signWith(SignatureAlgorithm.RS256, key).compact();
 
         } catch (Exception e) {
             e.printStackTrace();
