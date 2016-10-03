@@ -54,6 +54,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
         doBindService();
 
+        Boolean foo = PKIManager.hasValidCerts(this);
+
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             Uri uri = intent.getData();

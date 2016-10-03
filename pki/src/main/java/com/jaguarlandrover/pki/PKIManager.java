@@ -19,6 +19,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 //import java.net.URL;
+import java.security.Key;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -111,7 +112,19 @@ public class PKIManager {
         ManagerHelper.sendTokenVerificationRequest(context, listener, baseUrl, requestUrl, tokenVerificationString);
     }
 
-    public static String getPublicKey() {
-        return KeyStoreManager.getPublicKey();
+    public static Boolean hasValidCerts(Context context) {
+        return KeyStoreManager.hasValidCerts(context);
+    }
+
+    public static KeyStore getDeviceKeyStore(Context context) {
+        return KeyStoreManager.getDeviceKeyStore(context);
+    }
+
+    public static KeyStore getServerKeyStore(Context context) {
+        return KeyStoreManager.getServerKeyStore(context);
+    }
+
+    public static String getPublicKey(Context context) {
+        return KeyStoreManager.getPublicKey(context);
     }
 }

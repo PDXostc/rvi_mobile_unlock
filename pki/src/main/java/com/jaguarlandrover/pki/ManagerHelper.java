@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 class ManagerHelper {
-    private final static String TAG = "UnlockDemo:ManagerHelper";
+    private final static String TAG = "UnlckDemo:ManagerHelper";
 
     static void generateKeyPairAndCertificateSigningRequest(Context context, PKIManager.CertificateSigningRequestGeneratorListener listener, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
         new CertificateSigningRequestGeneratorTask(listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, context, startDate, endDate, principalFormatterPattern, principalFormatterArgs);
@@ -89,7 +89,8 @@ class ManagerHelper {
     static void sendCertificateSigningRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, String certificateSigningRequest, Boolean extraValidationExpected) {
         Log.d(TAG, "CSR encoded: " + certificateSigningRequest);
 
-        new ProvisioningServerTask(extraValidationExpected ?
+        new ProvisioningServerTask(context,
+                                   extraValidationExpected ?
                                             ProvisioningServerRequestToken.SEND_CSR_EXTRA_VALIDATION :
                                             ProvisioningServerRequestToken.SEND_CSR_NO_EXTRA_VALIDATION,
                                    listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, baseUrl, requestUrl, certificateSigningRequest);
@@ -101,7 +102,7 @@ class ManagerHelper {
 
         String signedTokenVerification = KeyStoreManager.createJwt(context, tokenVerificationString);
 
-        new ProvisioningServerTask(ProvisioningServerRequestToken.VALIDATE_TOKEN, listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, baseUrl, requestUrl, signedTokenVerification);
+        new ProvisioningServerTask(context, ProvisioningServerRequestToken.VALIDATE_TOKEN, listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, baseUrl, requestUrl, signedTokenVerification);
 
     }
 
@@ -116,10 +117,12 @@ class ManagerHelper {
 
     private static class ProvisioningServerTask extends AsyncTask<String, String, Throwable>
     {
+        Context mContext = null;
         ProvisioningServerRequestToken mRequestToken = ProvisioningServerRequestToken.UNKNOWN;
         PKIManager.ProvisioningServerListener mListener = null;
 
-        ProvisioningServerTask(ProvisioningServerRequestToken token, PKIManager.ProvisioningServerListener listener) {
+        ProvisioningServerTask(Context context, ProvisioningServerRequestToken token, PKIManager.ProvisioningServerListener listener) {
+            mContext      = context;
             mRequestToken = token;
             mListener     = listener;
         }
@@ -166,7 +169,7 @@ class ManagerHelper {
 
                     if (mListener != null) mListener.certificateSigningRequestSuccessfullyReceived();
 
-                    processServerCertificateResponse(serverResponse, mListener);
+                    processServerCertificateResponse(mContext, serverResponse, mListener);
 
                     break;
                 case OTHER:
@@ -204,7 +207,7 @@ class ManagerHelper {
         }
     }
 
-    private static void processServerCertificateResponse(String serverCertificateResponse, PKIManager.ProvisioningServerListener listener) {
+    private static void processServerCertificateResponse(Context context, String serverCertificateResponse, PKIManager.ProvisioningServerListener listener) {
         Gson gson = new Gson();
         ProvisioningServerCertificateResponse serverResponse = gson.fromJson(serverCertificateResponse, ProvisioningServerCertificateResponse.class);
 
@@ -216,10 +219,10 @@ class ManagerHelper {
             X509Certificate deviceCert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(decodedDeviceCert));
 
 
-            KeyStore serverKeyStore = KeyStore.getInstance("BKS", "BC");
-            serverKeyStore.load(null, null);
-
-            serverKeyStore.setCertificateEntry("serverCert", serverCert);
+//            KeyStore serverKeyStore = KeyStore.getInstance("BKS", "BC");
+//            serverKeyStore.load(null, null);
+//
+//            serverKeyStore.setCertificateEntry("serverCert", serverCert);
 
     //                    KeyStore deviceKeyStore = KeyStore.getInstance("PKCS12");
     //                    deviceKeyStore.load(null, null);
@@ -228,8 +231,8 @@ class ManagerHelper {
     //
     //                    deviceKeyStore.load(new ByteArrayInputStream(decodedDeviceCert), "password".toCharArray());
 
-            //KeyStore serverKeyStore = KeyManager.addServerCertToKeyStore(serverCert);
-            KeyStore deviceKeyStore = KeyStoreManager.addDeviceCertToKeyStore(deviceCert);
+            KeyStore serverKeyStore = KeyStoreManager.addServerCertToKeyStore(context, serverCert);
+            KeyStore deviceKeyStore = KeyStoreManager.addDeviceCertToKeyStore(context, deviceCert);
 
             if (listener != null) {
                 listener.managerDidReceiveServerSignedStuff(serverKeyStore, deviceKeyStore, null, serverResponse.mJwtPrivileges);

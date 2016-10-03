@@ -22,6 +22,9 @@ import android.util.Log;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.security.Key;
 
@@ -57,6 +60,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -67,7 +71,6 @@ class KeyStoreManager {
     private final static String KEYSTORE_CLIENT_ALIAS = "RVI_CLIENT_KEYSTORE_ALIAS";
     private final static String KEYSTORE_SERVER_ALIAS = "RVI_SERVER_KEYSTORE_ALIAS";
     private final static String DEFAULT_SIGNATURE_ALGORITHM = "SHA256withRSA";
-    private final static String CN_PATTERN = "CN=%s, O=Genivi, OU=OrgUnit, EMAILADDRESS=%s";
 
     private final static String PEM_HEADER_PATTERN = "-----BEGIN %s-----\n";
     private final static String PEM_FOOTER_PATTERN = "\n-----END %s-----";
@@ -84,30 +87,27 @@ class KeyStoreManager {
         KeyPair  keyPair   = null;
 
         java.security.cert.Certificate cert = null;
-        //byte[] csr = null;
 
         try {
             keyStore = KeyStore.getInstance("AndroidKeyStore");
             keyStore.load(null);
 
             if (!keyStore.containsAlias(KEYSTORE_CLIENT_ALIAS)) {
-//                Calendar start = Calendar.getInstance();
-//                Calendar end = Calendar.getInstance();
-//                end.add(Calendar.YEAR, 1);
 
                 KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
                         .setAlias(KEYSTORE_CLIENT_ALIAS)
                         .setKeySize(KEY_SIZE)
                         .setSubject(new X500Principal(principal))
                         .setSerialNumber(BigInteger.ONE)
-                        .setStartDate(startDate)//start.getTime())
-                        .setEndDate(endDate)//end.getTime())
+                        .setStartDate(startDate)
+                        .setEndDate(endDate)
+                        //.setEncryptionRequired () TODO: Document that this is currently disabled and enabling it might be complicated (i.e., fails whole method if screen pwd lock isn't on)
                         .build();
                 KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
                 generator.initialize(spec);
 
                 keyPair = generator.generateKeyPair();
-                //cert = keyStore.getCertificate(KEYSTORE_CLIENT_ALIAS);
+
 
             } else {
                 Key key = keyStore.getKey(KEYSTORE_CLIENT_ALIAS, null);
@@ -152,7 +152,6 @@ class KeyStoreManager {
         private ByteArrayOutputStream outputStream;
 
         JCESigner(PrivateKey privateKey, String sigAlgorithm) {
-            //Utils.throwIfNull(privateKey, sigAlgorithm);
             mAlgorithm = sigAlgorithm.toLowerCase();
             try {
                 this.outputStream = new ByteArrayOutputStream();
@@ -204,7 +203,7 @@ class KeyStoreManager {
         return csr;
     }
 
-    static String createJwt(Context context, String data) {//String token, String certId) {
+    static String createJwt(Context context, String data) {
 
         Log.d(TAG, "data: " + data);
 
@@ -224,24 +223,7 @@ class KeyStoreManager {
         return null;
     }
 
-    static KeyStore addServerCertToKeyStore(X509Certificate serverCert) {
-        KeyStore keyStore = null;
-
-        try {
-            keyStore = KeyStore.getInstance("AndroidKeyStore");
-            keyStore.load(null);
-            keyStore.setCertificateEntry(KEYSTORE_SERVER_ALIAS, serverCert);
-
-            return keyStore;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    static KeyStore addDeviceCertToKeyStore(X509Certificate deviceCert) {
+    static KeyStore addDeviceCertToKeyStore(Context context, X509Certificate deviceCert) {
         KeyStore keyStore = null;
 
         try {
@@ -252,7 +234,27 @@ class KeyStoreManager {
 
             keyStore.setKeyEntry(KEYSTORE_CLIENT_ALIAS, keyStore.getKey(KEYSTORE_CLIENT_ALIAS, null), null, arr);
 
-//            keyStore.setCertificateEntry(KEYSTORE_CLIENT_ALIAS, deviceCert);
+            return keyStore;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    static KeyStore addServerCertToKeyStore(Context context, X509Certificate serverCert) {
+        KeyStore keyStore = null;
+
+        try {
+            FileOutputStream outputStream = context.openFileOutput(KEYSTORE_SERVER_ALIAS, Context.MODE_PRIVATE);
+
+            keyStore = KeyStore.getInstance("BKS", "BC");
+            keyStore.load(null, null);
+
+            keyStore.setCertificateEntry(KEYSTORE_SERVER_ALIAS, serverCert); // TODO: Will using non-unique identifier cause the cert to get overwritten?
+
+            keyStore.store(outputStream, null);
 
             return keyStore;
 
@@ -263,7 +265,71 @@ class KeyStoreManager {
         return null;
     }
 
-    static String getPublicKey() {
+    static Boolean hasValidCerts(Context context) {
+        KeyStore deviceKeyStore = null;
+        KeyStore serverKeyStore = null;
+
+        try {
+            FileInputStream inputStream = context.openFileInput(KEYSTORE_SERVER_ALIAS);
+
+            deviceKeyStore = KeyStore.getInstance("AndroidKeyStore");
+            serverKeyStore = KeyStore.getInstance("BKS", "BC");
+
+            deviceKeyStore.load(null);
+            serverKeyStore.load(inputStream, null);
+
+            if (!deviceKeyStore.containsAlias(KEYSTORE_CLIENT_ALIAS)) {
+                return false;
+            }
+
+            if (!serverKeyStore.containsAlias(KEYSTORE_SERVER_ALIAS)) {
+                return false;
+            }
+
+        } catch (FileNotFoundException fnfe) {
+
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return false;
+        }
+
+        return true;
+    }
+
+    static KeyStore getDeviceKeyStore(Context context) {
+        KeyStore keyStore = null;
+
+        try {
+            keyStore = KeyStore.getInstance("AndroidKeyStore");
+            keyStore.load(null);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return keyStore;
+    }
+
+    static KeyStore getServerKeyStore(Context context) {
+
+        KeyStore keyStore = null;
+
+        try {
+            FileInputStream inputStream = context.openFileInput(KEYSTORE_SERVER_ALIAS);
+
+            keyStore = KeyStore.getInstance("BKS", "BC");
+            keyStore.load(inputStream, null);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return keyStore;
+    }
+
+    static String getPublicKey(Context context) {
         KeyStore keyStore = null;
 
         try {
