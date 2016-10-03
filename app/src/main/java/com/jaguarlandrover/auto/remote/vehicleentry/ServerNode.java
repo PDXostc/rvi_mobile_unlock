@@ -36,6 +36,8 @@ import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.xml.transform.sax.SAXTransformerFactory;
+
 public class ServerNode
 {
     private final static String TAG = "UnlockDemo:ServerNode";
@@ -71,10 +73,18 @@ public class ServerNode
     private final static String CERT_CREATE     = "cert_create";
     private final static String CERT_MODIFY     = "cert_modify";
 
+    private final static String GET_CREDENTIALS = "request_credentials";
+
+
     /* Local service identifiers */
     private final static String CERT_PROVISION       = "cert_provision";
     private final static String CERT_RESPONSE        = "cert_response";
     private final static String CERT_ACCOUNT_DETAILS = "cert_accountdetails";
+
+
+    private final static String REVOKE_CREDENTIALS = "revoke_credentials";
+    private final static String ADD_CREDENTIALS    = "add_credentials";
+
 
     private final static String SERVICE_INVOKED_BY_GUEST = "serviceinvokedbyguest";
 

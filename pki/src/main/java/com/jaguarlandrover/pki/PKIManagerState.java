@@ -16,32 +16,48 @@ package com.jaguarlandrover.pki;
 
 public enum PKIManagerState
 {
-    UNKNOWN("unknown"),
-    NO_KEYS_GENERATED("no_keys_generated"),
-    KEYS_GENERATED_CSR_SENT("keys_generated_csr_sent"),
-    CSR_VALIDATION_SENT("csr_validation_sent"),
-    CSR_VALIDATED_CERTS_RECEIVED("csr_validated_certs_received"),
-    OTHER("other");
-
-    private final String mState;
-
-    PKIManagerState(String state) {
-        mState = state;
-    }
-
-    public final String value() {
-        return mState;
-    }
-
-    public static PKIManagerState get(String state) {
-        switch (state) {
-            case "no_keys_generated":            return NO_KEYS_GENERATED;
-            case "keys_generated_csr_sent":      return KEYS_GENERATED_CSR_SENT;
-            case "csr_validation_sent":          return CSR_VALIDATION_SENT;
-            case "csr_validated_certs_received": return CSR_VALIDATED_CERTS_RECEIVED;
-            case "other":                        return OTHER;
-        }
-
-        return UNKNOWN;
-    }
+    UNKNOWN,
+    NO_KEYS_OR_CERTIFICATE_GENERATED,
+    KEYS_AND_CERTIFICATE_GENERATED,
+    CERTIFICATE_SIGNING_REQUEST_SENT_VERIFICATION_REQUIRED,
+    CERTIFICATE_SIGNING_REQUEST_SENT_NO_VERIFICATION_REQUIRED,
+    EXTRA_VERIFICATION_SENT,
+    SIGNED_CERTIFICATES_RECEIVED,
+    OTHER;
 }
+
+//public enum PKIManagerState
+//{
+//    UNKNOWN("unknown"),
+//    NO_KEYS_OR_CERTIFICATE_GENERATED("no_keys_or_certificate_generated"),
+//    KEYS_AND_CERTIFICATE_GENERATED("keys_and_certificate_generated"),
+//    CERTIFICATE_SIGNING_REQUEST_SENT_VERIFICATION_REQUIRED("certificate_signing_request_sent_verification_required"),
+//    CERTIFICATE_SIGNING_REQUEST_SENT_NO_VERIFICATION_REQUIRED("certificate_signing_request_sent_no_verification_required"),
+//    EXTRA_VERIFICATION_SENT("extra_verification_sent"),
+//    SIGNED_CERTIFICATES_RECEIVED("signed_certificates_received"),
+//    OTHER("other");
+//
+//    private final String mState;
+//
+//    PKIManagerState(String state) {
+//        mState = state;
+//    }
+//
+//    public final String value() {
+//        return mState;
+//    }
+//
+//    public static PKIManagerState get(String state) {
+//        switch (state) {
+//            case "no_keys_or_certificate_generated":                          return NO_KEYS_OR_CERTIFICATE_GENERATED;
+//            case "keys_and_certificate_generated":                            return KEYS_AND_CERTIFICATE_GENERATED;
+//            case "certificate_signing_request_sent_verification_required":    return CERTIFICATE_SIGNING_REQUEST_SENT_VERIFICATION_REQUIRED;
+//            case "certificate_signing_request_sent_no_verification_required": return CERTIFICATE_SIGNING_REQUEST_SENT_NO_VERIFICATION_REQUIRED;
+//            case "extra_verification_sent":                                   return EXTRA_VERIFICATION_SENT;
+//            case "signed_certificates_received":                              return SIGNED_CERTIFICATES_RECEIVED;
+//            case "other":                                                     return OTHER;
+//        }
+//
+//        return UNKNOWN;
+//    }
+//}

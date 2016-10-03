@@ -111,5 +111,7 @@ public class PKIManager {
         ManagerHelper.sendTokenVerificationRequest(context, listener, baseUrl, requestUrl, tokenVerificationString);
     }
 
-
+    public static String getPublicKey() {
+        return KeyStoreManager.getPublicKey();
+    }
 }

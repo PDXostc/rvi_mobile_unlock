@@ -31,6 +31,7 @@ import org.spongycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.spongycastle.asn1.x500.X500Name;
 import org.spongycastle.asn1.x509.AlgorithmIdentifier;
 import org.spongycastle.asn1.x509.BasicConstraints;
+import org.spongycastle.asn1.x509.Certificate;
 import org.spongycastle.asn1.x509.Extension;
 import org.spongycastle.asn1.x509.ExtensionsGenerator;
 import org.spongycastle.operator.ContentSigner;
@@ -72,6 +73,7 @@ class KeyStoreManager {
     private final static String PEM_FOOTER_PATTERN = "\n-----END %s-----";
 
     private final static String PEM_CERTIFICATE_SIGNING_REQUEST_HEADER_FOOTER_STRING = "CERTIFICATE REQUEST";
+    private final static String PEM_PUBLIC_KEY_HEADER_FOOTER_STRING                  = "PUBLIC KEY";
 
     private final static Integer KEY_SIZE = 4096;
 
@@ -253,6 +255,33 @@ class KeyStoreManager {
 //            keyStore.setCertificateEntry(KEYSTORE_CLIENT_ALIAS, deviceCert);
 
             return keyStore;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    static String getPublicKey() {
+        KeyStore keyStore = null;
+
+        try {
+            keyStore = KeyStore.getInstance("AndroidKeyStore");
+            keyStore.load(null);
+
+            if (!keyStore.containsAlias(KEYSTORE_CLIENT_ALIAS)) {
+                return null;
+            } else {
+                Key key = keyStore.getKey(KEYSTORE_CLIENT_ALIAS, null);
+
+                java.security.cert.Certificate cert = keyStore.getCertificate(KEYSTORE_CLIENT_ALIAS);
+                PublicKey publicKey = cert.getPublicKey();
+
+                byte [] bytes = publicKey.getEncoded();
+
+                return convertToPem(PEM_PUBLIC_KEY_HEADER_FOOTER_STRING, bytes);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
