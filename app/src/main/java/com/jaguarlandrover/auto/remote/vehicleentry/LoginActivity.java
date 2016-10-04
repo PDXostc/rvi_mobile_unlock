@@ -44,12 +44,13 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     private final static String DEFAULT_PROVISIONING_SERVER_CSR_URL          = "/csr";
     private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification"; // TODO: 'Verification' or 'validation'?
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-         super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_login2);
         handleExtra(getIntent());
+
         login_fragment = (LoginActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlogin);
 
         doBindService();
@@ -107,7 +108,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
             rviService = ((RviService.RviBinder)service).getService();
 
-            rviService.servicesAvailable()
+            rviService
+                    .servicesAvailable()
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Observer<String>() {
@@ -123,21 +125,19 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
                         @Override
                         public void onNext(String s) {
-                            Log.i(TAG, "X: "+s);
+                            Log.i(TAG, "X: " + s);
                             login_fragment.onNewServiceDiscovered(s);
                             //Toast.makeText(LockActivity.this, "X: "+s, Toast.LENGTH_SHORT).show();
                         }
                     });
 
             // Tell the user about this for our demo.
-            Toast.makeText(LoginActivity.this, "RVI service connected",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(LoginActivity.this, "RVI service connected", Toast.LENGTH_SHORT).show();
         }
 
         public void onServiceDisconnected(ComponentName className) {
             rviService = null;
-            Toast.makeText(LoginActivity.this, "RVI service disconnected",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(LoginActivity.this, "RVI service disconnected", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -234,24 +234,27 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         return super.onOptionsItemSelected(item);
     }
 
-    public void setStatus(String msg){
+    public void setStatus(String msg) {
         try {
             JSONObject obj = new JSONObject(msg);
             status = obj.get("success").toString();
-        }
-        catch(Exception e){
+
+        } catch(Exception e) {
             e.printStackTrace();
 
         }
 
-        if(status.equals("true")){
+        if (status.equals("true")) {
             Intent intent = new Intent();
+
             intent.setClass(LoginActivity.this, LockActivity.class);
             startActivity(intent);
-        }
-        else{
+
+        } else {
+
             //login_fragment.mEmail.setText("");
             //login_fragment.password.setText("");
+
             ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = cm.getActiveNetworkInfo();
             if (networkInfo == null || networkInfo.getDetailedState() == NetworkInfo.DetailedState.DISCONNECTED) {
@@ -263,28 +266,32 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     }
 
     public void onNewServiceDiscovered(String... service) {
-        for(String s:service)
+        for (String s : service)
             Log.e(TAG, "Service = " + s);
     }
 
     private void handleExtra(Intent intent) {
         Bundle extras = intent.getExtras();
-        if( extras != null && extras.size() > 0 ) {
+
+        if (extras != null && extras.size() > 0 ) {
             for(String k : extras.keySet()) {
                 Log.i(TAG, "k = " + k+" : "+extras.getString(k));
             }
         }
-        if( extras != null && "dialog".equals(extras.get("_extra1")) ) {
+
+        if (extras != null && "dialog".equals(extras.get("_extra1"))) {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
             alertDialogBuilder.setTitle("" + extras.get("_extra2"));
             alertDialogBuilder
-                    .setMessage(""+extras.get("_extra3"))
+                    .setMessage("" + extras.get("_extra3"))
                     .setCancelable(false)
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.cancel();
                         }
                     });
+
             alertDialogBuilder.create().show();
         }
     }
