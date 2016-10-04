@@ -107,24 +107,26 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             }
         }
 
-        if (PKIManager.hasValidSignedDeviceCert(this) && PKIManager.hasValidSignedServerCert(this)) {
-            mLoginActivityFragment.hideControls(true);
-            mLoginActivityFragment.setStatusTextText("Binding service...");
+        if (!mValidatingToken) {
+            if (PKIManager.hasValidSignedDeviceCert(this) && PKIManager.hasValidSignedServerCert(this)) {
+                mLoginActivityFragment.hideControls(true);
+                mLoginActivityFragment.setStatusTextText("Binding service...");
 
-            mAllValidCertsAquired = true;
+                mAllValidCertsAquired = true;
 
-            mServerCertificateKeyStoreHolder = PKIManager.getServerKeyStore(this);
-            mDeviceCertificateKeyStoreHolder = PKIManager.getDeviceKeyStore(this);
+                mServerCertificateKeyStoreHolder = PKIManager.getServerKeyStore(this);
+                mDeviceCertificateKeyStoreHolder = PKIManager.getDeviceKeyStore(this);
 
-            doTheRviThingIfEverythingElseIsComplete();
+                doTheRviThingIfEverythingElseIsComplete();
 
-        } else if (PKIManager.hasValidSignedDeviceCert(this) && !mValidatingToken) {
-            mLoginActivityFragment.setStatusTextText("Resend email");
-            mLoginActivityFragment.setStatusTextText("Please check your email account and click the link.");
+            } else if (PKIManager.hasValidSignedDeviceCert(this)) {
+                mLoginActivityFragment.setStatusTextText("Resend email");
+                mLoginActivityFragment.setStatusTextText("Please check your email account and click the link.");
 
-        } else {
-            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
+            } else {
+                mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
 
+            }
         }
 
         doBindService();

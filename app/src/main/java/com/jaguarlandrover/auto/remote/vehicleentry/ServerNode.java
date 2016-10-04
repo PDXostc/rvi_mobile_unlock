@@ -240,9 +240,9 @@ public class ServerNode
     public static void setKeyStoresAndPrivileges(KeyStore serverKeyStore, KeyStore deviceKeyStore, String deviceKeyStorePassword, ArrayList<String> privileges) {
         rviNode.setKeyStores(serverKeyStore, deviceKeyStore, deviceKeyStorePassword);
 
-        for (String jwt : privileges) {
-            rviNode.addJWTCredentials(jwt);
-        }
+        if (privileges != null)
+            for (String jwt : privileges)
+                rviNode.addJWTCredentials(jwt);
     }
 
     public static void connect() {

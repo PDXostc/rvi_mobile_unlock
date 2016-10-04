@@ -341,8 +341,8 @@ class KeyStoreManager {
                 return false;
             }
 
-            KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(KEYSTORE_CLIENT_ALIAS, null);
-            X509Certificate certificate = (X509Certificate) entry.getCertificate();
+            KeyStore.TrustedCertificateEntry entry = (KeyStore.TrustedCertificateEntry) keyStore.getEntry(KEYSTORE_SERVER_ALIAS, null);
+            X509Certificate certificate = (X509Certificate) entry.getTrustedCertificate();
 
             certificate.checkValidity();
 
