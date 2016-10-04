@@ -18,6 +18,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.security.KeyPairGeneratorSpec;
 import android.util.Log;
+import android.webkit.JavascriptInterface;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -55,6 +56,8 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
@@ -92,6 +95,17 @@ class KeyStoreManager {
             keyStore = KeyStore.getInstance("AndroidKeyStore");
             keyStore.load(null);
 
+            try {
+                KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(KEYSTORE_CLIENT_ALIAS, null);
+
+                if (entry != null) {
+                    X509Certificate certificate = (X509Certificate) entry.getCertificate();
+                    certificate.checkValidity();
+                }
+            } catch (CertificateExpiredException | CertificateNotYetValidException ce) {
+                keyStore.deleteEntry(KEYSTORE_CLIENT_ALIAS);
+            }
+
             if (!keyStore.containsAlias(KEYSTORE_CLIENT_ALIAS)) {
 
                 KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
@@ -107,7 +121,6 @@ class KeyStoreManager {
                 generator.initialize(spec);
 
                 keyPair = generator.generateKeyPair();
-
 
             } else {
                 Key key = keyStore.getKey(KEYSTORE_CLIENT_ALIAS, null);
@@ -166,7 +179,7 @@ class KeyStoreManager {
         public AlgorithmIdentifier getAlgorithmIdentifier() {
             AlgorithmIdentifier id = ALGORITHMS.get(mAlgorithm);
             if (id == null) {
-                throw new IllegalArgumentException("Does not support algo: " + mAlgorithm);
+                throw new IllegalArgumentException("Does not support algorithm: " + mAlgorithm);
             }
             return id;
         }
@@ -223,6 +236,27 @@ class KeyStoreManager {
         return null;
     }
 
+    static void deleteKeysAndCerts(Context context) {
+        KeyStore deviceKeyStore = null;
+
+        try {
+            deviceKeyStore = KeyStore.getInstance("AndroidKeyStore");
+
+            deviceKeyStore.load(null);
+
+            if (deviceKeyStore.containsAlias(KEYSTORE_CLIENT_ALIAS)) {
+                deviceKeyStore.deleteEntry(KEYSTORE_CLIENT_ALIAS);
+            }
+
+            context.deleteFile(KEYSTORE_SERVER_ALIAS);
+
+        } catch (FileNotFoundException ignored) {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     static KeyStore addDeviceCertToKeyStore(Context context, X509Certificate deviceCert) {
         KeyStore keyStore = null;
 
@@ -230,7 +264,7 @@ class KeyStoreManager {
             keyStore = KeyStore.getInstance("AndroidKeyStore");
             keyStore.load(null);
 
-            X509Certificate[] arr = {deviceCert};
+            X509Certificate[] arr = { deviceCert };
 
             keyStore.setKeyEntry(KEYSTORE_CLIENT_ALIAS, keyStore.getKey(KEYSTORE_CLIENT_ALIAS, null), null, arr);
 
@@ -265,28 +299,24 @@ class KeyStoreManager {
         return null;
     }
 
-    static Boolean hasValidCerts(Context context) {
-        KeyStore deviceKeyStore = null;
-        KeyStore serverKeyStore = null;
+    static Boolean hasValidSignedDeviceCert(Context context) {
+        KeyStore keyStore = null;
 
         try {
-            FileInputStream inputStream = context.openFileInput(KEYSTORE_SERVER_ALIAS);
+            keyStore = KeyStore.getInstance("AndroidKeyStore");
 
-            deviceKeyStore = KeyStore.getInstance("AndroidKeyStore");
-            serverKeyStore = KeyStore.getInstance("BKS", "BC");
+            keyStore.load(null);
 
-            deviceKeyStore.load(null);
-            serverKeyStore.load(inputStream, null);
-
-            if (!deviceKeyStore.containsAlias(KEYSTORE_CLIENT_ALIAS)) {
+            if (!keyStore.containsAlias(KEYSTORE_CLIENT_ALIAS)) {
                 return false;
             }
 
-            if (!serverKeyStore.containsAlias(KEYSTORE_SERVER_ALIAS)) {
-                return false;
-            }
+            KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(KEYSTORE_CLIENT_ALIAS, null);
+            X509Certificate certificate = (X509Certificate) entry.getCertificate();
 
-        } catch (FileNotFoundException fnfe) {
+            certificate.checkValidity();
+
+        } catch (FileNotFoundException | CertificateNotYetValidException | CertificateExpiredException ce) {
 
             return false;
         } catch (Exception e) {
@@ -297,6 +327,69 @@ class KeyStoreManager {
 
         return true;
     }
+
+    static Boolean hasValidSignedServerCert(Context context) {
+        KeyStore keyStore = null;
+
+        try {
+            FileInputStream inputStream = context.openFileInput(KEYSTORE_SERVER_ALIAS);
+
+            keyStore = KeyStore.getInstance("BKS", "BC");
+            keyStore.load(inputStream, null);
+
+            if (!keyStore.containsAlias(KEYSTORE_SERVER_ALIAS)) {
+                return false;
+            }
+
+            KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(KEYSTORE_CLIENT_ALIAS, null);
+            X509Certificate certificate = (X509Certificate) entry.getCertificate();
+
+            certificate.checkValidity();
+
+        } catch (FileNotFoundException | CertificateNotYetValidException | CertificateExpiredException ce) {
+
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return false;
+        }
+
+        return true;
+    }
+
+//    static Boolean hasValidCerts(Context context) {
+//        KeyStore deviceKeyStore = null;
+//        KeyStore serverKeyStore = null;
+//
+//        try {
+//            FileInputStream inputStream = context.openFileInput(KEYSTORE_SERVER_ALIAS);
+//
+//            deviceKeyStore = KeyStore.getInstance("AndroidKeyStore");
+//            serverKeyStore = KeyStore.getInstance("BKS", "BC");
+//
+//            deviceKeyStore.load(null);
+//            serverKeyStore.load(inputStream, null);
+//
+//            if (!deviceKeyStore.containsAlias(KEYSTORE_CLIENT_ALIAS)) {
+//                return false;
+//            }
+//
+//            if (!serverKeyStore.containsAlias(KEYSTORE_SERVER_ALIAS)) {
+//                return false;
+//            }
+//
+//        } catch (FileNotFoundException fnfe) {
+//
+//            return false;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//
+//            return false;
+//        }
+//
+//        return true;
+//    }
 
     static KeyStore getDeviceKeyStore(Context context) {
         KeyStore keyStore = null;

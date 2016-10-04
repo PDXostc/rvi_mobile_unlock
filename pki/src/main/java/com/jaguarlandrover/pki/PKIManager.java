@@ -112,8 +112,20 @@ public class PKIManager {
         ManagerHelper.sendTokenVerificationRequest(context, listener, baseUrl, requestUrl, tokenVerificationString);
     }
 
-    public static Boolean hasValidCerts(Context context) {
-        return KeyStoreManager.hasValidCerts(context);
+    public static void deleteKeysAndCerts(Context context) {
+        KeyStoreManager.deleteKeysAndCerts(context);
+    }
+
+//    public static Boolean hasValidCerts(Context context) {
+//        return KeyStoreManager.hasValidCerts(context);
+//    }
+
+    public static Boolean hasValidSignedDeviceCert(Context context) {
+        return KeyStoreManager.hasValidSignedDeviceCert(context);
+    }
+
+    public static Boolean hasValidSignedServerCert(Context context) {
+        return KeyStoreManager.hasValidSignedServerCert(context);
     }
 
     public static KeyStore getDeviceKeyStore(Context context) {

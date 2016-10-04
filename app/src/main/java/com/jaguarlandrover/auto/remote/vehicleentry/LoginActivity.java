@@ -54,8 +54,6 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
         doBindService();
 
-        Boolean foo = PKIManager.hasValidCerts(this);
-
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             Uri uri = intent.getData();
@@ -154,8 +152,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         // class name because we want a specific service implementation that
         // we know will be running in our own process (and thus won't be
         // supporting component replacement by other applications).
-        bindService(new Intent(LoginActivity.this,
-                RviService.class), mConnection, Context.BIND_AUTO_CREATE);
+        bindService(new Intent(LoginActivity.this, RviService.class), mConnection, Context.BIND_AUTO_CREATE);
         bound = true;
     }
 
