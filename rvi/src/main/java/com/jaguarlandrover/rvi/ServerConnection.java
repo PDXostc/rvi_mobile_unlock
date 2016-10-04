@@ -21,6 +21,9 @@ import javax.net.SocketFactory;
 import javax.net.ssl.*;
 import java.io.*;
 import java.security.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * The TCP/IP server @RemoteConnectionInterface implementation
@@ -171,7 +174,7 @@ class ServerConnection implements RemoteConnectionInterface
 
                 String keyManagerAlgorithm = "X509";//KeyManagerFactory.getDefaultAlgorithm();
                 KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(keyManagerAlgorithm);
-                keyManagerFactory.init(clientKeyStore, clientKeyStorePassword.toCharArray());
+                keyManagerFactory.init(clientKeyStore, null);//clientKeyStorePassword.toCharArray());
 
                 SSLContext context = SSLContext.getInstance("TLS");
                 context.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
@@ -181,6 +184,12 @@ class ServerConnection implements RemoteConnectionInterface
                 Log.d(TAG, "Creating ssl socket");
 
                 mSocket = (SSLSocket) sf.createSocket(dstAddress, dstPort);
+
+                SSLSession session = mSocket.getSession();
+                java.security.cert.Certificate[] servercerts = session.getPeerCertificates();
+
+                List mylist = new ArrayList();
+                Collections.addAll(mylist, servercerts);
 
                 Log.d(TAG, "Creating ssl socket complete");
 

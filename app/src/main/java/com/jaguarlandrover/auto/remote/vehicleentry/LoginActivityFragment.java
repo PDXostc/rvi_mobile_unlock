@@ -1,9 +1,7 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
-import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.preference.PreferenceManager;
@@ -12,8 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.rengwuxian.materialedittext.MaterialEditText;
 
@@ -26,13 +24,14 @@ import com.rengwuxian.materialedittext.MaterialEditText;
  */
 public class LoginActivityFragment extends Fragment {
 
-    //private OnFragmentInteractionListener mListener;
-    private Button login;
-    public MaterialEditText userName;
-    public MaterialEditText password;
-    private LoginFragmentButtonListener buttonListener;
+    private MaterialEditText mEmail;
+    private Button           mVerifyButton;
+    private TextView         mStatusText;
+
+    private LoginFragmentButtonListener mLoginFragmentButtonListener;
     private SharedPreferences sharedPref;
     private ImageView logo;
+
     public LoginActivityFragment() {
         // Required empty public constructor
     }
@@ -44,60 +43,74 @@ public class LoginActivityFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_login_activity, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View     view        = inflater.inflate(R.layout.fragment_login_activity, container, false);
         Typeface fontawesome = Typeface.createFromAsset(getActivity().getAssets(), "fonts/fontawesome-webfont.ttf");
-        login = (Button)view.findViewById(R.id.loginBtn);
-//        login.setTypeface(fontawesome);
-        userName = (MaterialEditText) view.findViewById(R.id.username);
-        password = (MaterialEditText) view.findViewById(R.id.password);
+
+        mEmail        = (MaterialEditText) view.findViewById(R.id.email);
+        mVerifyButton = (Button) view.findViewById(R.id.verifyButton);
+        mStatusText   = (TextView) view.findViewById(R.id.statusText);
 
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-        userName.setText(sharedPref.getString("savedUserName", ""));
-        password.setText(sharedPref.getString("savedPassword", ""));
+        mEmail.setText(sharedPref.getString("savedEmail", ""));
 
-        userName.setCursorVisible(true);
-        password.setCursorVisible(true);
+        mEmail.setCursorVisible(true);
 
-        login.setOnClickListener(l);
-            /*@Override
-            public void onClick(View v) {
-                submit(v);
-            }
-        });*/
-        buttonListener = (LoginFragmentButtonListener) getActivity();
-        // Inflate the layout for this fragment
+        mVerifyButton.setOnClickListener(mOnClickListener);
+
+        mLoginFragmentButtonListener = (LoginFragmentButtonListener) getActivity();
+
         return view;
     }
 
-    private View.OnClickListener l = new View.OnClickListener() {
+    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
-        public void onClick(View v) {
+        public void onClick(View view) {
             SharedPreferences.Editor ed = sharedPref.edit();
 
-            ed.putString("savedUserName", userName.getText().toString());
-            ed.putString("savedPassword", password.getText().toString());
+            ed.putString("savedEmail", mEmail.getText().toString());
 
             ed.commit();
 
-            switch(v.getId()) {
-                case R.id.loginBtn:
-                    Log.i("RVI", "LockBtn");
-                    //ed.putBoolean("Share", true);
-                    buttonListener.onButtonCommand(v);
+            switch (view.getId()) {
+                case R.id.verifyButton:
+                    Log.i("RVI", "Verify button clicked.");
+
+                    mLoginFragmentButtonListener.onButtonCommand(view);
                     break;
             }
-
         }
     };
+
     public void onNewServiceDiscovered(String... service) {
-        for(String s:service)
+        for(String s : service)
             Log.e("RVI", "Service = " + s);
     }
 
     public interface LoginFragmentButtonListener {
-        public void onButtonCommand(View v);
+        void onButtonCommand(View v);
+    }
+
+    void setVerifyButtonText(String text) {
+        mVerifyButton.setText(text);
+    }
+
+    void setStatusTextText(String text) {
+        mStatusText.setText(text);
+    }
+
+    void setVerifyButtonEnabled(Boolean enabled) {
+        mVerifyButton.setEnabled(enabled);
+    }
+
+    void hideControls(Boolean hidden) {
+        if (hidden) {
+            mVerifyButton.setVisibility(View.GONE);
+            mEmail.setVisibility(View.GONE);
+        } else {
+            mVerifyButton.setVisibility(View.VISIBLE);
+            mEmail.setVisibility(View.VISIBLE);
+        }
     }
 }
