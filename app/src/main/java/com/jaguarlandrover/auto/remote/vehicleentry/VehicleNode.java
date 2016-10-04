@@ -154,13 +154,13 @@ public class VehicleNode
         return isUnlocked;
     }
 
-    public static void setKeyStoresAndPrivileges(KeyStore serverKeyStore, KeyStore deviceKeyStore, String deviceKeyStorePassword, ArrayList<String> privileges) {
-        rviNode.setKeyStores(serverKeyStore, deviceKeyStore, deviceKeyStorePassword);
-
-        for (String jwt : privileges) {
-            rviNode.addJWTCredentials(jwt);
-        }
-    }
+//    public static void setKeyStoresAndPrivileges(KeyStore serverKeyStore, KeyStore deviceKeyStore, String deviceKeyStorePassword, ArrayList<String> privileges) {
+//        rviNode.setKeyStores(serverKeyStore, deviceKeyStore, deviceKeyStorePassword);
+//
+//        for (String jwt : privileges) {
+//            rviNode.addJWTCredentials(jwt);
+//        }
+//    }
 
     public static void connect() {
         if (connectionStatus == ConnectionStatus.CONNECTING) return; // TODO: Do we want to move this logic down into the SDK?
@@ -195,9 +195,9 @@ public class VehicleNode
         if (fobSignal.equals(FOB_SIGNAL_UNLOCK)) isUnlocked = true;
     }
 
-    public static void setDeviceAddress(String deviceAddress) {
-        rviNode.setBluetoothDeviceAddress(deviceAddress);
-    }
+//    public static void setDeviceAddress(String deviceAddress) {
+//        rviNode.setBluetoothDeviceAddress(deviceAddress);
+//    }
 
 
 }

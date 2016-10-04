@@ -36,13 +36,13 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     private final static String X509_PRINCIPAL_PATTERN = "CN=%s, O=Genivi, OU=OrgUnit, EMAILADDRESS=%s";
     private final static String X509_COMMON_NAME       = "Android Unlock App";
 
-    private final static String DEFAULT_PROVISIONING_SERVER_BASE_URL         = "http://192.168.16.245:5000";
+    private final static String DEFAULT_PROVISIONING_SERVER_BASE_URL         = "http://192.168.16.245:8000";
     private final static String DEFAULT_PROVISIONING_SERVER_CSR_URL          = "/csr";
     private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification"; // TODO: 'Verification' or 'validation'?
 
-    private boolean mRviServerConnected   = false;
-    private boolean mAllValidCertsAquired = false;
-    private boolean mValidatingToken      = false;
+    private boolean mRviServerConnected    = false;
+    private boolean mAllValidCertsAcquired = false;
+    private boolean mValidatingToken       = false;
 
     private KeyStore          mServerCertificateKeyStoreHolder = null;
     private KeyStore          mDeviceCertificateKeyStoreHolder = null;
@@ -59,6 +59,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         mLoginActivityFragment = (LoginActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlogin);
 
         mLoginActivityFragment.setVerifyButtonEnabled(true);
+
+        //PKIManager.deleteKeysAndCerts(this);
 
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
@@ -98,8 +100,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                         mDeviceCertificateKeyStoreHolder = deviceCertificateKeyStore;
                         mDefaultPrivilegesHolder         = defaultPrivileges;
 
-                        mValidatingToken      = false;
-                        mAllValidCertsAquired = true;
+                        mValidatingToken       = false;
+                        mAllValidCertsAcquired = true;
 
                         doTheRviThingIfEverythingElseIsComplete();
                     }
@@ -112,7 +114,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 mLoginActivityFragment.hideControls(true);
                 mLoginActivityFragment.setStatusTextText("Binding service...");
 
-                mAllValidCertsAquired = true;
+                mAllValidCertsAcquired = true;
 
                 mServerCertificateKeyStoreHolder = PKIManager.getServerKeyStore(this);
                 mDeviceCertificateKeyStoreHolder = PKIManager.getDeviceKeyStore(this);
@@ -189,7 +191,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
 
     private void doTheRviThingIfEverythingElseIsComplete() {
-        if (mRviServerConnected && mAllValidCertsAquired) {
+        if (mRviServerConnected && mAllValidCertsAcquired) {
             rviService.setServerKeyStore(mServerCertificateKeyStoreHolder);
             rviService.setDeviceKeyStore(mDeviceCertificateKeyStoreHolder);
             rviService.setDeviceKeyStorePassword(null);
@@ -260,8 +262,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                         mDeviceCertificateKeyStoreHolder = deviceCertificateKeyStore;
                         mDefaultPrivilegesHolder         = defaultPrivileges;
 
-                        mValidatingToken      = false;
-                        mAllValidCertsAquired = true;
+                        mValidatingToken       = false;
+                        mAllValidCertsAcquired = true;
 
                         doTheRviThingIfEverythingElseIsComplete();
                     }

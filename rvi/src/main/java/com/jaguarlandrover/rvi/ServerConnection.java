@@ -59,7 +59,7 @@ class ServerConnection implements RemoteConnectionInterface
 
     @Override
     public boolean isConfigured() {
-        return !(mServerUrl == null || mServerUrl.isEmpty() || mServerPort == 0 || mClientKeyStore == null || mServerKeyStore == null);
+        return !(mServerUrl == null || mServerUrl.isEmpty() || mServerPort == 0);// || mClientKeyStore == null || mServerKeyStore == null);
     }
 
     @Override
@@ -92,7 +92,8 @@ class ServerConnection implements RemoteConnectionInterface
     private void connectSocket() {
         Log.d(TAG, "Connecting the socket: " + mServerUrl + ":" + mServerPort);
 
-        ConnectTask connectAndAuthorizeTask = new ConnectTask(mServerUrl, mServerPort, mServerKeyStore, mClientKeyStore, mClientKeyStorePassword);
+        ConnectTask connectAndAuthorizeTask =
+                new ConnectTask(mServerUrl, mServerPort, RVILocalNode.getServerKeyStore(), RVILocalNode.getDeviceKeyStore(), RVILocalNode.getDeviceKeyStorePassword());//mServerKeyStore, mClientKeyStore, mClientKeyStorePassword);
         connectAndAuthorizeTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
@@ -171,7 +172,7 @@ class ServerConnection implements RemoteConnectionInterface
 
                 String keyManagerAlgorithm = "X509";//KeyManagerFactory.getDefaultAlgorithm();
                 KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(keyManagerAlgorithm);
-                keyManagerFactory.init(clientKeyStore, clientKeyStorePassword.toCharArray());
+                keyManagerFactory.init(clientKeyStore, clientKeyStorePassword != null ? clientKeyStorePassword.toCharArray() : null);
 
                 SSLContext context = SSLContext.getInstance("TLS");
                 context.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
@@ -324,27 +325,27 @@ class ServerConnection implements RemoteConnectionInterface
         mServerPort = serverPort;
     }
 
-    /**
-     * Sets the key store of the server certs
-     * @param serverKeyStore the key store with the trusted server's cert used in TLS handshake
-     */
-    public void setServerKeyStore(KeyStore serverKeyStore) {
-        mServerKeyStore = serverKeyStore;
-    }
-
-    /**
-     * Sets the key store of the client certs
-     * @param clientKeyStore the key store with the trusted client's cert used in TLS handshake
-     */
-    public void setClientKeyStore(KeyStore clientKeyStore) {
-        mClientKeyStore = clientKeyStore;
-    }
-
-    /**
-     * Sets the key store of the client certs
-     * @param clientKeyStorePassword the password of the key store with the trusted client's cert
-     */
-    void setClientKeyStorePassword(String clientKeyStorePassword) {
-        mClientKeyStorePassword = clientKeyStorePassword;
-    }
+//    /**
+//     * Sets the key store of the server certs
+//     * @param serverKeyStore the key store with the trusted server's cert used in TLS handshake
+//     */
+//    public void setServerKeyStore(KeyStore serverKeyStore) {
+//        mServerKeyStore = serverKeyStore;
+//    }
+//
+//    /**
+//     * Sets the key store of the client certs
+//     * @param clientKeyStore the key store with the trusted client's cert used in TLS handshake
+//     */
+//    void setClientKeyStore(KeyStore clientKeyStore) {
+//        mClientKeyStore = clientKeyStore;
+//    }
+//
+//    /**
+//     * Sets the key store of the client certs
+//     * @param clientKeyStorePassword the password of the key store with the trusted client's cert
+//     */
+//    void setClientKeyStorePassword(String clientKeyStorePassword) {
+//        mClientKeyStorePassword = clientKeyStorePassword;
+//    }
 }

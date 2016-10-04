@@ -195,17 +195,17 @@ public class RemoteConnectionManager
         mDirectServerConnection.setServerPort(serverPort);
     }
 
-    /**
-     * Sets the trusted server certificate of the remote RVI node, when using a TCP/IP link to interface with a remote node.
-     *
-     * @param clientKeyStore the server certificate key store
-     * @param serverKeyStore the server certificate key store
-     */
-    void setKeyStores(KeyStore serverKeyStore, KeyStore clientKeyStore, String clientKeyStorePassword) {
-        mDirectServerConnection.setServerKeyStore(serverKeyStore);
-        mDirectServerConnection.setClientKeyStore(clientKeyStore);
-        mDirectServerConnection.setClientKeyStorePassword(clientKeyStorePassword);
-    }
+//    /**
+//     * Sets the trusted server certificate of the remote RVI node, when using a TCP/IP link to interface with a remote node.
+//     *
+//     * @param clientKeyStore the server certificate key store
+//     * @param serverKeyStore the server certificate key store
+//     */
+//    void setKeyStores(KeyStore serverKeyStore, KeyStore clientKeyStore, String clientKeyStorePassword) {
+//        mDirectServerConnection.setServerKeyStore(serverKeyStore);
+//        mDirectServerConnection.setClientKeyStore(clientKeyStore);
+//        mDirectServerConnection.setClientKeyStorePassword(clientKeyStorePassword);
+//    }
 
     /**
      * Sets the device address of the remote Bluetooth receiver on the remote RVI node, when using a Bluetooth link to interface with a remote node.
