@@ -90,7 +90,7 @@ public class BKTask extends AsyncTask <String, Void, String> {
     @Override
     protected void onPostExecute(String output){
         Log.d(TAG, output);
-        activity.setStatus(output);
+//        activity.setStatus(output);
 
     }
 

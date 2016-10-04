@@ -2,8 +2,6 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
 import android.content.*;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -16,8 +14,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.jaguarlandrover.pki.PKIManager;
-
-import org.json.JSONObject;
 
 import java.security.KeyStore;
 import java.util.ArrayList;
@@ -34,7 +30,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     private String status = "false";
     private Boolean auth = Boolean.FALSE;
     private RviService rviService = null;
-    private LoginActivityFragment login_fragment = null;
+    private LoginActivityFragment mLoginActivityFragment = null;
     private boolean bound = false;
 
     private final static String X509_PRINCIPAL_PATTERN = "CN=%s, O=Genivi, OU=OrgUnit, EMAILADDRESS=%s";
@@ -44,6 +40,15 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     private final static String DEFAULT_PROVISIONING_SERVER_CSR_URL          = "/csr";
     private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification"; // TODO: 'Verification' or 'validation'?
 
+    private boolean mRviServerConnected   = false;
+    private boolean mAllValidCertsAquired = false;
+    private boolean mValidatingToken      = false;
+
+    private KeyStore          mServerCertificateKeyStoreHolder = null;
+    private KeyStore          mDeviceCertificateKeyStoreHolder = null;
+    private ArrayList<String> mDefaultPrivilegesHolder         = null;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,9 +56,9 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         setContentView(R.layout.activity_login2);
         handleExtra(getIntent());
 
-        login_fragment = (LoginActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlogin);
+        mLoginActivityFragment = (LoginActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlogin);
 
-        doBindService();
+        mLoginActivityFragment.setVerifyButtonEnabled(true);
 
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
@@ -61,34 +66,68 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             String token  = uri.getQueryParameter("tokencode");
             String certId = uri.getQueryParameter("certid");
 
-            Log.d(TAG, "valueOne: " + token + ", valueTwo: " + certId);
+            if (token != null && certId != null) {
+                mLoginActivityFragment.setStatusTextText("Validating email...");
+                mLoginActivityFragment.setVerifyButtonEnabled(false);
 
-            String tokenString = "{ \"token\":\"" + token + "\", \"certId\":\"" + certId + "\"}";
+                mValidatingToken = true;
 
-            PKIManager.sendTokenVerificationRequest(this, new PKIManager.ProvisioningServerListener() {
-                @Override
-                public void certificateSigningRequestSuccessfullySent() {
+                Log.d(TAG, "valueOne: " + token + ", valueTwo: " + certId);
 
-                }
+                String tokenString = "{ \"token\":\"" + token + "\", \"certId\":\"" + certId + "\"}";
 
-                @Override
-                public void certificateSigningRequestSuccessfullyReceived() {
+                PKIManager.sendTokenVerificationRequest(this, new PKIManager.ProvisioningServerListener() {
+                    @Override
+                    public void certificateSigningRequestSuccessfullySent() {
 
-                }
+                    }
 
-                @Override
-                public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges) {
-                    Log.d(TAG, "Got server stuff, trying to connect");
+                    @Override
+                    public void certificateSigningRequestSuccessfullyReceived() {
 
-                    rviService.setServerKeyStore(serverCertificateKeyStore);
-                    rviService.setDeviceKeyStore(deviceCertificateKeyStore);
-                    rviService.setDeviceKeyStorePassword(deviceKeyStorePassword);
-                    rviService.setPrivileges(defaultPrivileges);
+                    }
 
-                    rviService.tryConnectingServerNode();
-                }
-            }, DEFAULT_PROVISIONING_SERVER_BASE_URL, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, tokenString);
+                    @Override
+                    public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges) {
+                        Log.d(TAG, "Got server stuff, trying to connect");
+
+                        mLoginActivityFragment.hideControls(true);
+                        mLoginActivityFragment.setStatusTextText("Validating email... Processing certificates.");
+
+                        mServerCertificateKeyStoreHolder = serverCertificateKeyStore;
+                        mDeviceCertificateKeyStoreHolder = deviceCertificateKeyStore;
+                        mDefaultPrivilegesHolder         = defaultPrivileges;
+
+                        mValidatingToken      = false;
+                        mAllValidCertsAquired = true;
+
+                        doTheRviThingIfEverythingElseIsComplete();
+                    }
+                }, DEFAULT_PROVISIONING_SERVER_BASE_URL, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, tokenString);
+            }
         }
+
+        if (PKIManager.hasValidSignedDeviceCert(this) && PKIManager.hasValidSignedServerCert(this)) {
+            mLoginActivityFragment.hideControls(true);
+            mLoginActivityFragment.setStatusTextText("Binding service...");
+
+            mAllValidCertsAquired = true;
+
+            mServerCertificateKeyStoreHolder = PKIManager.getServerKeyStore(this);
+            mDeviceCertificateKeyStoreHolder = PKIManager.getDeviceKeyStore(this);
+
+            doTheRviThingIfEverythingElseIsComplete();
+
+        } else if (PKIManager.hasValidSignedDeviceCert(this) && !mValidatingToken) {
+            mLoginActivityFragment.setStatusTextText("Resend email");
+            mLoginActivityFragment.setStatusTextText("Please check your email account and click the link.");
+
+        } else {
+            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
+
+        }
+
+        doBindService();
     }
 
     @Override
@@ -105,6 +144,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             //mService = new Messenger(service);
+
+            mRviServerConnected = true;
 
             rviService = ((RviService.RviBinder)service).getService();
 
@@ -126,21 +167,40 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                         @Override
                         public void onNext(String s) {
                             Log.i(TAG, "X: " + s);
-                            login_fragment.onNewServiceDiscovered(s);
-                            //Toast.makeText(LockActivity.this, "X: "+s, Toast.LENGTH_SHORT).show();
+                            mLoginActivityFragment.onNewServiceDiscovered(s);
                         }
                     });
 
             // Tell the user about this for our demo.
             Toast.makeText(LoginActivity.this, "RVI service connected", Toast.LENGTH_SHORT).show();
+
+            doTheRviThingIfEverythingElseIsComplete();
         }
 
         public void onServiceDisconnected(ComponentName className) {
+            mRviServerConnected = false;
+
             rviService = null;
             Toast.makeText(LoginActivity.this, "RVI service disconnected", Toast.LENGTH_SHORT).show();
         }
     };
 
+
+    private void doTheRviThingIfEverythingElseIsComplete() {
+        if (mRviServerConnected && mAllValidCertsAquired) {
+            rviService.setServerKeyStore(mServerCertificateKeyStoreHolder);
+            rviService.setDeviceKeyStore(mDeviceCertificateKeyStoreHolder);
+            rviService.setDeviceKeyStorePassword(null);
+            rviService.setPrivileges(mDefaultPrivilegesHolder);
+
+            rviService.tryConnectingServerNode();
+
+            Intent intent = new Intent();
+
+            intent.setClass(LoginActivity.this, LockActivity.class);
+            startActivity(intent);
+        }
+    }
 
     @Override
     public void onButtonCommand(View v) {
@@ -173,6 +233,9 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         Calendar end = Calendar.getInstance();
         end.add(Calendar.YEAR, 1);
 
+        mLoginActivityFragment.setVerifyButtonEnabled(false);
+        mLoginActivityFragment.setStatusTextText("Connecting to server. Please check your email in a few minutes.");
+
         PKIManager.generateKeyPairAndCertificateSigningRequest(this, new PKIManager.CertificateSigningRequestGeneratorListener() {
             @Override
             public void generateCertificateSigningRequestSucceeded(String certificateSigningRequest) {
@@ -189,7 +252,16 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
                     @Override
                     public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges) {
+                        Log.d(TAG, "Got server stuff, trying to connect");
 
+                        mServerCertificateKeyStoreHolder = serverCertificateKeyStore;
+                        mDeviceCertificateKeyStoreHolder = deviceCertificateKeyStore;
+                        mDefaultPrivilegesHolder         = defaultPrivileges;
+
+                        mValidatingToken      = false;
+                        mAllValidCertsAquired = true;
+
+                        doTheRviThingIfEverythingElseIsComplete();
                     }
                 }, DEFAULT_PROVISIONING_SERVER_BASE_URL, DEFAULT_PROVISIONING_SERVER_CSR_URL, certificateSigningRequest, true);
             }
@@ -204,8 +276,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 //        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 //
 //        BKTask task = new BKTask(this);
-//        task.setUser(login_fragment.mEmail.getEditableText().toString());
-//        task.setpWd(login_fragment.password.getEditableText().toString());
+//        task.setUser(mLoginActivityFragment.mEmail.getEditableText().toString());
+//        task.setpWd(mLoginActivityFragment.password.getEditableText().toString());
 //        task.execute(new String[]{prefs.getString("pref_login_url", "http://rvi-test2.nginfotpdx.net:8000/token/new.json")});
     }
 
@@ -234,36 +306,36 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         return super.onOptionsItemSelected(item);
     }
 
-    public void setStatus(String msg) {
-        try {
-            JSONObject obj = new JSONObject(msg);
-            status = obj.get("success").toString();
-
-        } catch(Exception e) {
-            e.printStackTrace();
-
-        }
-
-        if (status.equals("true")) {
-            Intent intent = new Intent();
-
-            intent.setClass(LoginActivity.this, LockActivity.class);
-            startActivity(intent);
-
-        } else {
-
-            //login_fragment.mEmail.setText("");
-            //login_fragment.password.setText("");
-
-            ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-            if (networkInfo == null || networkInfo.getDetailedState() == NetworkInfo.DetailedState.DISCONNECTED) {
-               Toast.makeText(LoginActivity.this, "Network unavailable", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(LoginActivity.this, "username and password don't match", Toast.LENGTH_LONG).show();
-            }
-        }
-    }
+//    public void setStatus(String msg) {
+//        try {
+//            JSONObject obj = new JSONObject(msg);
+//            status = obj.get("success").toString();
+//
+//        } catch(Exception e) {
+//            e.printStackTrace();
+//
+//        }
+//
+//        if (status.equals("true")) {
+//            Intent intent = new Intent();
+//
+//            intent.setClass(LoginActivity.this, LockActivity.class);
+//            startActivity(intent);
+//
+//        } else {
+//
+//            //mLoginActivityFragment.mEmail.setText("");
+//            //mLoginActivityFragment.password.setText("");
+//
+//            ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+//            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+//            if (networkInfo == null || networkInfo.getDetailedState() == NetworkInfo.DetailedState.DISCONNECTED) {
+//               Toast.makeText(LoginActivity.this, "Network unavailable", Toast.LENGTH_LONG).show();
+//            } else {
+//                Toast.makeText(LoginActivity.this, "username and password don't match", Toast.LENGTH_LONG).show();
+//            }
+//        }
+//    }
 
     public void onNewServiceDiscovered(String... service) {
         for (String s : service)
@@ -275,7 +347,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
         if (extras != null && extras.size() > 0 ) {
             for(String k : extras.keySet()) {
-                Log.i(TAG, "k = " + k+" : "+extras.getString(k));
+                Log.i(TAG, "k = " + k + " : " + extras.getString(k));
             }
         }
 

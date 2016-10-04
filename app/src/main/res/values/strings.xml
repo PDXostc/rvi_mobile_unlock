@@ -52,5 +52,6 @@
     <string name="fob_background">keyfob background</string>
     <string name="user_header">User:</string>
     <string name="revoked">Revoked</string>
+    <string name="verify">Verify</string>
 
 </resources>
