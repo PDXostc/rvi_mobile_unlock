@@ -93,7 +93,7 @@ class ServerConnection implements RemoteConnectionInterface
         Log.d(TAG, "Connecting the socket: " + mServerUrl + ":" + mServerPort);
 
         ConnectTask connectAndAuthorizeTask = new ConnectTask(mServerUrl, mServerPort, mServerKeyStore, mClientKeyStore, mClientKeyStorePassword);
-        connectAndAuthorizeTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        connectAndAuthorizeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private class ConnectTask extends AsyncTask<Void, String, Throwable>
@@ -200,7 +200,7 @@ class ServerConnection implements RemoteConnectionInterface
             if (result == null) {
                 // TODO: Does the input buffer stream cache data in the case that my async thread sends the auth command before the listener is set up?
                 ListenTask listenTask = new ListenTask();
-                listenTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                listenTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
                 if (mRemoteConnectionListener != null)
                     mRemoteConnectionListener.onRemoteConnectionDidConnect();
