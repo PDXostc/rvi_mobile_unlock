@@ -44,6 +44,13 @@ interface RemoteConnectionManagerListener // TODO: Get rid of this middle man
     void onRVIDidReceivePacket(DlinkPacket packet);
 
     /**
+     * RVI did receive packet but there was an error with the packet.
+     *
+     * @param error the error
+     */
+    void onRVIDidFailToReceivePacket(Throwable error);
+
+    /**
      * On RVI did send packet.
      */
     void onRVIDidSendPacket(DlinkPacket packet);

@@ -88,6 +88,11 @@ public class RVINode
             }
 
             @Override
+            public void onRVIDidFailToReceivePacket(Throwable error) {
+                Log.d(TAG, Util.getMethodName() + ": " + ((error == null) ? "(null)" : error.getLocalizedMessage()));
+            }
+
+            @Override
             public void onRVIDidSendPacket(DlinkPacket packet) {
                 if (packet == null) return;
 
