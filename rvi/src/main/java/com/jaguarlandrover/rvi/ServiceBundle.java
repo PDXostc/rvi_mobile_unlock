@@ -18,6 +18,7 @@ import android.content.Context;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 
@@ -37,7 +38,7 @@ public class ServiceBundle
 
     private HashMap<String, Service> mRemoteServices = new HashMap<>();
 
-    private HashMap<String, Service> mPendingServiceInvocations = new HashMap<>();
+    private HashMap<String, ArrayList<Service>> mPendingServiceInvocations = new HashMap<>();
     private RVINode mNode;
 
     /**
@@ -174,11 +175,14 @@ public class ServiceBundle
         if (!mRemoteServices.containsKey(serviceIdentifier))
             mRemoteServices.put(serviceIdentifier, new Service(serviceIdentifier, mDomain, mBundleIdentifier, remoteNodeIdentifier));
 
-        Service pendingServiceInvocation = mPendingServiceInvocations.get(serviceIdentifier);
-        if (pendingServiceInvocation != null) {
-            if (pendingServiceInvocation.getTimeout() >= System.currentTimeMillis()) {
-                pendingServiceInvocation.setNodeIdentifier(remoteNodeIdentifier);
-                mNode.invokeService(pendingServiceInvocation);
+        ArrayList<Service> pendingServiceInvocationList = mPendingServiceInvocations.get(serviceIdentifier);
+
+        if (pendingServiceInvocationList != null) {
+            for (Service pendingServiceInvocation : pendingServiceInvocationList) {
+                if (pendingServiceInvocation.getTimeout() >= System.currentTimeMillis()) {
+                    pendingServiceInvocation.setNodeIdentifier(remoteNodeIdentifier);
+                    mNode.invokeService(pendingServiceInvocation);
+                }
             }
 
             mPendingServiceInvocations.remove(serviceIdentifier);
@@ -200,6 +204,16 @@ public class ServiceBundle
         mRemoteServices.clear();
     }
 
+    private void queueServiceInvocation(String serviceIdentifier, Service service) {
+
+        ArrayList<Service> pendingServiceInvocationList = mPendingServiceInvocations.get(serviceIdentifier);
+        if (pendingServiceInvocationList != null) {
+            pendingServiceInvocationList.add(service.copy());
+        } else {
+            mPendingServiceInvocations.put(serviceIdentifier, new ArrayList<>(Arrays.asList(service.copy())));
+        }
+    }
+
     /**
      * Invoke/update a remote service on the remote RVI node
      *
@@ -216,7 +230,7 @@ public class ServiceBundle
         if (service.hasNodeIdentifier() && mNode != null) // TODO: Check the logic here
             mNode.invokeService(service);
         else
-            mPendingServiceInvocations.put(serviceIdentifier, service);
+            queueServiceInvocation(serviceIdentifier, service);
     }
 
     /**

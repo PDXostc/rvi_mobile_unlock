@@ -21,9 +21,6 @@ import javax.net.SocketFactory;
 import javax.net.ssl.*;
 import java.io.*;
 import java.security.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * The TCP/IP server @RemoteConnectionInterface implementation
@@ -52,7 +49,7 @@ class ServerConnection implements RemoteConnectionInterface
             return;
         }
 
-        new SendDataTask(dlinkPacket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);//, dlinkPacket.toJsonString());
+        new SendDataTask(dlinkPacket).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);//, dlinkPacket.toJsonString());
     }
 
     @Override
@@ -96,7 +93,7 @@ class ServerConnection implements RemoteConnectionInterface
         Log.d(TAG, "Connecting the socket: " + mServerUrl + ":" + mServerPort);
 
         ConnectTask connectAndAuthorizeTask = new ConnectTask(mServerUrl, mServerPort, mServerKeyStore, mClientKeyStore, mClientKeyStorePassword);
-        connectAndAuthorizeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        connectAndAuthorizeTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private class ConnectTask extends AsyncTask<Void, String, Throwable>
@@ -174,7 +171,7 @@ class ServerConnection implements RemoteConnectionInterface
 
                 String keyManagerAlgorithm = "X509";//KeyManagerFactory.getDefaultAlgorithm();
                 KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(keyManagerAlgorithm);
-                keyManagerFactory.init(clientKeyStore, null);//clientKeyStorePassword.toCharArray());
+                keyManagerFactory.init(clientKeyStore, clientKeyStorePassword.toCharArray());
 
                 SSLContext context = SSLContext.getInstance("TLS");
                 context.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
@@ -184,12 +181,6 @@ class ServerConnection implements RemoteConnectionInterface
                 Log.d(TAG, "Creating ssl socket");
 
                 mSocket = (SSLSocket) sf.createSocket(dstAddress, dstPort);
-
-                SSLSession session = mSocket.getSession();
-                java.security.cert.Certificate[] servercerts = session.getPeerCertificates();
-
-                List mylist = new ArrayList();
-                Collections.addAll(mylist, servercerts);
 
                 Log.d(TAG, "Creating ssl socket complete");
 
@@ -209,7 +200,7 @@ class ServerConnection implements RemoteConnectionInterface
             if (result == null) {
                 // TODO: Does the input buffer stream cache data in the case that my async thread sends the auth command before the listener is set up?
                 ListenTask listenTask = new ListenTask();
-                listenTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                listenTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
 
                 if (mRemoteConnectionListener != null)
                     mRemoteConnectionListener.onRemoteConnectionDidConnect();

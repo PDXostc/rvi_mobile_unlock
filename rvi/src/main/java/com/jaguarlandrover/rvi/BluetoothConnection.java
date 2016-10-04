@@ -54,7 +54,7 @@ class BluetoothConnection implements RemoteConnectionInterface
         if (!isConnected() || !isConfigured()) // TODO: Call error on listener
             return;
 
-        new SendDataTask(dlinkPacket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);//, dlinkPacket.toJsonString());
+        new SendDataTask(dlinkPacket).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);//, dlinkPacket.toJsonString());
     }
 
     @Override
@@ -97,7 +97,7 @@ class BluetoothConnection implements RemoteConnectionInterface
         Log.d(TAG, "Connecting to device: " + mDeviceAddress + ":" + mServiceRecord + ":" + mChannel);
 
         ConnectTask connectAndAuthorizeTask = new ConnectTask(mDeviceAddress, mServiceRecord, mChannel);
-        connectAndAuthorizeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        connectAndAuthorizeTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private class ConnectTask extends AsyncTask<Void, String, Throwable>
@@ -186,7 +186,7 @@ class BluetoothConnection implements RemoteConnectionInterface
                 Log.d(TAG, "Connecting Bluetooth socket: Creating listener...");
 
                 ListenTask listenTask = new ListenTask();
-                listenTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                listenTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
 
                 if (mRemoteConnectionListener != null)
                     mRemoteConnectionListener.onRemoteConnectionDidConnect();

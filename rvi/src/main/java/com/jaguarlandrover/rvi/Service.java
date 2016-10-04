@@ -135,6 +135,10 @@ class Service
         return mNodeIdentifier != null;
     }
 
+    private String getNodeIdentifier() {
+        return mNodeIdentifier;
+    }
+
     /**
      * Sets the node identifier portion of the fully-qualified service name
      *
@@ -218,5 +222,14 @@ class Service
      */
     void setTimeout(Long timeout) {
         mTimeout = timeout;
+    }
+
+    public Service copy() {
+        Service copy = new Service(this.getServiceIdentifier(), this.getDomain(), this.getBundleIdentifier(), this.getNodeIdentifier());
+
+        copy.setTimeout(this.getTimeout());
+        copy.setParameters(this.getParameters());
+
+        return copy;
     }
 }
