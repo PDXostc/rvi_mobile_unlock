@@ -197,7 +197,9 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             rviService.setServerKeyStore(mServerCertificateKeyStoreHolder);
             rviService.setDeviceKeyStore(mDeviceCertificateKeyStoreHolder);
             rviService.setDeviceKeyStorePassword(null);
-            rviService.setPrivileges(mDefaultPrivilegesHolder);
+
+            if (mDefaultPrivilegesHolder != null)
+                rviService.setPrivileges(mDefaultPrivilegesHolder);
 
             rviService.tryConnectingServerNode();
 
@@ -249,7 +251,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 mLoginActivityFragment.setVerifyButtonEnabled(true);
                 mLoginActivityFragment.setStatusTextText("Resend email");
                 mLoginActivityFragment.setStatusTextText("Please check your email account and click the link.");
-                
+
                 PKIManager.sendCertificateSigningRequest(LoginActivity.this, new PKIManager.ProvisioningServerListener() {
                     @Override
                     public void certificateSigningRequestSuccessfullySent() {

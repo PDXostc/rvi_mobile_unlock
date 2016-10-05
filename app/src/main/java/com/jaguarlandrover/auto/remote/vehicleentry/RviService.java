@@ -82,7 +82,7 @@ public class RviService extends Service {
     //}
 
     public void setPrivileges(ArrayList<String> privileges) {
-        RVILocalNode.addCredentials(this, privileges);
+        RVILocalNode.setCredentials(this, privileges);
 
         //mPrivileges = privileges;
     }

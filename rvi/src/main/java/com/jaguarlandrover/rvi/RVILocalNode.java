@@ -114,13 +114,16 @@ public class RVILocalNode {
         }
     }
 
-    public static void addCredentials(Context context, ArrayList<String> newCredentialsList) {
+    public static void setCredentials(Context context, ArrayList<String> newCredentialsList) {
         checkIfReady();
 
-        if (newCredentialsList == null) return;
+        credentialsList.clear();
 
-        for (String credentials : newCredentialsList)
-            credentialsList.add(credentials);
+        if (newCredentialsList != null)
+            credentialsList.addAll(newCredentialsList);
+
+        //for (String credentials : newCredentialsList)
+        //    credentialsList.add(credentials);
 
         saveCredentials(context);
     }

@@ -23,6 +23,7 @@ import android.util.Base64;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.jaguarlandrover.pki.PKIManager;
 import com.jaguarlandrover.rvi.RVILocalNode;
 import com.jaguarlandrover.rvi.RVINode;
 import com.jaguarlandrover.rvi.ServiceBundle;
@@ -39,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.transform.sax.SAXTransformerFactory;
 
-public class ServerNode
+class ServerNode
 {
     private final static String TAG = "UnlockDemo:ServerNode";
 
@@ -47,7 +48,7 @@ public class ServerNode
     private static Context applicationContext = UnlockApplication.getContext();
 
     private static SharedPreferences        preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
-    private static SharedPreferences.Editor editor      = preferences.edit();
+    //private static SharedPreferences.Editor editor      = null;//preferences.edit();
     private static Gson                     gson        = new Gson();
 
     private static RVINode rviNode = new RVINode(null);
@@ -70,30 +71,35 @@ public class ServerNode
     private final static String REPORTING_BUNDLE = "report";
 
     /* Remote service identifiers */
+    /* OLD */
     private final static String CERT_REQUESTALL = "cert_requestall";
     private final static String CERT_CREATE     = "cert_create";
     private final static String CERT_MODIFY     = "cert_modify";
 
-    private final static String GET_CREDENTIALS = "request_credentials";
-
+    /* NEW */
+    private final static String REQUEST_CREDENTIALS = "request_credentials";
 
     /* Local service identifiers */
+    /* OLD */
     private final static String CERT_PROVISION       = "cert_provision";
     private final static String CERT_RESPONSE        = "cert_response";
     private final static String CERT_ACCOUNT_DETAILS = "cert_accountdetails";
 
-
-    private final static String REVOKE_CREDENTIALS = "revoke_credentials";
-    private final static String ADD_CREDENTIALS    = "add_credentials";
-
-
     private final static String SERVICE_INVOKED_BY_GUEST = "serviceinvokedbyguest";
+
+
+    /* NEW */
+    private final static String REVOKE_CREDENTIALS = "revoke_credentials";
+    private final static String UPDATE_CREDENTIALS = "update_credentials";
+
 
     private final static ArrayList<String> certProvServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
                     CERT_PROVISION,
                     CERT_RESPONSE,
-                    CERT_ACCOUNT_DETAILS));
+                    CERT_ACCOUNT_DETAILS,
+                    REVOKE_CREDENTIALS,
+                    UPDATE_CREDENTIALS));
 
     private final static ArrayList<String> reportingServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
@@ -119,6 +125,9 @@ public class ServerNode
     //}
 
     private ServerNode() {
+//        applicationContext = UnlockApplication.getContext();
+//        preferences        = PreferenceManager.getDefaultSharedPreferences(applicationContext);
+
         /* Listeners */
         ServiceBundle.ServiceBundleListener serviceBundleListener = new ServiceBundle.ServiceBundleListener()
         {
@@ -126,6 +135,18 @@ public class ServerNode
             public void onServiceInvoked(ServiceBundle serviceBundle, String serviceIdentifier, Object parameters) {
                 if (serviceBundle.getBundleIdentifier().equals(CERT_PROV_BUNDLE)) {
                     switch (serviceIdentifier) {
+                        case UPDATE_CREDENTIALS:
+
+                            RVILocalNode.setCredentials(applicationContext, (ArrayList<String>) gson.fromJson((String) parameters, HashMap.class).get("credentials"));
+
+                            break;
+
+                        case REVOKE_CREDENTIALS:
+
+                            RVILocalNode.setCredentials(applicationContext, null);
+
+                            break;
+
                         case CERT_RESPONSE:
                             //Type collectionType = new TypeToken<Collection<UserCredentials>>() {}.getType();
                             //Collection<UserCredentials> remoteCredentials =
@@ -134,6 +155,7 @@ public class ServerNode
                             ServerNode.setRemoteCredentialsList(gson.toJson(gson.fromJson((String) parameters, HashMap.class).get("certificates")));
 
                             break;
+
                         case CERT_PROVISION:
                             String certId = ((HashMap<String, String>) parameters).get("certid");
                             String certificateJwt = ((HashMap<String, String>) parameters).get("certificate");
@@ -171,6 +193,8 @@ public class ServerNode
                 connectionStatus = ConnectionStatus.CONNECTED;
 
                 stopRepeatingTask();
+
+                requestRemoteCredentials();
             }
 
             @Override
@@ -230,11 +254,11 @@ public class ServerNode
         }
     };
 
-    void startRepeatingTask() {
+    private void startRepeatingTask() {
         timerHandler.postDelayed(timerRunnable, 30 * 1000);
     }
 
-    void stopRepeatingTask() {
+    private void stopRepeatingTask() {
         timerHandler.removeCallbacks(timerRunnable);
     }
 
@@ -246,7 +270,7 @@ public class ServerNode
 //                rviNode.addJWTCredentials(jwt);
 //    }
 
-    public static void connect() {
+    static void connect() {
         Log.d(TAG, "Attempting to connect to RVI provisioning server.");
 
         rviNode.setServerUrl(preferences.getString("pref_rvi_server", "38.129.64.40"));
@@ -257,7 +281,7 @@ public class ServerNode
         rviNode.connect();
     }
 
-    public static void requestRemoteCredentials() {
+    static void requestRemoteCredentials() {
         Log.d(TAG, "Requesting remote credentials from RVI provisioning server.");
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
@@ -265,16 +289,25 @@ public class ServerNode
         HashMap<String, String> parameters = new HashMap<>();
 
         try {
-            parameters.put("mobileUUID", RVILocalNode.getLocalNodeIdentifier(applicationContext).substring("android/".length()));
-            parameters.put("vehicleVIN", ServerNode.getUserCredentials().getVehicleVin());
+            parameters.put("node_identifier", RVILocalNode.getLocalNodeIdentifier(applicationContext).substring("android/".length()));
+            parameters.put("public_key", PKIManager.getPublicKey(applicationContext));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+//        certProvServiceBundle.invokeService(REQUEST_CREDENTIALS, parameters, 5000);
+
+//        try {
+//            parameters.put("mobileUUID", RVILocalNode.getLocalNodeIdentifier(applicationContext).substring("android/".length()));
+//            parameters.put("vehicleVIN", ServerNode.getUserCredentials().getVehicleVin());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
         certProvServiceBundle.invokeService(CERT_REQUESTALL, parameters, 5000);
     }
 
-    public static void modifyRemoteCredentials(UserCredentials remoteCredentials) {
+    static void modifyRemoteCredentials(UserCredentials remoteCredentials) {
         Log.d(TAG, "Modifying remote credentials on RVI provisioning server.");
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
@@ -282,7 +315,7 @@ public class ServerNode
         certProvServiceBundle.invokeService(CERT_MODIFY, remoteCredentials, 5000);
     }
 
-    public static void createRemoteCredentials(UserCredentials remoteCredentials) {
+    static void createRemoteCredentials(UserCredentials remoteCredentials) {
         Log.d(TAG, "Creating remote credentials on RVI provisioning server.");
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
@@ -304,13 +337,14 @@ public class ServerNode
     }
 
     private static void setCertificate(String certStr) {
+        SharedPreferences.Editor editor = preferences.edit();
         editor.putString(CERTIFICATE_DATA_KEY, certStr);
         editor.commit();
 
         ServerNode.setThereIsNewCertificateData(true);
     }
 
-    public static UserCredentials getUserCredentials() {
+    static UserCredentials getUserCredentials() {
         String userStr = preferences.getString(USER_CREDENTIALS_KEY, null);
 
         UserCredentials userCreds = new UserCredentials();
@@ -324,13 +358,14 @@ public class ServerNode
     }
 
     private static void setUserCredentials(String userCredsStr) {
+        SharedPreferences.Editor editor = preferences.edit();
         editor.putString(USER_CREDENTIALS_KEY, userCredsStr);
         editor.commit();
 
         ServerNode.setThereAreNewUserCredentials(true);
     }
 
-    public static Collection<UserCredentials> getRemoteCredentialsList() {
+    static Collection<UserCredentials> getRemoteCredentialsList() {
         String credListStr = preferences.getString(REMOTE_CREDENTIALS_LIST_KEY, null);
 
         if (credListStr == null) return null;
@@ -350,13 +385,14 @@ public class ServerNode
     }
 
     private static void setRemoteCredentialsList(String credsListStr) {
+        SharedPreferences.Editor editor = preferences.edit();
         editor.putString(REMOTE_CREDENTIALS_LIST_KEY, credsListStr);
         editor.commit();
 
         ServerNode.setThereAreNewRemoteCredentials(true);
     }
 
-    public static InvokedServiceReport getInvokedServiceReport() {
+    static InvokedServiceReport getInvokedServiceReport() {
         String reportStr = preferences.getString(INVOKED_SERVICE_REPORT_KEY, null);
 
         InvokedServiceReport report = null;
@@ -370,6 +406,7 @@ public class ServerNode
     }
 
     private static void setInvokedServiceReport(String reportStr) {
+        SharedPreferences.Editor editor = preferences.edit();
         editor.putString(INVOKED_SERVICE_REPORT_KEY, reportStr);
         editor.commit();
 
@@ -380,39 +417,43 @@ public class ServerNode
         return preferences.getBoolean(NEW_CERTIFICATE_DATA_KEY, false);
     }
 
-    public static void setThereIsNewCertificateData(Boolean isNewActivity) {
+    private static void setThereIsNewCertificateData(Boolean isNewActivity) {
+        SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(NEW_CERTIFICATE_DATA_KEY, isNewActivity);
         editor.commit();
     }
 
-    public static Boolean thereAreNewUserCredentials() {
+    static Boolean thereAreNewUserCredentials() {
         return preferences.getBoolean(NEW_USER_CREDENTIALS_KEY, false);
     }
 
-    public static void setThereAreNewUserCredentials(Boolean areNewCredentials) {
+    static void setThereAreNewUserCredentials(Boolean areNewCredentials) {
+        SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(NEW_USER_CREDENTIALS_KEY, areNewCredentials);
         editor.commit();
     }
 
-    public static Boolean thereAreNewRemoteCredentials() {
+    static Boolean thereAreNewRemoteCredentials() {
         return preferences.getBoolean(NEW_REMOTE_CREDENTIALS_LIST_KEY, false);
     }
 
-    public static void setThereAreNewRemoteCredentials(Boolean areNewCredentials) {
+    static void setThereAreNewRemoteCredentials(Boolean areNewCredentials) {
+        SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(NEW_REMOTE_CREDENTIALS_LIST_KEY, areNewCredentials);
         editor.commit();
     }
 
-    public static Boolean thereIsNewInvokedServiceReport() {
+    static Boolean thereIsNewInvokedServiceReport() {
         return preferences.getBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, false);
     }
 
-    public static void setThereIsNewInvokedServiceReport(Boolean isNewReport) {
+    static void setThereIsNewInvokedServiceReport(Boolean isNewReport) {
+        SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, isNewReport);
         editor.commit();
     }
 
-    public static String[] parseAndValidateJWT(String encToken) {
+    private static String[] parseAndValidateJWT(String encToken) {
         String[] result = new String[3];
 
         String [] jwtParts = encToken.split("\\.");

@@ -14,13 +14,10 @@ package com.jaguarlandrover.rvi;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-import android.util.Log;
-import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.LinkedTreeMap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -86,7 +83,7 @@ class Service
         return mJsonParameters != null && mParameters == null;
     }
 
-    private void parseParamters() {
+    private void parseParameters() {
         // TODO: Why are parameters arrays of object, not just an object? This should probably get fixed everywhere.
         if (mJsonParameters.getClass().equals(ArrayList.class) && ((ArrayList<LinkedTreeMap>)mJsonParameters).size() == 1)
             mParameters = ((ArrayList<LinkedTreeMap>) mJsonParameters).get(0);
@@ -192,7 +189,7 @@ class Service
      */
     Object getParameters() {
         if (shouldParseParameters())
-            parseParamters();
+            parseParameters();
 
         return mParameters;
     }
