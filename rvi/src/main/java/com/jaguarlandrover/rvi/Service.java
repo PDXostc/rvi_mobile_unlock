@@ -33,15 +33,15 @@ class Service
     @SerializedName("parameters")
     private Object mJsonParameters = null;
 
-    private String mServiceIdentifier = null;
+    private transient String mServiceIdentifier = null;
 
-    private String mBundleIdentifier = null;
+    private transient String mBundleIdentifier = null;
 
-    private String mDomain = null;
+    private transient String mDomain = null;
 
-    private String mNodeIdentifier = null;
+    private transient String mNodeIdentifier = null;
 
-    private Object mParameters = null;
+    private transient Object mParameters = null;
 
     @SerializedName("timeout")
     private Long mTimeout;
