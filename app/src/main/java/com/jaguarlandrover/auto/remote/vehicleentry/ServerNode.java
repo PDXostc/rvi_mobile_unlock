@@ -23,6 +23,7 @@ import android.util.Base64;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.jaguarlandrover.rvi.RVILocalNode;
 import com.jaguarlandrover.rvi.RVINode;
 import com.jaguarlandrover.rvi.ServiceBundle;
 
@@ -264,7 +265,7 @@ public class ServerNode
         HashMap<String, String> parameters = new HashMap<>();
 
         try {
-            parameters.put("mobileUUID", RVINode.getLocalNodeIdentifier(applicationContext).substring("android/".length()));
+            parameters.put("mobileUUID", RVILocalNode.getLocalNodeIdentifier(applicationContext).substring("android/".length()));
             parameters.put("vehicleVIN", ServerNode.getUserCredentials().getVehicleVin());
         } catch (Exception e) {
             e.printStackTrace();

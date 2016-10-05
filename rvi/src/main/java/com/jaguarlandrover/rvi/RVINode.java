@@ -343,45 +343,4 @@ public class RVINode
     private void handleAuthPacket(DlinkAuthPacket packet) {
 
     }
-
-    private final static String SHARED_PREFS_STRING         = "com.rvisdk.settings";
-    private final static String LOCAL_SERVICE_PREFIX_STRING = "localServicePrefix";
-
-    // TODO: Test and verify this function
-    private static String uuidB58String() {
-        UUID uuid = UUID.randomUUID();
-        String b64Str;
-
-        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
-        bb.putLong(uuid.getMostSignificantBits());
-        bb.putLong(uuid.getLeastSignificantBits());
-
-        b64Str = Base64.encodeToString(bb.array(), Base64.DEFAULT);
-        b64Str = b64Str.split("=")[0];
-
-        b64Str = b64Str.replace('+', 'P');
-        b64Str = b64Str.replace('/', 'S'); /* Reduces likelihood of uniqueness but stops non-alphanumeric characters from screwing up any urls or anything */
-
-        return b64Str;
-    }
-
-    /**
-     * Gets the prefix of the local RVI node
-     *
-     * @param context the application context
-     * @return the local prefix
-     */
-    public static String getLocalNodeIdentifier(Context context) { // TODO: There is no easy way to reset this once it's stored, is there? Maybe an app version check?
-        SharedPreferences sharedPrefs = context.getSharedPreferences(SHARED_PREFS_STRING, MODE_PRIVATE);
-        String localServicePrefix;
-
-        if ((localServicePrefix = sharedPrefs.getString(LOCAL_SERVICE_PREFIX_STRING, null)) == null)
-            localServicePrefix = "android/" + uuidB58String();
-
-        SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.putString(LOCAL_SERVICE_PREFIX_STRING, localServicePrefix);
-        editor.apply();
-
-        return localServicePrefix;
-    }
 }

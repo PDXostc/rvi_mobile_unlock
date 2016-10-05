@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.jaguarlandrover.pki.PKIManager;
+import com.jaguarlandrover.rvi.RVILocalNode;
 
 import java.security.KeyStore;
 import java.util.ArrayList;
@@ -33,8 +34,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     private LoginActivityFragment mLoginActivityFragment = null;
     private boolean bound = false;
 
-    private final static String X509_PRINCIPAL_PATTERN = "CN=%s, O=Genivi, OU=OrgUnit, EMAILADDRESS=%s";
-    private final static String X509_COMMON_NAME       = "Android Unlock App";
+    private final static String X509_PRINCIPAL_PATTERN = "CN=%s, O=Genivi, OU=%s, EMAILADDRESS=%s";
+    private final static String X509_ORG_UNIT          = "Android Unlock App";
 
     private final static String DEFAULT_PROVISIONING_SERVER_BASE_URL         = "http://192.168.16.245:8000";
     private final static String DEFAULT_PROVISIONING_SERVER_CSR_URL          = "/csr";
@@ -60,8 +61,6 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
         mLoginActivityFragment.setVerifyButtonEnabled(true);
 
-        //PKIManager.deleteKeysAndCerts(this);
-
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             Uri uri = intent.getData();
@@ -69,6 +68,9 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             String certId = uri.getQueryParameter("certid");
 
             if (token != null && certId != null) {
+                RVILocalNode.start(this);
+                RVILocalNode.removeAllCredentials(this);
+
                 mLoginActivityFragment.setStatusTextText("Validating email...");
                 mLoginActivityFragment.setVerifyButtonEnabled(false);
 
@@ -243,6 +245,11 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         PKIManager.generateKeyPairAndCertificateSigningRequest(this, new PKIManager.CertificateSigningRequestGeneratorListener() {
             @Override
             public void generateCertificateSigningRequestSucceeded(String certificateSigningRequest) {
+
+                mLoginActivityFragment.setVerifyButtonEnabled(true);
+                mLoginActivityFragment.setStatusTextText("Resend email");
+                mLoginActivityFragment.setStatusTextText("Please check your email account and click the link.");
+                
                 PKIManager.sendCertificateSigningRequest(LoginActivity.this, new PKIManager.ProvisioningServerListener() {
                     @Override
                     public void certificateSigningRequestSuccessfullySent() {
@@ -275,7 +282,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 // TODO: Update ui with failure message
             }
 
-        }, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, X509_COMMON_NAME, email);
+        }, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT, email);
 
 //        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 //
@@ -302,9 +309,26 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent intent = new Intent();
+
             intent.setClass(LoginActivity.this, AdvancedPreferenceActivity.class);
             startActivityForResult(intent, 0);
+
             return true;
+
+        } else if (id == R.id.action_reset) {
+            // TODO: Dialog
+
+            PKIManager.deleteKeysAndCerts(this);
+            RVILocalNode.start(this);
+            RVILocalNode.removeAllCredentials(this);
+
+            mValidatingToken       = false;
+            mAllValidCertsAcquired = false;
+
+            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
+            mLoginActivityFragment.hideControls(false);
+            mLoginActivityFragment.setVerifyButtonEnabled(true);
+
         }
 
         return super.onOptionsItemSelected(item);

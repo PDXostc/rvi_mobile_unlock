@@ -95,7 +95,7 @@ public class ServiceBundle
         mDomain = validated(domain);
         mBundleIdentifier = validated(bundleIdentifier);
 
-        mLocalNodeIdentifier = RVINode.getLocalNodeIdentifier(context);
+        mLocalNodeIdentifier = RVILocalNode.getLocalNodeIdentifier(context);
 
         mLocalServices = makeServices(servicesIdentifiers);
     }

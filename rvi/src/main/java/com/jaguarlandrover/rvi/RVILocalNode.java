@@ -15,6 +15,8 @@ package com.jaguarlandrover.rvi;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Base64;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -22,8 +24,14 @@ import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
 import java.security.KeyStore;
 import java.util.ArrayList;
+import java.util.UUID;
+
+import javax.xml.transform.sax.SAXTransformerFactory;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class RVILocalNode {
     private final static String TAG = "UnlockDemo:RVILocalNode";
@@ -117,6 +125,14 @@ public class RVILocalNode {
         saveCredentials(context);
     }
 
+    public static void removeAllCredentials(Context context) {
+        checkIfReady();
+
+        credentialsList.clear();
+
+        saveCredentials(context);
+    }
+
     static ArrayList<String>getCredentials() {
         checkIfReady();
 
@@ -151,5 +167,47 @@ public class RVILocalNode {
         checkIfReady();
 
         RVILocalNode.deviceKeyStorePassword = deviceKeyStorePassword;
+    }
+
+
+    private final static String SHARED_PREFS_STRING         = "com.rvisdk.settings";
+    private final static String LOCAL_SERVICE_PREFIX_STRING = "localServicePrefix";
+
+    // TODO: Test and verify this function
+    private static String uuidB58String() {
+        UUID uuid = UUID.randomUUID();
+        String b64Str;
+
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+
+        b64Str = Base64.encodeToString(bb.array(), Base64.DEFAULT);
+        b64Str = b64Str.split("=")[0];
+
+        b64Str = b64Str.replace('+', 'P');
+        b64Str = b64Str.replace('/', 'S'); /* Reduces likelihood of uniqueness but stops non-alphanumeric characters from screwing up any urls or anything */
+
+        return b64Str;
+    }
+
+    /**
+     * Gets the prefix of the local RVI node
+     *
+     * @param context the application context
+     * @return the local prefix
+     */
+    public static String getLocalNodeIdentifier(Context context) { // TODO: There is no easy way to reset this once it's stored, is there? Maybe an app version check?
+        SharedPreferences sharedPrefs = context.getSharedPreferences(SHARED_PREFS_STRING, MODE_PRIVATE);
+        String localServicePrefix;
+
+        if ((localServicePrefix = sharedPrefs.getString(LOCAL_SERVICE_PREFIX_STRING, null)) == null)
+            localServicePrefix = "android/" + uuidB58String();
+
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putString(LOCAL_SERVICE_PREFIX_STRING, localServicePrefix);
+        editor.apply();
+
+        return localServicePrefix;
     }
 }

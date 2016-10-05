@@ -208,28 +208,15 @@ class ManagerHelper {
     }
 
     private static void processServerCertificateResponse(Context context, String serverCertificateResponse, PKIManager.ProvisioningServerListener listener) {
-        Gson gson = new Gson();
-        ProvisioningServerCertificateResponse serverResponse = gson.fromJson(serverCertificateResponse, ProvisioningServerCertificateResponse.class);
-
         try {
+            Gson gson = new Gson();
+            ProvisioningServerCertificateResponse serverResponse = gson.fromJson(serverCertificateResponse, ProvisioningServerCertificateResponse.class);
+
             byte [] decodedServerCert  = Base64.decode(serverResponse.mServerCert.replaceAll("-----BEGIN CERTIFICATE-----", "").replaceAll("-----END CERTIFICATE-----", ""));
             X509Certificate serverCert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(decodedServerCert));
 
             byte [] decodedDeviceCert  = Base64.decode(serverResponse.mDeviceCert.replaceAll("-----BEGIN CERTIFICATE-----", "").replaceAll("-----END CERTIFICATE-----", ""));
             X509Certificate deviceCert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(decodedDeviceCert));
-
-
-//            KeyStore serverKeyStore = KeyStore.getInstance("BKS", "BC");
-//            serverKeyStore.load(null, null);
-//
-//            serverKeyStore.setCertificateEntry("serverCert", serverCert);
-
-    //                    KeyStore deviceKeyStore = KeyStore.getInstance("PKCS12");
-    //                    deviceKeyStore.load(null, null);
-    //
-    //                    deviceKeyStore.setCertificateEntry("deviceCert", deviceCert);
-    //
-    //                    deviceKeyStore.load(new ByteArrayInputStream(decodedDeviceCert), "password".toCharArray());
 
             KeyStore serverKeyStore = KeyStoreManager.addServerCertToKeyStore(context, serverCert);
             KeyStore deviceKeyStore = KeyStoreManager.addDeviceCertToKeyStore(context, deviceCert);
