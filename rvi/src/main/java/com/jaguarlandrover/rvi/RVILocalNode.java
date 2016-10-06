@@ -76,6 +76,31 @@ public class RVILocalNode {
         }
     }
 
+
+//    /**
+//     * Add a service bundle to the local RVI node. Adding a service bundle triggers a service announce over the
+//     * network to the remote RVI node.
+//     *
+//     * @param bundle the bundle
+//     */
+//    public void addBundle(ServiceBundle bundle) {
+//        bundle.setNode(this);
+//        mAllServiceBundles.put(bundle.getDomain() + ":" + bundle.getBundleIdentifier(), bundle);
+//        announceServices();
+//    }
+//
+//    /**
+//     * Remove a service bundle from the local RVI node. Removing a service bundle triggers a service announce over the
+//     * network to the remote RVI node.
+//     *
+//     * @param bundle the bundle
+//     */
+//    public void removeBundle(ServiceBundle bundle) {
+//        bundle.setNode(null);
+//        mAllServiceBundles.remove(bundle.getDomain() + ":" + bundle.getBundleIdentifier());
+//        announceServices();
+//    }
+
     static KeyStore getServerKeyStore() {
         return serverKeyStore;
     }

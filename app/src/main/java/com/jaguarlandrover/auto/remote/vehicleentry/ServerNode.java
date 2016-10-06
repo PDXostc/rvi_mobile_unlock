@@ -22,6 +22,9 @@ import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.internal.ObjectConstructor;
 import com.google.gson.reflect.TypeToken;
 import com.jaguarlandrover.pki.PKIManager;
 import com.jaguarlandrover.rvi.RVILocalNode;
@@ -30,6 +33,7 @@ import com.jaguarlandrover.rvi.ServiceBundle;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -134,7 +138,10 @@ class ServerNode
                     switch (serviceIdentifier) {
                         case UPDATE_CREDENTIALS:
 
-                            RVILocalNode.setCredentials(applicationContext, (ArrayList<String>) gson.fromJson((String) parameters, HashMap.class).get("credentials"));
+                            // TODO: Check this
+                            ArrayList<String> credentials = (ArrayList<String>) ((LinkedTreeMap<String, Object>) parameters).get("credentials");
+
+                            RVILocalNode.setCredentials(applicationContext, credentials);
 
                             break;
 
