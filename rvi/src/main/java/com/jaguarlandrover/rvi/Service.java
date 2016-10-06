@@ -46,6 +46,10 @@ class Service
     @SerializedName("timeout")
     private Long mTimeout;
 
+    private transient Boolean mAuthorizedToInvoke  = false;
+
+    private transient Boolean mAuthorizedToReceive = false;
+
     Service() {}
 
     /**

@@ -15,17 +15,11 @@ package com.jaguarlandrover.rvi;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.util.Base64;
 import android.util.Log;
 
-import java.nio.ByteBuffer;
-import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.UUID;
 
-import static android.content.Context.MODE_PRIVATE;
 
 /**
  * The local RVI node.
@@ -34,7 +28,7 @@ public class RVINode
 {
     private final static String TAG = "RVI:RVINode";
 
-    //private ArrayList<String>              mCredentials             = new ArrayList<>();
+
     private HashMap<String, ServiceBundle> mAllServiceBundles       = new HashMap<>();
     private RemoteConnectionManager        mRemoteConnectionManager = new RemoteConnectionManager();
 
@@ -50,7 +44,7 @@ public class RVINode
                 mIsConnected = true;
                 if (mListener != null) mListener.nodeDidConnect();
 
-                mRemoteConnectionManager.sendPacket(new DlinkAuthPacket(RVILocalNode.getCredentials()));//mCredentials));
+                mRemoteConnectionManager.sendPacket(new DlinkAuthPacket(RVILocalNode.getCredentials()));
             }
 
             @Override
@@ -158,115 +152,22 @@ public class RVINode
         mRemoteConnectionManager.setServerPort(serverPort);
     }
 
-//    /**
-//      * Method to pass the SDK your app's JWT-encoded json credentials for invoking services on a remote node and receiving service invocations from a remote node.
-//      *
-//      * @param jwtString a jwt-encoded credentials string
-//      */
-//    public void addJWTCredentials(String jwtString) {
-//        mCredentials.add(jwtString);
-//    }
-
-//    /**
-//     * Sets the server port of the remote RVI node, when using a TCP/IP link to interface with a remote node.
-//     *
-//     * @param serverKeyStore the KeyStore object that contains your server's self-signed certificate that the TLS connection should accept.
-//     *                 To make this KeyStore object, use BouncyCastle (http://www.bouncycastle.org/download/bcprov-jdk15on-146.jar), and
-//     *                 this command-line command:
-//     *                 $ keytool -import -v -trustcacerts -alias 0 \
-//     *                 -file [PATH_TO_SELF_CERT.PEM] \
-//     *                 -keystore [PATH_TO_KEYSTORE] \
-//     *                 -storetype BKS \
-//     *                 -provider org.bouncycastle.jce.provider.BouncyCastleProvider \
-//     *                 -providerpath [PATH_TO_bcprov-jdk15on-146.jar] \
-//     *                 -storepass [STOREPASS]
-//     * @param clientKeyStore the KeyStore object that contains your client's self-signed certificate that the TLS connection sends to the server.
-//     *                       // TODO: openssl pkcs12 -export -in insecure_device_cert.crt -inkey insecure_device_key.pem -out client.p12 -name "client-certs"
-//     * @param clientKeyStorePassword the password of the client key store
-//     */
-//    public void setKeyStores(KeyStore serverKeyStore, KeyStore clientKeyStore, String clientKeyStorePassword) {
-//        mRemoteConnectionManager.setKeyStores(serverKeyStore, clientKeyStore, clientKeyStorePassword);
-//    }
-//
-//    /**
-//     * Sets the device address of the remote Bluetooth receiver on the remote RVI node, when using a Bluetooth link to interface with a remote node.
-//     *
-//     * @param deviceAddress the Bluetooth device address
-//     */
-//    public void setBluetoothDeviceAddress(String deviceAddress) {
-//        mRemoteConnectionManager.setBluetoothDeviceAddress(deviceAddress);
-//    }
-//
-//    /**
-//     * Sets the Bluetooth service record identifier of the remote RVI node, when using a Bluetooth link to interface with a remote node.
-//     *
-//     * @param serviceRecord the service record identifier
-//     */
-//    public void setBluetoothServiceRecord(UUID serviceRecord) {
-//        /*RemoteConnectionManager.ourInstance.*/mRemoteConnectionManager.setBluetoothServiceRecord(serviceRecord);
-//    }
-//
-//    /**
-//     * Sets the Bluetooth channel of the remote RVI node, when using a Bluetooth link to interface with a remote node.
-//     *
-//     * @param channel the channel
-//     */
-//    public void setBluetoothChannel(Integer channel) {
-//        /*RemoteConnectionManager.ourInstance.*/mRemoteConnectionManager.setBluetoothChannel(channel);
-//    }
-
     public boolean isConnected() {
         return mIsConnected;
     }
-
-    private void connect(RemoteConnectionManager.ConnectionType type) {
-        mRemoteConnectionManager.connect(type);//, RemoteConnection.Status.NA, RemoteConnection.Descriptor.NONE));
-    }
-
-    private void disconnect(RemoteConnectionManager.ConnectionType type) {
-        mRemoteConnectionManager.disconnect(type);//, RemoteConnection.Status.NA, RemoteConnection.Descriptor.DISCONNECTED_APP_INITIATED));
-    }
-
-//    /**
-//     * Tells the local RVI node to connect to the remote RVI node using a TCP/IP connection.
-//     */
-//    public void connectServer() {
-//        this.connect(RemoteConnectionManager.ConnectionType.SERVER);
-//    }
-//
-//    /**
-//     * Tells the local RVI node to disconnect the TCP/IP connection to the remote RVI node.
-//     */
-//    public void disconnectServer() {
-//        this.disconnect(RemoteConnectionManager.ConnectionType.SERVER);
-//    }
-//
-//    /**
-//     * Tells the local RVI node to connect to the remote RVI node using a Bluetooth connection.
-//     */
-//    public void connectBluetooth() {
-//       connect(RemoteConnectionManager.ConnectionType.BLUETOOTH);
-//    }
-//
-//    /**
-//     * Tells the local RVI node to disconnect the Bluetooth to the remote RVI node.
-//     */
-//    public void disconnectBluetooth() {
-//        connect(RemoteConnectionManager.ConnectionType.BLUETOOTH);
-//    }
 
     /**
      * Tells the local RVI node to connect to the remote RVI node, letting the RVINode choose the best connection.
      */
     public void connect() {
-        connect(RemoteConnectionManager.ConnectionType.GLOBAL);
+        mRemoteConnectionManager.connect();
     }
 
     /**
      * Tells the local RVI node to disconnect all connections to the remote RVI node.
      */
     public void disconnect() {
-        disconnect(RemoteConnectionManager.ConnectionType.GLOBAL);
+        mRemoteConnectionManager.disconnect();
     }
 
     /**
