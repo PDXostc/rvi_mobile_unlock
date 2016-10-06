@@ -20,21 +20,19 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
 /**
- * The local RVI node.
+ * The remote RVI node.
  */
-public class RVINode
+public class RVIRemoteNode
 {
     private final static String TAG = "RVI:RVINode";
-
 
     private HashMap<String, ServiceBundle> mAllServiceBundles       = new HashMap<>();
     private RemoteConnectionManager        mRemoteConnectionManager = new RemoteConnectionManager();
 
     private boolean mIsConnected = false;
 
-    public RVINode(Context context) {
+    public RVIRemoteNode(Context context) {
         mRemoteConnectionManager.setListener(new RemoteConnectionManagerListener()
         {
             @Override
@@ -42,7 +40,7 @@ public class RVINode
                 Log.d(TAG, Util.getMethodName());
 
                 mIsConnected = true;
-                if (mListener != null) mListener.nodeDidConnect();
+                if (mListener != null) mListener.nodeDidConnect(RVIRemoteNode.this);
 
                 mRemoteConnectionManager.sendPacket(new DlinkAuthPacket(RVILocalNode.getCredentials()));
             }
@@ -52,7 +50,7 @@ public class RVINode
                 Log.d(TAG, Util.getMethodName() + ": " + ((error == null) ? "(null)" : error.getLocalizedMessage()));
 
                 mIsConnected = false;
-                if (mListener != null) mListener.nodeDidFailToConnect(error);
+                if (mListener != null) mListener.nodeDidFailToConnect(RVIRemoteNode.this, error);
             }
 
             @Override
@@ -60,7 +58,7 @@ public class RVINode
                 Log.d(TAG, Util.getMethodName() + ": " + ((trigger == null) ? "(null)" : trigger.getLocalizedMessage()));
 
                 mIsConnected = false;
-                if (mListener != null) mListener.nodeDidDisconnect(trigger);
+                if (mListener != null) mListener.nodeDidDisconnect(RVIRemoteNode.this, trigger);
             }
 
             @Override
@@ -107,32 +105,15 @@ public class RVINode
      *
      * @param listener the listener
      */
-    public void setListener(RVINodeListener listener) {
+    public void setListener(RVIRemoteNodeListener listener) {
         mListener = listener;
     }
 
     /**
      * The RVI node listener interface.
      */
-    public interface RVINodeListener
-    {
-        /**
-         * Called when the local RVI node successfully connects to a remote RVI node.
-         */
-        void nodeDidConnect();
 
-        /**
-         * Called when the local RVI node failed to connect to a remote RVI node.
-         */
-        void nodeDidFailToConnect(Throwable trigger);
-
-        /**
-         * Called when the local RVI node disconnects from a remote RVI node.
-         */
-        void nodeDidDisconnect(Throwable trigger);
-    }
-
-    private RVINodeListener mListener;
+    private RVIRemoteNodeListener mListener;
 
     /**
      * Sets the server url to the remote RVI node, when using a TCP/IP link to interface with a remote node.

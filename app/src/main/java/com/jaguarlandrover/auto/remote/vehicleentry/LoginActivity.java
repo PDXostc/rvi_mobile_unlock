@@ -49,10 +49,13 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     private KeyStore          mDeviceCertificateKeyStoreHolder = null;
     private ArrayList<String> mDefaultPrivilegesHolder         = null;
 
+    private final static String RVI_DOMAIN = "genivi.org";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        RVILocalNode.start(this, RVI_DOMAIN);
 
         setContentView(R.layout.activity_login2);
         handleExtra(getIntent());
@@ -68,7 +71,6 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             String certId = uri.getQueryParameter("certid");
 
             if (token != null && certId != null) {
-                RVILocalNode.start(this);
                 RVILocalNode.removeAllCredentials(this);
 
                 mLoginActivityFragment.setStatusTextText("Validating email...");
@@ -321,7 +323,6 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             // TODO: Dialog
 
             PKIManager.deleteKeysAndCerts(this);
-            RVILocalNode.start(this);
             RVILocalNode.removeAllCredentials(this);
 
             mValidatingToken       = false;
@@ -335,7 +336,6 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             // TODO: Dialog
 
             //PKIManager.deleteKeysAndCerts(this);
-            RVILocalNode.start(this);
             RVILocalNode.removeAllCredentials(this);
 
             mValidatingToken       = false;

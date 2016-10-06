@@ -39,7 +39,7 @@ public class ServiceBundle
     private HashMap<String, Service> mRemoteServices = new HashMap<>();
 
     private HashMap<String, ArrayList<Service>> mPendingServiceInvocations = new HashMap<>();
-    private RVINode mNode;
+    private RVIRemoteNode mNode;
 
     /**
      * The Service bundle listener interface.
@@ -105,7 +105,7 @@ public class ServiceBundle
 
         HashMap<String, Service> services = new HashMap<>(serviceIdentifiers.size());
         for (String serviceIdentifier : serviceIdentifiers)
-            services.put(validated(serviceIdentifier), new Service(serviceIdentifier, mDomain, mBundleIdentifier, mLocalNodeIdentifier));
+            services.put(validated(serviceIdentifier), new Service(mDomain, mLocalNodeIdentifier, mBundleIdentifier, serviceIdentifier));
 
         return services;
     }
@@ -121,7 +121,7 @@ public class ServiceBundle
         if (null != (service = mRemoteServices.get(serviceIdentifier)))
             return service;
 
-        return new Service(serviceIdentifier, mDomain, mBundleIdentifier, null);
+        return new Service(mDomain, null, mBundleIdentifier, serviceIdentifier);
     }
 
     /**
@@ -130,7 +130,7 @@ public class ServiceBundle
      */
     public void addLocalService(String serviceIdentifier) {
         if (!mLocalServices.containsKey(serviceIdentifier))
-            mLocalServices.put(serviceIdentifier, new Service(serviceIdentifier, mDomain, mBundleIdentifier, mLocalNodeIdentifier));
+            mLocalServices.put(serviceIdentifier, new Service(mDomain, mLocalNodeIdentifier, mBundleIdentifier, serviceIdentifier));
 
         if (mNode != null) mNode.announceServices();
     }
@@ -141,7 +141,7 @@ public class ServiceBundle
      */
     public void addLocalServices(ArrayList<String> serviceIdentifiers) {
         for (String serviceIdentifier : serviceIdentifiers)
-            mLocalServices.put(serviceIdentifier, new Service(serviceIdentifier, mDomain, mBundleIdentifier, mLocalNodeIdentifier));
+            mLocalServices.put(serviceIdentifier, new Service(mDomain, mLocalNodeIdentifier, mBundleIdentifier, serviceIdentifier));
 
         if (mNode != null) mNode.announceServices();
     }
@@ -173,7 +173,7 @@ public class ServiceBundle
      */
     void addRemoteService(String serviceIdentifier, String remoteNodeIdentifier) {
         if (!mRemoteServices.containsKey(serviceIdentifier))
-            mRemoteServices.put(serviceIdentifier, new Service(serviceIdentifier, mDomain, mBundleIdentifier, remoteNodeIdentifier));
+            mRemoteServices.put(serviceIdentifier, new Service(mDomain, remoteNodeIdentifier, mBundleIdentifier, serviceIdentifier));
 
         ArrayList<Service> pendingServiceInvocationList = mPendingServiceInvocations.get(serviceIdentifier);
 
@@ -283,7 +283,7 @@ public class ServiceBundle
         return mDomain;
     }
 
-    void setNode(RVINode node) {
+    void setNode(RVIRemoteNode node) {
         mNode = node;
     }
 //    RVINode getNode() {

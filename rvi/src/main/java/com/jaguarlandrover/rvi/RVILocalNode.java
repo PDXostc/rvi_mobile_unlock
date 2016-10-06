@@ -18,23 +18,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
-import java.security.Key;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.StringTokenizer;
+import java.util.HashMap;
 import java.util.UUID;
-
-import javax.xml.transform.sax.SAXTransformerFactory;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -51,7 +39,9 @@ public class RVILocalNode {
     private static KeyStore deviceKeyStore = null;
     private static String   deviceKeyStorePassword = null;
 
-    private static ArrayList<Credential> credentialsList = null;
+    private static String rviDomain;
+
+    private static HashMap<String, Service> allLocalServices = new HashMap<>();
 
     private static RVILocalNode getInstance() {
         return ourInstance;
@@ -60,11 +50,12 @@ public class RVILocalNode {
     private RVILocalNode() {
     }
 
-    public static void start(Context context) {
+    public static void start(Context context, String domain) {
         if (context == null) {
             throw new IllegalArgumentException("Context parameter must not be null.");
         }
 
+        rviDomain           = domain;
         localNodeStarted = true;
 
         loadCredentials(context);
@@ -76,6 +67,30 @@ public class RVILocalNode {
         }
     }
 
+    public void addLocalServices(Context context, ArrayList<String> serviceIdentifiers) {
+        if (serviceIdentifiers == null) return;
+
+        for (String serviceIdentifier : serviceIdentifiers) {
+            if (!allLocalServices.containsKey(serviceIdentifier)) {
+                allLocalServices.put(serviceIdentifier, new Service(rviDomain, getLocalNodeIdentifier(context), "", serviceIdentifier));
+            }
+        }
+
+        // TODO: Validate and announce services
+    }
+
+    public void removeLocalServices(Context context, ArrayList<String> serviceIdentifiers) {
+        if (serviceIdentifiers == null) return;
+
+        for (String serviceIdentifier : serviceIdentifiers) {
+            if (allLocalServices.containsKey(serviceIdentifier)) {
+                allLocalServices.remove(serviceIdentifier);
+            }
+        }
+
+        // TODO: Validate and announce services
+    }
+
 
 //    /**
 //     * Add a service bundle to the local RVI node. Adding a service bundle triggers a service announce over the
@@ -85,7 +100,7 @@ public class RVILocalNode {
 //     */
 //    public void addBundle(ServiceBundle bundle) {
 //        bundle.setNode(this);
-//        mAllServiceBundles.put(bundle.getDomain() + ":" + bundle.getBundleIdentifier(), bundle);
+//        allServiceBundles.put(bundle.getDomain() + ":" + bundle.getBundleIdentifier(), bundle);
 //        announceServices();
 //    }
 //
@@ -97,7 +112,7 @@ public class RVILocalNode {
 //     */
 //    public void removeBundle(ServiceBundle bundle) {
 //        bundle.setNode(null);
-//        mAllServiceBundles.remove(bundle.getDomain() + ":" + bundle.getBundleIdentifier());
+//        allServiceBundles.remove(bundle.getDomain() + ":" + bundle.getBundleIdentifier());
 //        announceServices();
 //    }
 

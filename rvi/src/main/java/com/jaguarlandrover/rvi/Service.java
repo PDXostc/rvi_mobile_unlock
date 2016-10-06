@@ -54,17 +54,19 @@ class Service
 
     /**
      * Instantiates a new Vehicle service.
+     *   @param domain the domain
      *
-     * @param serviceIdentifier the service identifier
-     * @param domain the domain
-     * @param bundleIdentifier the bundle identifier
-     * @param prefix the service's prefix
+     *   @param nodeIdentifier the service's nodeIdentifier
+     *
+     *   @param bundleIdentifier the bundle identifier
+     *
+     *   @param serviceIdentifier the service identifier
      */
-    Service(String serviceIdentifier, String domain, String bundleIdentifier, String prefix) {
+    Service(String domain, String nodeIdentifier, String bundleIdentifier, String serviceIdentifier) {
+        mDomain            = domain;
+        mNodeIdentifier    = nodeIdentifier;
+        mBundleIdentifier  = bundleIdentifier;
         mServiceIdentifier = serviceIdentifier;
-        mBundleIdentifier = bundleIdentifier;
-        mDomain = domain;
-        mNodeIdentifier = prefix;
 
         mJsonService = getFullyQualifiedServiceName();
     }
@@ -226,7 +228,7 @@ class Service
     }
 
     public Service copy() {
-        Service copy = new Service(this.getServiceIdentifier(), this.getDomain(), this.getBundleIdentifier(), this.getNodeIdentifier());
+        Service copy = new Service(this.getDomain(), this.getNodeIdentifier(), this.getBundleIdentifier(), this.getServiceIdentifier());
 
         copy.setTimeout(this.getTimeout());
         copy.setParameters(this.getParameters());

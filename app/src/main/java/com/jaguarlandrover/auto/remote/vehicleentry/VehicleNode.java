@@ -19,7 +19,8 @@ import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import com.jaguarlandrover.rvi.RVINode;
+import com.jaguarlandrover.rvi.RVIRemoteNode;
+import com.jaguarlandrover.rvi.RVIRemoteNodeListener;
 import com.jaguarlandrover.rvi.ServiceBundle;
 
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class VehicleNode
 
     private static SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
 
-    private static RVINode rviNode = new RVINode(null);
+    private static RVIRemoteNode rviNode = new RVIRemoteNode(null);
 
     /* RVI fully-qualified service identifier parts */
     private final static String RVI_DOMAIN        = "genivi.org";
@@ -90,10 +91,10 @@ public class VehicleNode
             }
         };
 
-        RVINode.RVINodeListener nodeListener = new RVINode.RVINodeListener()
+        RVIRemoteNodeListener nodeListener = new RVIRemoteNodeListener()
         {
             @Override
-            public void nodeDidConnect() {
+            public void nodeDidConnect(RVIRemoteNode node) {
                 Log.d(TAG, "Connected to vehicle!");
                 connectionStatus = ConnectionStatus.CONNECTED;
 
@@ -101,20 +102,51 @@ public class VehicleNode
             }
 
             @Override
-            public void nodeDidFailToConnect(Throwable trigger) {
+            public void nodeDidFailToConnect(RVIRemoteNode node, Throwable reason) {
                 Log.d(TAG, "Failed to connect to vehicle!");
                 connectionStatus = ConnectionStatus.DISCONNECTED;
             }
 
             @Override
-            public void nodeDidDisconnect(Throwable trigger) {
+            public void nodeDidDisconnect(RVIRemoteNode node, Throwable reason) {
                 Log.d(TAG, "Disconnected from vehicle!");
                 connectionStatus = ConnectionStatus.DISCONNECTED;
 
                 ///* Try and reconnect */
                 //startRepeatingTask();
             }
+
+            @Override
+            public void nodeSendServiceInvocationSucceeded(RVIRemoteNode node, String serviceIdentifier) {
+
+            }
+
+            @Override
+            public void nodeSendServiceInvocationFailed(RVIRemoteNode node, String serviceIdentifier, Throwable reason) {
+
+            }
+
+            @Override
+            public void nodeReceiveServiceInvocationSucceeded(RVIRemoteNode node, String serviceIdentifier, Object parameters) {
+
+            }
+
+            @Override
+            public void nodeReceiveServiceInvocationFailed(RVIRemoteNode node, String serviceIdentifier, Throwable reason) {
+
+            }
+
+            @Override
+            public void nodeDidAuthorizeLocalServices(RVIRemoteNode node, ArrayList<String> serviceIdentifiers) {
+
+            }
+
+            @Override
+            public void nodeDidAuthorizeRemoteServices(RVIRemoteNode node, ArrayList<String> serviceIdentifiers) {
+
+            }
         };
+
 
 //        try {
 //            rviNode.setKeyStores(getKeyStore("server-certs", "BKS", "password"), getKeyStore("client.p12", "PKCS12", "password"), "password");

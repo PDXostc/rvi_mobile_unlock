@@ -121,7 +121,7 @@ public class RviService extends Service {
         Observable<RangeObject> obs =  br.getRangeStream();
         obs.observeOn(Schedulers.newThread()).subscribeOn(Schedulers.newThread()).subscribe(beaconSubscriber);
 
-        RVILocalNode.start(this);
+        //RVILocalNode.start(this);
     }
 
     @Override

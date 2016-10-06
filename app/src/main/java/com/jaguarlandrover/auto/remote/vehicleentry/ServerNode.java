@@ -22,18 +22,16 @@ import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.internal.LinkedTreeMap;
-import com.google.gson.internal.ObjectConstructor;
 import com.google.gson.reflect.TypeToken;
 import com.jaguarlandrover.pki.PKIManager;
 import com.jaguarlandrover.rvi.RVILocalNode;
-import com.jaguarlandrover.rvi.RVINode;
+import com.jaguarlandrover.rvi.RVIRemoteNode;
+import com.jaguarlandrover.rvi.RVIRemoteNodeListener;
 import com.jaguarlandrover.rvi.ServiceBundle;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -53,7 +51,7 @@ class ServerNode
     //private static SharedPreferences.Editor editor      = null;//preferences.edit();
     private static Gson                     gson        = new Gson();
 
-    private static RVINode rviNode = new RVINode(null);
+    private static RVIRemoteNode rviNode = new RVIRemoteNode(null);
 
     private static final ConcurrentHashMap<String, String> certs = new ConcurrentHashMap<String, String>(1);
 
@@ -189,10 +187,10 @@ class ServerNode
             }
         };
 
-        RVINode.RVINodeListener nodeListener = new RVINode.RVINodeListener()
+        RVIRemoteNodeListener nodeListener = new RVIRemoteNodeListener()
         {
             @Override
-            public void nodeDidConnect() {
+            public void nodeDidConnect(RVIRemoteNode node) {
                 Log.d(TAG, "Connected to RVI provisioning server!");
                 connectionStatus = ConnectionStatus.CONNECTED;
 
@@ -202,7 +200,7 @@ class ServerNode
             }
 
             @Override
-            public void nodeDidFailToConnect(Throwable trigger) {
+            public void nodeDidFailToConnect(RVIRemoteNode node, Throwable reason) {
                 Log.d(TAG, "Failed to connect to RVI provisioning server!");
                 connectionStatus = ConnectionStatus.DISCONNECTED;
 
@@ -210,12 +208,42 @@ class ServerNode
             }
 
             @Override
-            public void nodeDidDisconnect(Throwable trigger) {
+            public void nodeDidDisconnect(RVIRemoteNode node, Throwable reason) {
                 Log.d(TAG, "Disconnected from RVI provisioning server!");
                 connectionStatus = ConnectionStatus.DISCONNECTED;
 
                 /* Try and reconnect */
                 startRepeatingTask();
+            }
+
+            @Override
+            public void nodeSendServiceInvocationSucceeded(RVIRemoteNode node, String serviceIdentifier) {
+
+            }
+
+            @Override
+            public void nodeSendServiceInvocationFailed(RVIRemoteNode node, String serviceIdentifier, Throwable reason) {
+
+            }
+
+            @Override
+            public void nodeReceiveServiceInvocationSucceeded(RVIRemoteNode node, String serviceIdentifier, Object parameters) {
+
+            }
+
+            @Override
+            public void nodeReceiveServiceInvocationFailed(RVIRemoteNode node, String serviceIdentifier, Throwable reason) {
+
+            }
+
+            @Override
+            public void nodeDidAuthorizeLocalServices(RVIRemoteNode node, ArrayList<String> serviceIdentifiers) {
+
+            }
+
+            @Override
+            public void nodeDidAuthorizeRemoteServices(RVIRemoteNode node, ArrayList<String> serviceIdentifiers) {
+
             }
         };
 
