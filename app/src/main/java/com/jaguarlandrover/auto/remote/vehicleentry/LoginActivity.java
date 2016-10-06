@@ -331,6 +331,20 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             mLoginActivityFragment.hideControls(false);
             mLoginActivityFragment.setVerifyButtonEnabled(true);
 
+        } else if (id == R.id.action_reset_2) {
+            // TODO: Dialog
+
+            //PKIManager.deleteKeysAndCerts(this);
+            RVILocalNode.start(this);
+            RVILocalNode.removeAllCredentials(this);
+
+            mValidatingToken       = false;
+            mAllValidCertsAcquired = false;
+
+            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
+            mLoginActivityFragment.hideControls(false);
+            mLoginActivityFragment.setVerifyButtonEnabled(true);
+
         }
 
         return super.onOptionsItemSelected(item);

@@ -53,5 +53,6 @@
     <string name="user_header">User:</string>
     <string name="revoked">Revoked</string>
     <string name="verify">Verify</string>
+    <string name="action_reset_2">Reset 2</string>
 
 </resources>
