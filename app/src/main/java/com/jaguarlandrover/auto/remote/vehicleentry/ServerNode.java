@@ -38,8 +38,6 @@ import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.xml.transform.sax.SAXTransformerFactory;
-
 class ServerNode
 {
     private final static String TAG = "UnlockDemo:ServerNode";
@@ -66,9 +64,9 @@ class ServerNode
     private final static String INVOKED_SERVICE_REPORT_KEY      = "INVOKED_SERVICE_REPORT_KEY";
 
     /* RVI fully-qualified service identifier parts */
-    private final static String RVI_DOMAIN       = "genivi.org";
-    private final static String CERT_PROV_BUNDLE = "dm";
-    private final static String REPORTING_BUNDLE = "report";
+    private final static String RVI_DOMAIN                   = "genivi.org";
+    private final static String CREDENTIAL_MANAGEMENT_BUNDLE = "credential_management";
+    private final static String REPORTING_BUNDLE             = "report";
 
     /* Remote service identifiers */
     /* OLD */
@@ -87,13 +85,12 @@ class ServerNode
 
     private final static String SERVICE_INVOKED_BY_GUEST = "serviceinvokedbyguest";
 
-
     /* NEW */
     private final static String REVOKE_CREDENTIALS = "revoke_credentials";
     private final static String UPDATE_CREDENTIALS = "update_credentials";
 
 
-    private final static ArrayList<String> certProvServiceIdentifiers =
+    private final static ArrayList<String> credentialManagementServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
                     CERT_PROVISION,
                     CERT_RESPONSE,
@@ -106,8 +103,8 @@ class ServerNode
                     SERVICE_INVOKED_BY_GUEST));
 
     /* Service bundles */
-    private final static ServiceBundle certProvServiceBundle  = new ServiceBundle(applicationContext, RVI_DOMAIN, CERT_PROV_BUNDLE, certProvServiceIdentifiers);
-    private final static ServiceBundle reportingServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, REPORTING_BUNDLE, reportingServiceIdentifiers);
+    private final static ServiceBundle credentialManagementServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, CREDENTIAL_MANAGEMENT_BUNDLE, credentialManagementServiceIdentifiers);
+    private final static ServiceBundle reportingServiceBundle            = new ServiceBundle(applicationContext, RVI_DOMAIN, REPORTING_BUNDLE, reportingServiceIdentifiers);
 
     private enum ConnectionStatus
     {
@@ -133,7 +130,7 @@ class ServerNode
         {
             @Override
             public void onServiceInvoked(ServiceBundle serviceBundle, String serviceIdentifier, Object parameters) {
-                if (serviceBundle.getBundleIdentifier().equals(CERT_PROV_BUNDLE)) {
+                if (serviceBundle.getBundleIdentifier().equals(CREDENTIAL_MANAGEMENT_BUNDLE)) {
                     switch (serviceIdentifier) {
                         case UPDATE_CREDENTIALS:
 
@@ -223,12 +220,12 @@ class ServerNode
 //
 //        rviNode.addJWTCredentials("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyaWdodF90b19pbnZva2UiOlsiZ2VuaXZpLm9yZyJdLCJpc3MiOiJqbHIuY29tIiwiZGV2aWNlX2NlcnQiOiJNSUlCOHpDQ0FWd0NBUUV3RFFZSktvWklodmNOQVFFTEJRQXdRakVMTUFrR0ExVUVCaE1DVlZNeER6QU5CZ05WQkFnTUJrOXlaV2R2YmpFUk1BOEdBMVVFQnd3SVVHOXlkR3hoYm1ReER6QU5CZ05WQkFvTUJrZEZUa2xXU1RBZUZ3MHhOVEV4TWpjeU16RTBOVEphRncweE5qRXhNall5TXpFME5USmFNRUl4Q3pBSkJnTlZCQVlUQWxWVE1ROHdEUVlEVlFRSURBWlBjbVZuYjI0eEVUQVBCZ05WQkFjTUNGQnZjblJzWVc1a01ROHdEUVlEVlFRS0RBWkhSVTVKVmtrd2daOHdEUVlKS29aSWh2Y05BUUVCQlFBRGdZMEFNSUdKQW9HQkFKdHZpTThBUklyRnF1UGMwbXlCOUJ1RjlNZGtBLzJTYXRxYlpNV2VUT1VKSEdyakJERUVNTFE3ems4QXlCbWk3UnF1WVlaczY3U3lMaHlsVkdLaDZzSkFsZWN4YkhVd2o3Y1pTUzFibUtNamU2TDYxZ0t3eEJtMk5JRlUxY1ZsMmpKbFRhVTlWWWhNNHhrNTd5ajI4bmtOeFNZV1AxdmJGWDJORFgyaUg3YjVBZ01CQUFFd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ1lFQWhicVZyOUUvME03MjluYzZESStxZ3FzUlNNZm95dkEzQ21uL0VDeGwxeWJHa3V6TzdzQjhmR2pnTVE5enpjYjZxMXVQM3dHalBpb3FNeW1pWVlqVW1DVHZ6ZHZSQlorNlNEanJaZndVdVlleGlLcUk5QVA2WEthSGxBTDE0K3JLKzZITjR1SWtaY0l6UHdTTUhpaDFic1RScHlZNVozQ1VEY0RKa1l0VmJZcz0iLCJ2YWxpZGl0eSI6eyJzdGFydCI6MTQ1MjE5Mjc3Nywic3RvcCI6MTQ4MzcyODc3N30sInJpZ2h0X3RvX3JlZ2lzdGVyIjpbImdlbml2aS5vcmciXSwiY3JlYXRlX3RpbWVzdGFtcCI6MTQ1MjE5Mjc3NywiaWQiOiJpbnNlY3VyZV9jcmVkZW50aWFscyJ9.TBDUJFL1IQ039Lz7SIkcblhz62jO35STJ8OiclL_xlxEE_L_EjnELrDOGvkIh7zhhl8RMHkUJcTFQKF7P6WDJ5rUJejXJlkTRf-aVmHqEhpspRw6xD2u_2A9wmTWLJF94_wsEb7M7xWCXVrbexu_oik85zmuxRQgRE5wrTC7DDQ");
 
-        certProvServiceBundle.setListener(serviceBundleListener);
+        credentialManagementServiceBundle.setListener(serviceBundleListener);
         reportingServiceBundle.setListener(serviceBundleListener);
 
         rviNode.setListener(nodeListener);
 
-        rviNode.addBundle(certProvServiceBundle);
+        rviNode.addBundle(credentialManagementServiceBundle);
         rviNode.addBundle(reportingServiceBundle);
     }
 
@@ -295,7 +292,7 @@ class ServerNode
             e.printStackTrace();
         }
 
-//        certProvServiceBundle.invokeService(REQUEST_CREDENTIALS, parameters, 5000);
+        credentialManagementServiceBundle.invokeService(REQUEST_CREDENTIALS, parameters, 5000);
 
 //        try {
 //            parameters.put("mobileUUID", RVILocalNode.getLocalNodeIdentifier(applicationContext).substring("android/".length()));
@@ -304,7 +301,7 @@ class ServerNode
 //            e.printStackTrace();
 //        }
 //
-        certProvServiceBundle.invokeService(CERT_REQUESTALL, parameters, 5000);
+//        credentialManagementServiceBundle.invokeService(CERT_REQUESTALL, parameters, 5000);
     }
 
     static void modifyRemoteCredentials(UserCredentials remoteCredentials) {
@@ -312,7 +309,7 @@ class ServerNode
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
-        certProvServiceBundle.invokeService(CERT_MODIFY, remoteCredentials, 5000);
+        credentialManagementServiceBundle.invokeService(CERT_MODIFY, remoteCredentials, 5000);
     }
 
     static void createRemoteCredentials(UserCredentials remoteCredentials) {
@@ -320,7 +317,7 @@ class ServerNode
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
-        certProvServiceBundle.invokeService(CERT_CREATE, remoteCredentials, 5000);
+        credentialManagementServiceBundle.invokeService(CERT_CREATE, remoteCredentials, 5000);
     }
 
     public static Certificate getCertificate() {

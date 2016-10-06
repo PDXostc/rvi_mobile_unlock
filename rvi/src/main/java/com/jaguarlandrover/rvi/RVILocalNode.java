@@ -25,8 +25,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
+import java.security.Key;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
 import java.util.UUID;
 
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -47,7 +52,7 @@ public class RVILocalNode {
     private static KeyStore deviceKeyStore = null;
     private static String   deviceKeyStorePassword = null;
 
-    private static ArrayList<String> credentialsList = null;
+    private static ArrayList<Credential> credentialsList = null;
 
     private static RVILocalNode getInstance() {
         return ourInstance;
@@ -73,9 +78,29 @@ public class RVILocalNode {
         }
     }
 
+    private static ArrayList<String> toCredentialStringArray(ArrayList<Credential> credentialObjects) {
+        ArrayList<String> credentialStrings = new ArrayList<>();
+
+        if (credentialObjects != null)
+            for (Credential credential : credentialObjects)
+                credentialStrings.add(credential.getJwt());
+
+        return credentialStrings;
+    }
+
+    private static ArrayList<Credential> fromCredentialStringArray(ArrayList<String> credentialStrings) {
+        ArrayList<Credential> credentialObjects = new ArrayList<>();
+
+        if (credentialStrings != null)
+            for (String credential : credentialStrings)
+                credentialObjects.add(new Credential(credential));
+
+        return credentialObjects;
+    }
+
     private static void saveCredentials(Context context) {
         Gson gson = new Gson();
-        String jsonString = gson.toJson(credentialsList);
+        String jsonString = gson.toJson(toCredentialStringArray(credentialsList));
 
         try {
             FileOutputStream fileOutputStream = context.openFileOutput(SAVED_CREDENTIALS_FILE, Context.MODE_PRIVATE);
@@ -105,7 +130,8 @@ public class RVILocalNode {
                     jsonString = jsonString + Character.toString((char)c);
                 }
 
-                credentialsList = gson.fromJson(jsonString, new TypeToken<ArrayList<String>>(){}.getType());
+                // TODO: Handle all kinds of errors here
+                credentialsList = fromCredentialStringArray((ArrayList<String>) gson.fromJson(jsonString, new TypeToken<ArrayList<String>>(){}.getType()));
 
             } catch (Exception e) {
 
@@ -114,16 +140,10 @@ public class RVILocalNode {
         }
     }
 
-    public static void setCredentials(Context context, ArrayList<String> newCredentialsList) {
+    public static void setCredentials(Context context, ArrayList<String> credentialStrings) {
         checkIfReady();
 
-        credentialsList.clear();
-
-        if (newCredentialsList != null)
-            credentialsList.addAll(newCredentialsList);
-
-        //for (String credentials : newCredentialsList)
-        //    credentialsList.add(credentials);
+        credentialsList = fromCredentialStringArray(credentialStrings);
 
         saveCredentials(context);
     }
@@ -136,10 +156,32 @@ public class RVILocalNode {
         saveCredentials(context);
     }
 
-    static ArrayList<String>getCredentials() {
+    public static void validateCredentials() {
+        if (serverKeyStore == null) return;
+
+        try {
+            Enumeration<String> aliases = serverKeyStore.aliases();
+
+            while (aliases.hasMoreElements()) {
+                String alias = aliases.nextElement();
+
+                KeyStore.TrustedCertificateEntry entry = (KeyStore.TrustedCertificateEntry) serverKeyStore.getEntry(alias, null);
+                X509Certificate certificate = (X509Certificate) entry.getTrustedCertificate();
+
+                Key key = certificate.getPublicKey();
+
+                for (Credential credential : credentialsList)
+                    credential.isValid(key);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static ArrayList<String> getCredentials() {
         checkIfReady();
 
-        return credentialsList;
+        return toCredentialStringArray(credentialsList);
     }
 
     static KeyStore getServerKeyStore() {
@@ -150,6 +192,8 @@ public class RVILocalNode {
         checkIfReady();
 
         RVILocalNode.serverKeyStore = serverKeyStore;
+
+        validateCredentials();
     }
 
     static KeyStore getDeviceKeyStore() {
@@ -171,7 +215,6 @@ public class RVILocalNode {
 
         RVILocalNode.deviceKeyStorePassword = deviceKeyStorePassword;
     }
-
 
     private final static String SHARED_PREFS_STRING         = "com.rvisdk.settings";
     private final static String LOCAL_SERVICE_PREFIX_STRING = "localServicePrefix";
