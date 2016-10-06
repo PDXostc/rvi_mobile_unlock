@@ -19,6 +19,7 @@ import android.content.SharedPreferences;
 import android.util.Base64;
 
 import java.nio.ByteBuffer;
+import java.security.InvalidParameterException;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,12 +51,24 @@ public class RVILocalNode {
     private RVILocalNode() {
     }
 
+    /**
+     * Instantiates a new Service bundle.
+     *
+     * @param context          the current context. This value cannot be null.
+     *
+     * @param domain           the domain portion of the RVI node's prefix (e.g., "jlr.com"). The domain must only contain
+     *                         alphanumeric characters, underscores, hyphens, and/or periods. No other characters or whitespace
+     *                         are allowed, including forward-slashes. This value cannot be an empty string or null.
+     *
+     * @exception java.lang.IllegalArgumentException Throws an exception when the context is null, or if the domain is an empty
+     *                                               string, contain special characters, or is null.
+     */
     public static void start(Context context, String domain) {
         if (context == null) {
             throw new IllegalArgumentException("Context parameter must not be null.");
         }
 
-        rviDomain           = domain;
+        rviDomain        = Util.validated(domain, true);
         localNodeStarted = true;
 
         loadCredentials(context);
@@ -67,24 +80,58 @@ public class RVILocalNode {
         }
     }
 
+    /**
+     * Adds new local services
+     *
+     * @param context            the current context. This value cannot be null.
+     *
+     * @param serviceIdentifiers a list of the identifiers for all the local services. The service identifiers must only contain
+     *                           alphanumeric characters, underscores, hyphens, or forward-slashes. No other characters or whitespace
+     *                           are allowed. Two forward-slashes in a row is also forbidden. This value cannot be an empty string or null.
+     *                           Leading and trailing forward-slashes are trimmed.
+     *
+     * @exception java.lang.IllegalArgumentException Throws an exception when the context is null or if any of the service identifiers are
+     *                                               empty strings, contain illegal characters, or are null.
+     */
     public void addLocalServices(Context context, ArrayList<String> serviceIdentifiers) {
+        if (context == null) throw new IllegalArgumentException("Context can't be null");
+
         if (serviceIdentifiers == null) return;
 
         for (String serviceIdentifier : serviceIdentifiers) {
-            if (!allLocalServices.containsKey(serviceIdentifier)) {
-                allLocalServices.put(serviceIdentifier, new Service(rviDomain, getLocalNodeIdentifier(context), "", serviceIdentifier));
+            String validatedServiceIdentifier = Util.validated(serviceIdentifier, false);
+
+            if (!allLocalServices.containsKey(validatedServiceIdentifier)) {
+                allLocalServices.put(validatedServiceIdentifier, new Service(rviDomain, getLocalNodeIdentifier(context), "", validatedServiceIdentifier));
             }
         }
 
         // TODO: Validate and announce services
     }
 
+    /**
+     * Removes local services
+     *
+     * @param context            the current context. This value cannot be null.
+     *
+     * @param serviceIdentifiers a list of the identifiers for all the local services. The service identifiers must only contain
+     *                           alphanumeric characters, underscores, hyphens, or forward-slashes. No other characters or whitespace
+     *                           are allowed. Two forward-slashes in a row is also forbidden. This value cannot be an empty string or null.
+     *                           Leading and trailing forward-slashes are trimmed.
+     *
+     * @exception java.lang.IllegalArgumentException Throws an exception when the context is null or if any of the service identifiers are
+     *                                               empty strings, contain illegal characters, or are null.
+     */
     public void removeLocalServices(Context context, ArrayList<String> serviceIdentifiers) {
+        if (context == null) throw new IllegalArgumentException("Context can't be null");
+
         if (serviceIdentifiers == null) return;
 
         for (String serviceIdentifier : serviceIdentifiers) {
-            if (allLocalServices.containsKey(serviceIdentifier)) {
-                allLocalServices.remove(serviceIdentifier);
+            String validatedServiceIdentifier = Util.validated(serviceIdentifier, false);
+
+            if (allLocalServices.containsKey(validatedServiceIdentifier)) {
+                allLocalServices.remove(validatedServiceIdentifier);
             }
         }
 
