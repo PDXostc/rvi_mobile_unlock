@@ -387,7 +387,7 @@ class ServerNode
         }
 
         //credentialManagementServiceBundle.invokeService(REQUEST_CREDENTIALS, parameters, 5000);
-        rviNode.invokeService(REQUEST_CREDENTIALS, parameters, 5000);
+        rviNode.invokeService(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + REQUEST_CREDENTIALS, parameters, 5000);
 
 //        try {
 //            parameters.put("mobileUUID", RVILocalNode.getLocalNodeIdentifier(applicationContext).substring("android/".length()));
@@ -405,7 +405,7 @@ class ServerNode
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
 //        credentialManagementServiceBundle.invokeService(CERT_MODIFY, remoteCredentials, 5000);
-        rviNode.invokeService(CERT_MODIFY, remoteCredentials, 5000);
+        rviNode.invokeService(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + CERT_MODIFY, remoteCredentials, 5000);
     }
 
     static void createRemoteCredentials(UserCredentials remoteCredentials) {
@@ -414,7 +414,7 @@ class ServerNode
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
 //        credentialManagementServiceBundle.invokeService(CERT_CREATE, remoteCredentials, 5000);
-        rviNode.invokeService(CERT_CREATE, remoteCredentials, 5000);
+        rviNode.invokeService(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + CERT_CREATE, remoteCredentials, 5000);
     }
 
     public static Certificate getCertificate() {

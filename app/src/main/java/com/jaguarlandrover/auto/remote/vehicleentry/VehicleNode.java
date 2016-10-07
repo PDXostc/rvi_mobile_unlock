@@ -46,7 +46,7 @@ public class VehicleNode
 
 //    /* RVI fully-qualified service identifier parts */
 //    private final static String RVI_DOMAIN        = "genivi.org";
-//    private final static String FOB_SIGNAL_BUNDLE = "fob";
+    private final static String FOB_SIGNAL_BUNDLE = "fob";
 
     /* Remote service identifiers */
     public final static String FOB_SIGNAL_UNLOCK      = "unlock";
@@ -222,7 +222,7 @@ public class VehicleNode
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
         //fobSignalServiceBundle.invokeService(fobSignal, new FobParamsManager.FobParams(), 5000);
-        rviNode.invokeService(fobSignal, new FobParamsManager.FobParams(), 5000);
+        rviNode.invokeService(FOB_SIGNAL_BUNDLE + "/" + fobSignal, new FobParamsManager.FobParams(), 5000);
 
         if (fobSignal.equals(FOB_SIGNAL_LOCK)) isUnlocked = false;
         if (fobSignal.equals(FOB_SIGNAL_UNLOCK)) isUnlocked = true;
