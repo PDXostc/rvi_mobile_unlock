@@ -132,7 +132,7 @@ public class ServiceBundle
         if (!mLocalServices.containsKey(serviceIdentifier))
             mLocalServices.put(serviceIdentifier, new Service(mDomain, mLocalNodeIdentifier, mBundleIdentifier, serviceIdentifier));
 
-        if (mNode != null) mNode.announceServices();
+        if (mNode != null) ;//mNode.announceServices();
     }
 
     /**
@@ -143,7 +143,7 @@ public class ServiceBundle
         for (String serviceIdentifier : serviceIdentifiers)
             mLocalServices.put(serviceIdentifier, new Service(mDomain, mLocalNodeIdentifier, mBundleIdentifier, serviceIdentifier));
 
-        if (mNode != null) mNode.announceServices();
+        if (mNode != null) ;//mNode.announceServices();
     }
 
     /**
@@ -153,7 +153,7 @@ public class ServiceBundle
     public void removeLocalService(String serviceIdentifier) {
         mLocalServices.remove(serviceIdentifier);
 
-        if (mNode != null) mNode.announceServices();
+        if (mNode != null) ;//mNode.announceServices();
     }
 
     /**
@@ -162,7 +162,7 @@ public class ServiceBundle
     public void removeAllLocalServices() {
         mLocalServices.clear();
 
-        if (mNode != null) mNode.announceServices();
+        if (mNode != null) ;//mNode.announceServices();
     }
 
     /**
@@ -181,7 +181,7 @@ public class ServiceBundle
             for (Service pendingServiceInvocation : pendingServiceInvocationList) {
                 if (pendingServiceInvocation.getTimeout() >= System.currentTimeMillis()) {
                     pendingServiceInvocation.setNodeIdentifier(remoteNodeIdentifier);
-                    mNode.invokeService(pendingServiceInvocation);
+                    ;//mNode.invokeService(pendingServiceInvocation);
                 }
             }
 
@@ -228,7 +228,7 @@ public class ServiceBundle
         service.setTimeout(System.currentTimeMillis() + timeout);
 
         if (service.hasNodeIdentifier() && mNode != null) // TODO: Check the logic here
-            mNode.invokeService(service);
+            ;//mNode.invokeService(service);
         else
             queueServiceInvocation(serviceIdentifier, service);
     }

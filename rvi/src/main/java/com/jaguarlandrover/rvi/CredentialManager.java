@@ -15,6 +15,7 @@ package com.jaguarlandrover.rvi;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.content.Context;
+import android.widget.ArrayAdapter;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -33,13 +34,10 @@ class CredentialManager {
 
     private static CredentialManager ourInstance = new CredentialManager();
 
-    private final static String SAVED_CREDENTIALS_FILE = "org.genivi.rvi.saved_credentials";
-    private static ArrayList<Credential> credentialsList = new ArrayList<>();
-
     private CredentialManager() {
     }
 
-    private static ArrayList<String> toCredentialStringArray(ArrayList<Credential> credentialObjects) {
+    static ArrayList<String> toCredentialStringArray(ArrayList<Credential> credentialObjects) {
         ArrayList<String> credentialStrings = new ArrayList<>();
 
         if (credentialObjects != null)
@@ -49,7 +47,7 @@ class CredentialManager {
         return credentialStrings;
     }
 
-    private static ArrayList<Credential> fromCredentialStringArray(ArrayList<String> credentialStrings) {
+    static ArrayList<Credential> fromCredentialStringArray(ArrayList<String> credentialStrings) {
         ArrayList<Credential> credentialObjects = new ArrayList<>();
 
         if (credentialStrings != null)
@@ -59,62 +57,7 @@ class CredentialManager {
         return credentialObjects;
     }
 
-    static void saveCredentials(Context context) {
-        Gson gson = new Gson();
-        String jsonString = gson.toJson(toCredentialStringArray(credentialsList));
-
-        try {
-            FileOutputStream fileOutputStream = context.openFileOutput(SAVED_CREDENTIALS_FILE, Context.MODE_PRIVATE);
-            fileOutputStream.write(jsonString.getBytes());
-            fileOutputStream.close();
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-    }
-
-    static void loadCredentials(Context context) {
-        Gson gson = new Gson();
-
-        File file = context.getFileStreamPath(SAVED_CREDENTIALS_FILE);
-        if (file != null && file.exists()) {
-            try {
-                FileInputStream fileInputStream = context.openFileInput(SAVED_CREDENTIALS_FILE);
-                int c;
-                String jsonString = "";
-
-                while ((c = fileInputStream.read()) != -1) {
-                    jsonString = jsonString + Character.toString((char)c);
-                }
-
-                // TODO: Handle all kinds of errors here
-                credentialsList = fromCredentialStringArray((ArrayList<String>) gson.fromJson(jsonString, new TypeToken<ArrayList<String>>(){}.getType()));
-
-            } catch (Exception e) {
-
-                e.printStackTrace();
-            }
-        }
-    }
-
-    static ArrayList<String> getCredentials() {
-        return toCredentialStringArray(credentialsList);
-    }
-
-    static void setCredentials(Context context, ArrayList<String> credentialStrings) {
-        credentialsList = fromCredentialStringArray(credentialStrings);
-
-        saveCredentials(context);
-    }
-
-    static void removeAllCredentials(Context context) {
-        credentialsList.clear();
-
-        saveCredentials(context);
-    }
-
-    static void validateCredentials(KeyStore keyStore) {
+    static void validateCredentials(KeyStore keyStore, ArrayList<Credential> credentialsList) {
         if (keyStore == null) return;
 
         try {

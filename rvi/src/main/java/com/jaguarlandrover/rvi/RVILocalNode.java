@@ -18,8 +18,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
-import java.security.InvalidParameterException;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +41,8 @@ public class RVILocalNode {
 
     private static Boolean localNodeStarted = false;
 
+    private static ArrayList<Credential> localCredentials = new ArrayList<>();
+
     private static KeyStore serverKeyStore = null;
     private static KeyStore deviceKeyStore = null;
     private static String   deviceKeyStorePassword = null;
@@ -44,11 +51,22 @@ public class RVILocalNode {
 
     private static HashMap<String, Service> allLocalServices = new HashMap<>();
 
+    private static ArrayList<LocalNodeListener> localNodeListeners = new ArrayList<>();
+
     private static RVILocalNode getInstance() {
         return ourInstance;
     }
 
     private RVILocalNode() {
+    }
+
+    interface LocalNodeListener
+    {
+        /** Called when local services have been added or remove so that RVIRemoteNodes can check if they are authorized */
+        void onLocalServicesUpdated();
+
+        /** Called when local services have been added or remove so that RVIRemoteNodes can check if they are authorized */
+        void onLocalCredentialsUpdated();
     }
 
     /**
@@ -72,6 +90,9 @@ public class RVILocalNode {
         localNodeStarted = true;
 
         loadCredentials(context);
+
+        for (LocalNodeListener listener : localNodeListeners)
+            listener.onLocalCredentialsUpdated();
     }
 
     private static void checkIfReady() {
@@ -93,7 +114,7 @@ public class RVILocalNode {
      * @exception java.lang.IllegalArgumentException Throws an exception when the context is null or if any of the service identifiers are
      *                                               empty strings, contain illegal characters, or are null.
      */
-    public void addLocalServices(Context context, ArrayList<String> serviceIdentifiers) {
+    public static void addLocalServices(Context context, ArrayList<String> serviceIdentifiers) {
         if (context == null) throw new IllegalArgumentException("Context can't be null");
 
         if (serviceIdentifiers == null) return;
@@ -102,11 +123,12 @@ public class RVILocalNode {
             String validatedServiceIdentifier = Util.validated(serviceIdentifier, false);
 
             if (!allLocalServices.containsKey(validatedServiceIdentifier)) {
-                allLocalServices.put(validatedServiceIdentifier, new Service(rviDomain, getLocalNodeIdentifier(context), "", validatedServiceIdentifier));
+                allLocalServices.put(validatedServiceIdentifier, new Service(rviDomain, getLocalNodeIdentifier(context), null, validatedServiceIdentifier));
             }
         }
 
-        // TODO: Validate and announce services
+        for (LocalNodeListener listener : localNodeListeners)
+            listener.onLocalServicesUpdated();
     }
 
     /**
@@ -122,7 +144,7 @@ public class RVILocalNode {
      * @exception java.lang.IllegalArgumentException Throws an exception when the context is null or if any of the service identifiers are
      *                                               empty strings, contain illegal characters, or are null.
      */
-    public void removeLocalServices(Context context, ArrayList<String> serviceIdentifiers) {
+    public static void removeLocalServices(Context context, ArrayList<String> serviceIdentifiers) {
         if (context == null) throw new IllegalArgumentException("Context can't be null");
 
         if (serviceIdentifiers == null) return;
@@ -135,33 +157,13 @@ public class RVILocalNode {
             }
         }
 
-        // TODO: Validate and announce services
+        for (LocalNodeListener listener : localNodeListeners)
+            listener.onLocalServicesUpdated();
     }
 
-
-//    /**
-//     * Add a service bundle to the local RVI node. Adding a service bundle triggers a service announce over the
-//     * network to the remote RVI node.
-//     *
-//     * @param bundle the bundle
-//     */
-//    public void addBundle(ServiceBundle bundle) {
-//        bundle.setNode(this);
-//        allServiceBundles.put(bundle.getDomain() + ":" + bundle.getBundleIdentifier(), bundle);
-//        announceServices();
-//    }
-//
-//    /**
-//     * Remove a service bundle from the local RVI node. Removing a service bundle triggers a service announce over the
-//     * network to the remote RVI node.
-//     *
-//     * @param bundle the bundle
-//     */
-//    public void removeBundle(ServiceBundle bundle) {
-//        bundle.setNode(null);
-//        allServiceBundles.remove(bundle.getDomain() + ":" + bundle.getBundleIdentifier());
-//        announceServices();
-//    }
+    static ArrayList<Service> getLocalServices() {
+        return new ArrayList<Service>(allLocalServices.values());
+    }
 
     static KeyStore getServerKeyStore() {
         return serverKeyStore;
@@ -194,29 +196,78 @@ public class RVILocalNode {
     }
 
     private static void saveCredentials(Context context) {
-        CredentialManager.saveCredentials(context);
+        Gson gson = new Gson();
+        String jsonString = gson.toJson(CredentialManager.toCredentialStringArray(localCredentials));
+
+        try {
+            FileOutputStream fileOutputStream = context.openFileOutput(SAVED_CREDENTIALS_FILE, Context.MODE_PRIVATE);
+            fileOutputStream.write(jsonString.getBytes());
+            fileOutputStream.close();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
     }
 
     private static void loadCredentials(Context context) {
-        CredentialManager.loadCredentials(context);
+        Gson gson = new Gson();
+
+        File file = context.getFileStreamPath(SAVED_CREDENTIALS_FILE);
+        if (file != null && file.exists()) {
+            try {
+                FileInputStream fileInputStream = context.openFileInput(SAVED_CREDENTIALS_FILE);
+                int c;
+                String jsonString = "";
+
+                while ((c = fileInputStream.read()) != -1) {
+                    jsonString = jsonString + Character.toString((char)c);
+                }
+
+                // TODO: Handle all kinds of errors here
+                localCredentials = CredentialManager.fromCredentialStringArray((ArrayList<String>) gson.fromJson(jsonString, new TypeToken<ArrayList<String>>(){}.getType()));
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            }
+        }
     }
 
-    static ArrayList<String> getCredentials() {
+    static ArrayList<Credential> getCredentials() {
         checkIfReady();
 
-        return CredentialManager.getCredentials();
+        return localCredentials;
     }
 
     public static void setCredentials(Context context, ArrayList<String> credentialStrings) {
         checkIfReady();
 
-        CredentialManager.setCredentials(context, credentialStrings);
+        localCredentials = CredentialManager.fromCredentialStringArray(credentialStrings);
+
+        saveCredentials(context);
+
+        for (LocalNodeListener listener : localNodeListeners)
+            listener.onLocalCredentialsUpdated();
     }
 
     public static void removeAllCredentials(Context context) {
         checkIfReady();
 
-        CredentialManager.removeAllCredentials(context);
+        localCredentials.clear();
+
+        saveCredentials(context);
+
+        for (LocalNodeListener listener : localNodeListeners)
+            listener.onLocalCredentialsUpdated();
+    }
+
+    static void addLocalNodeListener(LocalNodeListener listener) {
+        localNodeListeners.add(listener);
+    }
+
+    static void removeLocalNodeListener(LocalNodeListener listener) {
+        localNodeListeners.remove(listener);
     }
 
     private final static String SHARED_PREFS_STRING         = "com.rvisdk.settings";

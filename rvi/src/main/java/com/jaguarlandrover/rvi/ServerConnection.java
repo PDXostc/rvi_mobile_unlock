@@ -21,6 +21,7 @@ import javax.net.SocketFactory;
 import javax.net.ssl.*;
 import java.io.*;
 import java.security.*;
+import java.security.cert.Certificate;
 
 /**
  * The TCP/IP server @RemoteConnectionInterface implementation
@@ -32,13 +33,10 @@ class ServerConnection implements RemoteConnectionInterface
 
     private String   mServerUrl;
     private Integer  mServerPort;
-    private KeyStore mClientKeyStore;
-    private KeyStore mServerKeyStore;
-    private String   mClientKeyStorePassword;
 
-    /**
-     * The socket.
-     */
+    private java.security.cert.Certificate[] mRemoteCertificates;
+    private java.security.cert.Certificate[] mLocalCertificates;
+
     private SSLSocket mSocket;
 
     @Override
@@ -76,7 +74,10 @@ class ServerConnection implements RemoteConnectionInterface
             if (mSocket != null)
                 mSocket.close(); // TODO: Put on background thread (and probably do in BluetoothConnection too)
 
-            mSocket = null;
+            mRemoteCertificates = null;
+            mLocalCertificates  = null;
+            mSocket             = null;
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -182,6 +183,12 @@ class ServerConnection implements RemoteConnectionInterface
                 Log.d(TAG, "Creating ssl socket");
 
                 mSocket = (SSLSocket) sf.createSocket(dstAddress, dstPort);
+
+                SSLSession session  = mSocket.getSession();
+                mRemoteCertificates = session.getPeerCertificates();
+                mLocalCertificates  = session.getLocalCertificates();
+
+                // TODO: Maybe make sure there's only one cert for each kind?
 
                 Log.d(TAG, "Creating ssl socket complete");
 
@@ -325,7 +332,15 @@ class ServerConnection implements RemoteConnectionInterface
         mServerPort = serverPort;
     }
 
-//    /**
+    public Certificate[] getRemoteCertificates() {
+        return mRemoteCertificates;
+    }
+
+    public Certificate[] getLocalCertificates() {
+        return mLocalCertificates;
+    }
+
+    //    /**
 //     * Sets the key store of the server certs
 //     * @param serverKeyStore the key store with the trusted server's cert used in TLS handshake
 //     */

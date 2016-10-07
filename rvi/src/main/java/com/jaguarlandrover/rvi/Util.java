@@ -100,6 +100,6 @@ class Util
             throw new IllegalArgumentException("Component \"" + identifierComponent + "\" contains an illegal character sequence: two or more '/'s in a row.");
 
         /* Trim leading and trailing '/'s for non-domain components. (If it was a domain, they already would have thrown an exception.) */
-        return identifierComponent.replaceAll("^/.*", "").replaceAll("/.*$", "");
+        return identifierComponent.replaceAll("^/", "").replaceAll("/$", "");
     }
 }

@@ -16,6 +16,9 @@ package com.jaguarlandrover.rvi;
 
 import android.util.Log;
 
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+
 /**
  * The remote connection manager of the RVI node.
  */
@@ -150,5 +153,13 @@ public class RemoteConnectionManager
      */
     void setListener(RemoteConnectionManagerListener listener) {
         mListener = listener;
+    }
+
+    Certificate[] getRemoteCertificates() {
+        return mRemoteConnection.getRemoteCertificates();
+    }
+
+    Certificate[] getLocalCertificates() {
+        return mRemoteConnection.getLocalCertificates();
     }
 }
