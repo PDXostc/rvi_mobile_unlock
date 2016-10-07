@@ -46,10 +46,6 @@ class Service
     @SerializedName("timeout")
     private Long mTimeout;
 
-    private transient Boolean mAuthorizedToInvoke  = false;
-
-    private transient Boolean mAuthorizedToReceive = false;
-
     Service() {}
 
     /**
@@ -102,8 +98,6 @@ class Service
     /* If the Service object was deserialized from json, some of its fields might not be set, but the mFullyQualifiedServiceIdentifier field will be set.
        If this is the case, parse out the mFullyQualifiedServiceIdentifier field into its parts and set the rest of the fields. */
     private Boolean shouldParseServiceName() {
-
-        //return mFullyQualifiedServiceIdentifier != null && (mDomain == null || mNodeIdentifier == null || mBundleIdentifier == null || mServiceIdentifier == null);
         return mFullyQualifiedServiceIdentifier != null && (mDomain == null || mNodeIdentifier == null || mServiceIdentifier == null);
     }
 
@@ -114,9 +108,6 @@ class Service
 
         mDomain = serviceParts[0];
         mNodeIdentifier = serviceParts[1] + "/" + serviceParts[2];
-
-        //mBundleIdentifier = serviceParts[3];
-        //mServiceIdentifier = serviceParts[4];
 
         StringBuilder builder = new StringBuilder();
         for (Integer i = 3; i < serviceParts.length; i++) {
@@ -138,7 +129,6 @@ class Service
         if (shouldParseServiceName())
             parseFullyQualifiedServiceName();
 
-        //return mDomain + "/" + mNodeIdentifier + "/" + mBundleIdentifier + "/" + mServiceIdentifier;
         return mDomain + "/" + mNodeIdentifier + "/" + mServiceIdentifier;
     }
 

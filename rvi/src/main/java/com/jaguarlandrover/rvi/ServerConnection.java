@@ -47,7 +47,7 @@ class ServerConnection implements RemoteConnectionInterface
             return;
         }
 
-        new SendDataTask(dlinkPacket).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);//, dlinkPacket.toJsonString());
+        new SendDataTask(dlinkPacket).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     @Override
@@ -57,7 +57,7 @@ class ServerConnection implements RemoteConnectionInterface
 
     @Override
     public boolean isConfigured() {
-        return !(mServerUrl == null || mServerUrl.isEmpty() || mServerPort == 0);// || mClientKeyStore == null || mServerKeyStore == null);
+        return !(mServerUrl == null || mServerUrl.isEmpty() || mServerPort == 0);
     }
 
     @Override
@@ -94,7 +94,7 @@ class ServerConnection implements RemoteConnectionInterface
         Log.d(TAG, "Connecting the socket: " + mServerUrl + ":" + mServerPort);
 
         ConnectTask connectAndAuthorizeTask =
-                new ConnectTask(mServerUrl, mServerPort, RVILocalNode.getServerKeyStore(), RVILocalNode.getDeviceKeyStore(), RVILocalNode.getDeviceKeyStorePassword());//mServerKeyStore, mClientKeyStore, mClientKeyStorePassword);
+                new ConnectTask(mServerUrl, mServerPort, RVILocalNode.getServerKeyStore(), RVILocalNode.getDeviceKeyStore(), RVILocalNode.getDeviceKeyStorePassword());
         connectAndAuthorizeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -137,41 +137,17 @@ class ServerConnection implements RemoteConnectionInterface
             clientKeyStorePassword = cksPass;
         }
 
-
-//        private KeyStore getKeyStore(String fileName, String type, String password) throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException { // type = "jks"?
-////            AssetManager assetManager = getAssetManager();
-////            AssetFileDescriptor fileDescriptor = assetManager.openFd(fileName);
-////            FileInputStream stream = fileDescriptor.createInputStream();
-//            File file = new File(fileName);
-//            FileInputStream fis = new FileInputStream(file);
-//            KeyStore ks = KeyStore.getInstance(type);
-//            ks.load(fis, password.toCharArray());
-//            fis.close(); // Now we initialize the TrustManagerFactory with this KeyStore
-//
-//            return ks;
-//        }
-//
-//        private KeyManager[] getKeyManagers(String keyStoreFileName, String keyStoreType, String keyStorePassword) throws IOException, GeneralSecurityException { // First, get the default KeyManagerFactory.
-//            String alg = KeyManagerFactory.getDefaultAlgorithm();
-//            KeyManagerFactory kmFact = KeyManagerFactory.getInstance(alg); // Next, set up the KeyStore to use. We need to load the file into // a KeyStore instance.
-//            kmFact.init(getKeyStore(keyStoreFileName, keyStoreType, keyStorePassword), keyStorePassword.toCharArray()); // And now get the TrustManagers
-//            KeyManager[] kms = kmFact.getKeyManagers();
-//
-//            return kms;
-//        }
-
-
         @Override
         protected Throwable doInBackground(Void... params) {
 
             try {
                 Log.d(TAG, "Creating socket factory");
 
-                String trustManagerAlgorithm = "X509";//TrustManagerFactory.getDefaultAlgorithm();
+                String trustManagerAlgorithm = "X509";
                 TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(trustManagerAlgorithm);
                 trustManagerFactory.init(serverKeyStore);
 
-                String keyManagerAlgorithm = "X509";//KeyManagerFactory.getDefaultAlgorithm();
+                String keyManagerAlgorithm = "X509";
                 KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(keyManagerAlgorithm);
                 keyManagerFactory.init(clientKeyStore, clientKeyStorePassword != null ? clientKeyStorePassword.toCharArray() : null);
 
@@ -306,10 +282,6 @@ class ServerConnection implements RemoteConnectionInterface
         }
     }
 
-    //public String getServerUrl() {
-    //    return mServerUrl;
-    //}
-
     /**
      * Sets server url.
      *
@@ -318,10 +290,6 @@ class ServerConnection implements RemoteConnectionInterface
     void setServerUrl(String serverUrl) {
         mServerUrl = serverUrl;
     }
-
-    //public Integer getServerPort() {
-    //    return mServerPort;
-    //}
 
     /**
      * Sets server port.
@@ -339,28 +307,4 @@ class ServerConnection implements RemoteConnectionInterface
     public Certificate[] getLocalCertificates() {
         return mLocalCertificates;
     }
-
-    //    /**
-//     * Sets the key store of the server certs
-//     * @param serverKeyStore the key store with the trusted server's cert used in TLS handshake
-//     */
-//    public void setServerKeyStore(KeyStore serverKeyStore) {
-//        mServerKeyStore = serverKeyStore;
-//    }
-//
-//    /**
-//     * Sets the key store of the client certs
-//     * @param clientKeyStore the key store with the trusted client's cert used in TLS handshake
-//     */
-//    void setClientKeyStore(KeyStore clientKeyStore) {
-//        mClientKeyStore = clientKeyStore;
-//    }
-//
-//    /**
-//     * Sets the key store of the client certs
-//     * @param clientKeyStorePassword the password of the key store with the trusted client's cert
-//     */
-//    void setClientKeyStorePassword(String clientKeyStorePassword) {
-//        mClientKeyStorePassword = clientKeyStorePassword;
-//    }
 }

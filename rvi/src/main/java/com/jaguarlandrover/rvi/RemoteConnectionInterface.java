@@ -35,13 +35,6 @@ interface RemoteConnectionInterface
      */
     boolean isConfigured();
 
-//    /**
-//     * Is the interface available.
-//     *
-//     * @return the boolean
-//     */
-//    boolean isAvailable();
-
     /**
      * Is the interface connected.
      *

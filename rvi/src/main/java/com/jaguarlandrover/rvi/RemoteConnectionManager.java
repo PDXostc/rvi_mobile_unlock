@@ -16,7 +16,6 @@ package com.jaguarlandrover.rvi;
 
 import android.util.Log;
 
-import java.security.KeyStore;
 import java.security.cert.Certificate;
 
 /**

@@ -74,12 +74,6 @@ class DlinkPacket
     @SerializedName("cmd")
     protected Command mCmd = null;
 
-//    /**
-//     * The signature.
-//     */
-//    @SerializedName("sign")
-//    protected String mSig = null;
-
     @SerializedName("rvi_log_id") /* Note: try to keep less than 20 characters */
     protected String mLogId = null;
 
