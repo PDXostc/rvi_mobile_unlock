@@ -17,6 +17,9 @@ package com.jaguarlandrover.rvi;
 import android.content.Context;
 import android.util.Log;
 
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -189,6 +192,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
      * Tells the local RVI node to connect to the remote RVI node, letting the RVINode choose the best connection.
      */
     public void connect() {
+        mRemoteConnectionManager.setKeyStores(RVILocalNode.getServerKeyStore(), RVILocalNode.getDeviceKeyStore(), RVILocalNode.getDeviceKeyStorePassword());
         mRemoteConnectionManager.connect();
     }
 
@@ -207,8 +211,8 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
     private ArrayList<String> getFullyQualifiedLocalServiceNames() {
         ArrayList<String> fullyQualifiedLocalServiceNames = new ArrayList<>(mAuthorizedLocalServices.size());
         for (Service service : mAuthorizedLocalServices.values())
-            if (service.getFullyQualifiedServiceName() != null)
-                fullyQualifiedLocalServiceNames.add(service.getFullyQualifiedServiceName());
+            if (service.getFullyQualifiedServiceIdentifier() != null)
+                fullyQualifiedLocalServiceNames.add(service.getFullyQualifiedServiceIdentifier());
 
         return fullyQualifiedLocalServiceNames;
     }
@@ -342,64 +346,90 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
     }
 
     private void validateLocalCredentials() {
-        Certificate remoteCertificate = mRemoteConnectionManager.getRemoteDeviceCertificate();
         Certificate localCertificate  = mRemoteConnectionManager.getLocalDeviceCertificate();
         Certificate serverCertificate = mRemoteConnectionManager.getServerCertificate();
 
+        if (localCertificate == null || serverCertificate == null) return; // TODO: There's a problem, but have we already handled it and disconnected?
+
         ArrayList<Credential> localCredentials = RVILocalNode.getCredentials();
 
-        // Blah blah blah, validate credentials
+        mValidLocalCredentials.clear();
 
-        mValidLocalCredentials.addAll(localCredentials);
+        for (Credential credential : localCredentials) {
+            if (credential.validateAndParse(serverCertificate.getPublicKey()) && credential.deviceCertificateMatches(localCertificate))
+                mValidLocalCredentials.add(credential);
+        }
     }
 
     private void validateRemoteCredentials() {
         Certificate remoteCertificate = mRemoteConnectionManager.getRemoteDeviceCertificate();
-        Certificate localCertificate  = mRemoteConnectionManager.getLocalDeviceCertificate();
         Certificate serverCertificate = mRemoteConnectionManager.getServerCertificate();
+
+        if (remoteCertificate == null || serverCertificate == null) return; // TODO: There's a problem, but have we already handled it and disconnected?
 
         ArrayList<Credential> remoteCredentials = mRemoteCredentials;
 
-        // Blah blah blah, validate credentials
+        mValidRemoteCredentials.clear();
 
-        mValidRemoteCredentials.addAll(remoteCredentials);
+        for (Credential credential : remoteCredentials) {
+            if (credential.validateAndParse(serverCertificate.getPublicKey()) && credential.deviceCertificateMatches(remoteCertificate))
+                mValidRemoteCredentials.add(credential);
+        }
     }
 
     private void sortThroughLocalServices() {
-        Certificate remoteCertificate = mRemoteConnectionManager.getRemoteDeviceCertificate();
-        Certificate localCertificate  = mRemoteConnectionManager.getLocalDeviceCertificate();
-        Certificate serverCertificate = mRemoteConnectionManager.getServerCertificate();
+        ArrayList<Service> allLocalServices = RVILocalNode.getLocalServices();
+        ArrayList<Service> authorizedToReceive = new ArrayList<>();
+        ArrayList<Service> authorizedLocalServices = new ArrayList<>();
 
-        ArrayList<Service> allLocalServices  = RVILocalNode.getLocalServices();
-        ArrayList<Service> authorizedLocalServices  = RVILocalNode.getLocalServices();
+        for (Credential credential : mValidLocalCredentials) {
+            for (Service service : allLocalServices) {
+                if (credential.grantsRightToReceive(service.getFullyQualifiedServiceIdentifier()))
+                    authorizedToReceive.add(service);
+            }
+        }
 
-        // Blah blah blah, validate services against credentials
-
-        authorizedLocalServices = allLocalServices;
+        for (Credential credential : mValidRemoteCredentials) {
+            for (Service service : authorizedToReceive) {
+                if (credential.grantsRightToInvoke(service.getFullyQualifiedServiceIdentifier()))
+                    authorizedLocalServices.add(service);
+            }
+        }
 
         mAuthorizedLocalServices.clear();
 
         for (Service service : authorizedLocalServices)
-            mAuthorizedLocalServices.put(service.getServiceIdentifier(), service);
+            mAuthorizedLocalServices.put(service.getFullyQualifiedServiceIdentifier(), service);
+
+        if (mListener != null) mListener.nodeDidAuthorizeLocalServices(this, mAuthorizedLocalServices.keySet());
     }
 
+    // TODO: The remote node does this too, in which case the list never changes, right?
     private void sortThroughRemoteServices() {
-        Certificate remoteCertificate = mRemoteConnectionManager.getRemoteDeviceCertificate();
-        Certificate localCertificate  = mRemoteConnectionManager.getLocalDeviceCertificate();
-        Certificate serverCertificate = mRemoteConnectionManager.getServerCertificate();
-
         ArrayList<Service> allRemoteServices = new ArrayList<Service>(mAuthorizedRemoteServices.values());
-        ArrayList<Service> authorizedRemoteServices = new ArrayList<Service>(mAuthorizedRemoteServices.values());
+        ArrayList<Service> authorizedToInvoke = new ArrayList<>();
+        ArrayList<Service> authorizedRemoteServices = new ArrayList<>();
 
-        // Blah blah blah, validate services against credentials
+        for (Credential credential : mValidLocalCredentials) {
+            for (Service service : allRemoteServices) {
+                if (credential.grantsRightToInvoke(service.getFullyQualifiedServiceIdentifier()))
+                    authorizedToInvoke.add(service);
+            }
+        }
 
-        authorizedRemoteServices = allRemoteServices;
+        for (Credential credential : mValidRemoteCredentials) {
+            for (Service service : authorizedToInvoke) {
+                if (credential.grantsRightToReceive(service.getFullyQualifiedServiceIdentifier()))
+                    authorizedRemoteServices.add(service);
+            }
+        }
 
         mAuthorizedRemoteServices.clear();
 
         for (Service service : authorizedRemoteServices)
-            mAuthorizedRemoteServices.put(service.getServiceIdentifier(), service);
+            mAuthorizedRemoteServices.put(service.getFullyQualifiedServiceIdentifier(), service);
 
+        if (mListener != null) mListener.nodeDidAuthorizeRemoteServices(this, mAuthorizedRemoteServices.keySet());
     }
 
     @Override

@@ -209,13 +209,13 @@ class ServerNode
             }
 
             @Override
-            public void nodeDidAuthorizeLocalServices(RVIRemoteNode node, ArrayList<String> serviceIdentifiers) {
-
+            public void nodeDidAuthorizeLocalServices(RVIRemoteNode node, Set<String> serviceIdentifiers) {
+                Log.d(TAG, "Local services available: " + serviceIdentifiers.toString());
             }
 
             @Override
-            public void nodeDidAuthorizeRemoteServices(RVIRemoteNode node, ArrayList<String> serviceIdentifiers) {
-
+            public void nodeDidAuthorizeRemoteServices(RVIRemoteNode node, Set<String> serviceIdentifiers) {
+                Log.d(TAG, "Remote services available: " + serviceIdentifiers.toString());
             }
         };
 

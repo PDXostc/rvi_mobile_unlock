@@ -16,6 +16,7 @@ package com.jaguarlandrover.rvi;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import java.util.ArrayList;
+import java.util.Set;
 
 public interface RVIRemoteNodeListener
 {
@@ -91,7 +92,7 @@ public interface RVIRemoteNodeListener
      *
      *  @param serviceIdentifiers The list of local service identifiers that are authorized
      */
-    void nodeDidAuthorizeLocalServices(RVIRemoteNode node, ArrayList<String> serviceIdentifiers);
+    void nodeDidAuthorizeLocalServices(RVIRemoteNode node, Set<String> serviceIdentifiers);
 
     /**
      * Called when new remote services become authorized for the local RVI node to invoke.
@@ -100,5 +101,5 @@ public interface RVIRemoteNodeListener
      *
      *  @param serviceIdentifiers The list of local service identifiers that are authorized
      */
-    void nodeDidAuthorizeRemoteServices(RVIRemoteNode node, ArrayList<String> serviceIdentifiers);
+    void nodeDidAuthorizeRemoteServices(RVIRemoteNode node, Set<String> serviceIdentifiers);
 }

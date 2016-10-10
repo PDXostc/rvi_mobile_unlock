@@ -57,25 +57,25 @@ class CredentialManager {
         return credentialObjects;
     }
 
-    static void validateCredentials(KeyStore keyStore, ArrayList<Credential> credentialsList) {
-        if (keyStore == null) return;
-
-        try {
-            Enumeration<String> aliases = keyStore.aliases();
-
-            while (aliases.hasMoreElements()) {
-                String alias = aliases.nextElement();
-
-                KeyStore.TrustedCertificateEntry entry = (KeyStore.TrustedCertificateEntry) keyStore.getEntry(alias, null);
-                X509Certificate certificate = (X509Certificate) entry.getTrustedCertificate();
-
-                Key key = certificate.getPublicKey();
-
-                for (Credential credential : credentialsList)
-                    credential.isValid(key);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    static void validateCredentials(KeyStore keyStore, ArrayList<Credential> credentialsList) {
+//        if (keyStore == null) return;
+//
+//        try {
+//            Enumeration<String> aliases = keyStore.aliases();
+//
+//            while (aliases.hasMoreElements()) {
+//                String alias = aliases.nextElement();
+//
+//                KeyStore.TrustedCertificateEntry entry = (KeyStore.TrustedCertificateEntry) keyStore.getEntry(alias, null);
+//                X509Certificate certificate = (X509Certificate) entry.getTrustedCertificate();
+//
+//                Key key = certificate.getPublicKey();
+//
+//                for (Credential credential : credentialsList)
+//                    credential.isValid(key);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 }

@@ -143,6 +143,16 @@ class ServerConnection implements RemoteConnectionInterface
         protected Throwable doInBackground(Void... params) {
 
             try {
+
+                try {
+                    KeyStore keyStore = KeyStore.getInstance("BKS", "BC");
+                    keyStore.load(null, null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+
                 Log.d(TAG, "Creating socket factory");
 
                 String trustManagerAlgorithm = "X509";
@@ -164,8 +174,8 @@ class ServerConnection implements RemoteConnectionInterface
 
                 SSLSession session  = mSocket.getSession();
 
-                java.security.cert.Certificate[] peerCertificates = session.getPeerCertificates();;
-                java.security.cert.Certificate[] localCertificates = session.getLocalCertificates();;
+                java.security.cert.Certificate[] peerCertificates = session.getPeerCertificates();
+                java.security.cert.Certificate[] localCertificates = session.getLocalCertificates();
 
                 if (peerCertificates == null || peerCertificates.length != 1) {
                     throw new Exception("Remote certificate chain is null or contains more than 1 certificate");
@@ -335,8 +345,6 @@ class ServerConnection implements RemoteConnectionInterface
         try {
             if (mLocalDeviceKeyStore == null) throw new Exception("Device keystore is null");
 
-            mLocalDeviceKeyStore.load(null, mLocalDeviceKeyStorePassword == null ? null : mLocalDeviceKeyStorePassword.toCharArray());
-
             Enumeration<String> aliases = mLocalDeviceKeyStore.aliases();
 
             String alias = aliases.nextElement();
@@ -356,8 +364,6 @@ class ServerConnection implements RemoteConnectionInterface
     public Certificate getServerCertificate() {
         try {
             if (mServerKeyStore == null) throw new Exception("Server keystore is null");
-
-            mServerKeyStore.load(null);
 
             Enumeration<String> aliases = mServerKeyStore.aliases();
 

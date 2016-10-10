@@ -64,7 +64,7 @@ class Service
         mBundleIdentifier  = bundleIdentifier;
         mServiceIdentifier = serviceIdentifier;
 
-        mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceName();
+        mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceIdentifier();
     }
 
     HashMap unwrap(ArrayList<LinkedTreeMap> parameters) {
@@ -125,7 +125,7 @@ class Service
      *
      * @return the fully qualified service name
      */
-    String getFullyQualifiedServiceName() {
+    String getFullyQualifiedServiceIdentifier() {
         if (shouldParseServiceName())
             parseFullyQualifiedServiceName();
 
@@ -153,7 +153,7 @@ class Service
      */
     void setNodeIdentifier(String nodeIdentifier) {
         mNodeIdentifier = nodeIdentifier;
-        mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceName();
+        mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceIdentifier();
     }
 
     /**
@@ -170,7 +170,7 @@ class Service
 
     public void setDomain(String domain) {
         mDomain = domain;
-        mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceName();
+        mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceIdentifier();
     }
 
     /**

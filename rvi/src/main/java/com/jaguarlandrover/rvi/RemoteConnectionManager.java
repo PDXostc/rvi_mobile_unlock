@@ -130,9 +130,9 @@ public class RemoteConnectionManager
     }
 
     void setKeyStores(KeyStore serverKeyStore, KeyStore deviceKeyStore, String deviceKeyStorePassword) {
-        mRemoteConnection.setServerKeyStore(serverKeyStore);
-        mRemoteConnection.setLocalDeviceKeyStore(deviceKeyStore);
-        mRemoteConnection.setLocalDeviceKeyStorePassword(deviceKeyStorePassword);
+        mDirectServerConnection.setServerKeyStore(serverKeyStore);
+        mDirectServerConnection.setLocalDeviceKeyStore(deviceKeyStore);
+        mDirectServerConnection.setLocalDeviceKeyStorePassword(deviceKeyStorePassword);
     }
 
     /**

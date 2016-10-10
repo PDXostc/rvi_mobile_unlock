@@ -173,31 +173,36 @@ public class RVILocalNode {
         return new ArrayList<Service>(allLocalServices.values());
     }
 
-    private static void validateKeystore(KeyStore keyStore, String password) throws Exception {
-        if (keyStore != null) {
-            keyStore.load(null, password == null ? null : password.toCharArray());
-
-            Enumeration<String> aliases = keyStore.aliases();
-
-            if (!aliases.hasMoreElements())
-                return; /* If the device keystore requires a password, but we haven't passed the password yet, then loading the keystore results in no entries,
-                           which we don't really have to check for here anyway, because if keystore really doesn't have entries at time of connection when
-                           passing the password for real or bc maybe it was just empty, the connection would fail anyway. */
-
-            String firstAlias = aliases.nextElement();
-            if (aliases.hasMoreElements())
-                throw new Exception("Keystore contains more than one entry");
-        }
-    }
+//    private static void validateKeystore(KeyStore keyStore, String password) throws Exception {
+//        if (keyStore != null) {
+////            keyStore.load(null, password == null ? null : password.toCharArray());
+//
+//            Enumeration<String> aliases = keyStore.aliases();
+//
+//            if (!aliases.hasMoreElements())
+//                return; /* If the device keystore requires a password, but we haven't passed the password yet, then loading the keystore results in no entries,
+//                           which we don't really have to check for here anyway, because if keystore really doesn't have entries at time of connection when
+//                           passing the password for real or bc maybe it was just empty, the connection would fail anyway. */
+//
+//            String firstAlias = aliases.nextElement();
+//            if (aliases.hasMoreElements())
+//                throw new Exception("Keystore contains more than one entry");
+//        }
+//    }
 
     static KeyStore getServerKeyStore() {
         return serverKeyStore;
     }
 
+    /**
+     * Set the BKS key store containing the server cert. Keystore needs to be loaded and can only contain 1 entry. // TODO: Confirm loaded and one entry
+     * @param serverKeyStore
+     * @throws Exception
+     */
     public static void setServerKeyStore(KeyStore serverKeyStore) throws Exception {
         checkIfReady();
 
-        validateKeystore(serverKeyStore, null);
+//        validateKeystore(serverKeyStore, null);
 
         RVILocalNode.serverKeyStore = serverKeyStore;
     }
@@ -209,7 +214,7 @@ public class RVILocalNode {
     public static void setDeviceKeyStore(KeyStore deviceKeyStore) throws Exception {
         checkIfReady();
 
-        validateKeystore(deviceKeyStore, RVILocalNode.deviceKeyStorePassword);
+//        validateKeystore(deviceKeyStore, RVILocalNode.deviceKeyStorePassword);
 
         RVILocalNode.deviceKeyStore = deviceKeyStore;
     }
@@ -221,7 +226,7 @@ public class RVILocalNode {
     public static void setDeviceKeyStorePassword(String deviceKeyStorePassword) throws Exception {
         checkIfReady();
 
-        validateKeystore(RVILocalNode.deviceKeyStore, deviceKeyStorePassword);
+//        validateKeystore(RVILocalNode.deviceKeyStore, deviceKeyStorePassword);
 
         RVILocalNode.deviceKeyStorePassword = deviceKeyStorePassword;
     }
