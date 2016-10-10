@@ -42,8 +42,8 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
 
     private ArrayList<Credential> mRemoteCredentials = new ArrayList<>();
 
-    ArrayList<Credential> mValidRemoteCredentials = new ArrayList<Credential>();
-    ArrayList<Credential> mValidLocalCredentials  = new ArrayList<Credential>();
+    private ArrayList<Credential> mValidRemoteCredentials = new ArrayList<Credential>();
+    private ArrayList<Credential> mValidLocalCredentials  = new ArrayList<Credential>();
 
     private Integer mRemotePort;
     private String  mRemoteAddr;
@@ -260,7 +260,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
                     pendingServiceInvocation.setNodeIdentifier(service.getNodeIdentifier());
                     pendingServiceInvocation.setDomain(service.getDomain());
 
-                    invokeService(service);
+                    invokeService(pendingServiceInvocation);
                 }
             }
 
@@ -272,7 +272,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
      * Invoke/update a remote service on the remote RVI node
      *
      * @param serviceIdentifier the service identifier
-     * @param parameters the parameters
+     * @param parameters the parameters; must be a json-serializable object, that serializes into a json object
      * @param timeout the timeout, in milliseconds. This is added to the current system time.
      */
     public void invokeService(String serviceIdentifier, Object parameters, Integer timeout) {
@@ -331,7 +331,9 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
             addRemoteService(serviceIdentifier, new Service(domain, nodeIdentifier, null, serviceIdentifier));
         }
 
-        sortThroughRemoteServices();
+        if (mListener != null) mListener.nodeDidAuthorizeRemoteServices(this, mAuthorizedRemoteServices.keySet());
+
+        //sortThroughRemoteServices();
     }
 
     private void handleAuthPacket(DlinkAuthPacket packet) {
@@ -341,11 +343,18 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
 
         validateRemoteCredentials();
         sortThroughLocalServices();
-        sortThroughRemoteServices();
+
+        //sortThroughRemoteServices();
+
+        mValidRemoteCredentials.clear(); // TODO: Check w Ulf about assumptions made wrt remote services and creds/auth and deleting list vs. adding to list and not checking against own creds
+        if (mListener != null) mListener.nodeDidAuthorizeRemoteServices(this, mAuthorizedRemoteServices.keySet());
+
         announceServices();
     }
 
     private void validateLocalCredentials() {
+        Log.d(TAG, "Validating local credentials...");
+
         Certificate localCertificate  = mRemoteConnectionManager.getLocalDeviceCertificate();
         Certificate serverCertificate = mRemoteConnectionManager.getServerCertificate();
 
@@ -362,6 +371,8 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
     }
 
     private void validateRemoteCredentials() {
+        Log.d(TAG, "Validating remote credentials...");
+
         Certificate remoteCertificate = mRemoteConnectionManager.getRemoteDeviceCertificate();
         Certificate serverCertificate = mRemoteConnectionManager.getServerCertificate();
 
@@ -378,6 +389,8 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
     }
 
     private void sortThroughLocalServices() {
+        Log.d(TAG, "Sorting through local service list...");
+
         ArrayList<Service> allLocalServices = RVILocalNode.getLocalServices();
         ArrayList<Service> authorizedToReceive = new ArrayList<>();
         ArrayList<Service> authorizedLocalServices = new ArrayList<>();
@@ -404,47 +417,53 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
         if (mListener != null) mListener.nodeDidAuthorizeLocalServices(this, mAuthorizedLocalServices.keySet());
     }
 
-    // TODO: The remote node does this too, in which case the list never changes, right?
-    private void sortThroughRemoteServices() {
-        ArrayList<Service> allRemoteServices = new ArrayList<Service>(mAuthorizedRemoteServices.values());
-        ArrayList<Service> authorizedToInvoke = new ArrayList<>();
-        ArrayList<Service> authorizedRemoteServices = new ArrayList<>();
-
-        for (Credential credential : mValidLocalCredentials) {
-            for (Service service : allRemoteServices) {
-                if (credential.grantsRightToInvoke(service.getFullyQualifiedServiceIdentifier()))
-                    authorizedToInvoke.add(service);
-            }
-        }
-
-        for (Credential credential : mValidRemoteCredentials) {
-            for (Service service : authorizedToInvoke) {
-                if (credential.grantsRightToReceive(service.getFullyQualifiedServiceIdentifier()))
-                    authorizedRemoteServices.add(service);
-            }
-        }
-
-        mAuthorizedRemoteServices.clear();
-
-        for (Service service : authorizedRemoteServices)
-            mAuthorizedRemoteServices.put(service.getFullyQualifiedServiceIdentifier(), service);
-
-        if (mListener != null) mListener.nodeDidAuthorizeRemoteServices(this, mAuthorizedRemoteServices.keySet());
-    }
+//    // TODO: The remote node does this too, in which case the list never changes, right?
+//    private void sortThroughRemoteServices() {
+//        ArrayList<Service> allRemoteServices = new ArrayList<Service>(mAuthorizedRemoteServices.values());
+//        ArrayList<Service> authorizedToInvoke = new ArrayList<>();
+//        ArrayList<Service> authorizedRemoteServices = new ArrayList<>();
+//
+//        for (Credential credential : mValidLocalCredentials) {
+//            for (Service service : allRemoteServices) {
+//                if (credential.grantsRightToInvoke(service.getFullyQualifiedServiceIdentifier()))
+//                    authorizedToInvoke.add(service);
+//            }
+//        }
+//
+//        for (Credential credential : mValidRemoteCredentials) {
+//            for (Service service : authorizedToInvoke) {
+//                if (credential.grantsRightToReceive(service.getFullyQualifiedServiceIdentifier()))
+//                    authorizedRemoteServices.add(service);
+//            }
+//        }
+//
+//        //mAuthorizedRemoteServices.clear();
+//
+//        for (Service service : authorizedRemoteServices)
+//            mAuthorizedRemoteServices.put(service.getFullyQualifiedServiceIdentifier(), service);
+//
+//        if (mListener != null) mListener.nodeDidAuthorizeRemoteServices(this, mAuthorizedRemoteServices.keySet());
+//    }
 
     @Override
     public void onLocalServicesUpdated() {
+        Log.d(TAG, "Local services updated...");
+
         sortThroughLocalServices();
         announceServices();
     }
 
     @Override
     public void onLocalCredentialsUpdated() {
+        Log.d(TAG, "Local credentials updated...");
+
         validateLocalCredentials();
         authorizeNode();
 
         sortThroughLocalServices();
-        sortThroughRemoteServices();
+
+        //sortThroughRemoteServices();
+
         announceServices();
     }
 }

@@ -215,7 +215,10 @@ class Service
      * @param parameters the parameters
      */
     void setParameters(Object parameters) {
-        this.mParameters = this.mJsonParameters = parameters;
+        if (parameters == null)
+            this.mParameters = this.mJsonParameters = new Object();
+        else
+            this.mParameters = this.mJsonParameters = parameters;
     }
 
     /**

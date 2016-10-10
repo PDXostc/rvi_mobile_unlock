@@ -175,21 +175,12 @@ class ServerConnection implements RemoteConnectionInterface
                 SSLSession session  = mSocket.getSession();
 
                 java.security.cert.Certificate[] peerCertificates = session.getPeerCertificates();
-                java.security.cert.Certificate[] localCertificates = session.getLocalCertificates();
 
                 if (peerCertificates == null || peerCertificates.length != 1) {
                     throw new Exception("Remote certificate chain is null or contains more than 1 certificate");
                 }
 
                 mRemoteDeviceCertificate = peerCertificates[0];
-
-                for (Certificate certificate : peerCertificates) {
-                    Log.d(TAG, certificate.toString());
-                }
-
-                for (Certificate certificate : localCertificates) {
-                    Log.d(TAG, certificate.toString());
-                }
 
                 Log.d(TAG, "Creating ssl socket complete");
 
@@ -370,6 +361,8 @@ class ServerConnection implements RemoteConnectionInterface
             String alias = aliases.nextElement();
 
             KeyStore.TrustedCertificateEntry entry = (KeyStore.TrustedCertificateEntry) mServerKeyStore.getEntry(alias, null);
+
+            // TODO: Maybe check here if have more than one entry?
 
             return entry.getTrustedCertificate();
         } catch (Exception e) {

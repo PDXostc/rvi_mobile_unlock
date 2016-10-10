@@ -269,7 +269,7 @@ class ServerNode
             e.printStackTrace();
         }
 
-        rviNode.invokeService(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + REQUEST_CREDENTIALS, parameters, 5000);
+        rviNode.invokeService(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + REQUEST_CREDENTIALS, parameters, 60 * 1000);
     }
 
     static void modifyRemoteCredentials(UserCredentials remoteCredentials) {
