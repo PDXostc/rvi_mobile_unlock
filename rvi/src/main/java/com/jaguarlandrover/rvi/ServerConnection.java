@@ -22,6 +22,7 @@ import javax.net.ssl.*;
 import java.io.*;
 import java.security.*;
 import java.security.cert.Certificate;
+import java.util.Enumeration;
 
 /**
  * The TCP/IP server @RemoteConnectionInterface implementation
@@ -31,11 +32,14 @@ class ServerConnection implements RemoteConnectionInterface
     private final static String TAG = "RVI:ServerConnection";
     private RemoteConnectionListener mRemoteConnectionListener;
 
-    private String   mServerUrl;
-    private Integer  mServerPort;
+    private String  mServerUrl;
+    private Integer mServerPort;
 
-    private java.security.cert.Certificate[] mRemoteCertificates;
-    private java.security.cert.Certificate[] mLocalCertificates;
+    private java.security.cert.Certificate mRemoteDeviceCertificate;
+
+    private KeyStore mServerKeyStore = null;
+    private KeyStore mLocalDeviceKeyStore = null;
+    private String   mLocalDeviceKeyStorePassword = null;
 
     private SSLSocket mSocket;
 
@@ -57,7 +61,7 @@ class ServerConnection implements RemoteConnectionInterface
 
     @Override
     public boolean isConfigured() {
-        return !(mServerUrl == null || mServerUrl.isEmpty() || mServerPort == 0);
+        return !(mServerUrl == null || mServerUrl.isEmpty() || mServerPort == 0 || mServerKeyStore == null || mLocalDeviceKeyStore == null);
     }
 
     @Override
@@ -74,9 +78,8 @@ class ServerConnection implements RemoteConnectionInterface
             if (mSocket != null)
                 mSocket.close(); // TODO: Put on background thread (and probably do in BluetoothConnection too)
 
-            mRemoteCertificates = null;
-            mLocalCertificates  = null;
-            mSocket             = null;
+            mRemoteDeviceCertificate = null;
+            mSocket                  = null;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,8 +96,7 @@ class ServerConnection implements RemoteConnectionInterface
     private void connectSocket() {
         Log.d(TAG, "Connecting the socket: " + mServerUrl + ":" + mServerPort);
 
-        ConnectTask connectAndAuthorizeTask =
-                new ConnectTask(mServerUrl, mServerPort, RVILocalNode.getServerKeyStore(), RVILocalNode.getDeviceKeyStore(), RVILocalNode.getDeviceKeyStorePassword());
+        ConnectTask connectAndAuthorizeTask = new ConnectTask(mServerUrl, mServerPort, mServerKeyStore, mLocalDeviceKeyStore, mLocalDeviceKeyStorePassword);
         connectAndAuthorizeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -161,10 +163,23 @@ class ServerConnection implements RemoteConnectionInterface
                 mSocket = (SSLSocket) sf.createSocket(dstAddress, dstPort);
 
                 SSLSession session  = mSocket.getSession();
-                mRemoteCertificates = session.getPeerCertificates();
-                mLocalCertificates  = session.getLocalCertificates();
 
-                // TODO: Maybe make sure there's only one cert for each kind?
+                java.security.cert.Certificate[] peerCertificates = session.getPeerCertificates();;
+                java.security.cert.Certificate[] localCertificates = session.getLocalCertificates();;
+
+                if (peerCertificates == null || peerCertificates.length != 1) {
+                    throw new Exception("Remote certificate chain is null or contains more than 1 certificate");
+                }
+
+                mRemoteDeviceCertificate = peerCertificates[0];
+
+                for (Certificate certificate : peerCertificates) {
+                    Log.d(TAG, certificate.toString());
+                }
+
+                for (Certificate certificate : localCertificates) {
+                    Log.d(TAG, certificate.toString());
+                }
 
                 Log.d(TAG, "Creating ssl socket complete");
 
@@ -300,11 +315,63 @@ class ServerConnection implements RemoteConnectionInterface
         mServerPort = serverPort;
     }
 
-    public Certificate[] getRemoteCertificates() {
-        return mRemoteCertificates;
+    public void setServerKeyStore(KeyStore serverKeyStore) {
+        mServerKeyStore = serverKeyStore;
     }
 
-    public Certificate[] getLocalCertificates() {
-        return mLocalCertificates;
+    public void setLocalDeviceKeyStore(KeyStore localDeviceKeyStore) {
+        mLocalDeviceKeyStore = localDeviceKeyStore;
+    }
+
+    public void setLocalDeviceKeyStorePassword(String localDeviceKeyStorePassword) {
+        mLocalDeviceKeyStorePassword = localDeviceKeyStorePassword;
+    }
+
+    public Certificate getRemoteDeviceCertificate() {
+        return mRemoteDeviceCertificate;
+    }
+
+    public Certificate getLocalDeviceCertificate() {
+        try {
+            if (mLocalDeviceKeyStore == null) throw new Exception("Device keystore is null");
+
+            mLocalDeviceKeyStore.load(null, mLocalDeviceKeyStorePassword == null ? null : mLocalDeviceKeyStorePassword.toCharArray());
+
+            Enumeration<String> aliases = mLocalDeviceKeyStore.aliases();
+
+            String alias = aliases.nextElement();
+
+            KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) mLocalDeviceKeyStore.getEntry(alias, null);
+
+            return entry.getCertificate();
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            disconnect(e);
+        }
+
+        return null;
+    }
+
+    public Certificate getServerCertificate() {
+        try {
+            if (mServerKeyStore == null) throw new Exception("Server keystore is null");
+
+            mServerKeyStore.load(null);
+
+            Enumeration<String> aliases = mServerKeyStore.aliases();
+
+            String alias = aliases.nextElement();
+
+            KeyStore.TrustedCertificateEntry entry = (KeyStore.TrustedCertificateEntry) mServerKeyStore.getEntry(alias, null);
+
+            return entry.getTrustedCertificate();
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            disconnect(e);
+        }
+
+        return null;
     }
 }

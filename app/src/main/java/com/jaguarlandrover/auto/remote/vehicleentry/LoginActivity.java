@@ -2,6 +2,7 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
 import android.content.*;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -16,7 +17,12 @@ import android.widget.Toast;
 import com.jaguarlandrover.pki.PKIManager;
 import com.jaguarlandrover.rvi.RVILocalNode;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Calendar;
 

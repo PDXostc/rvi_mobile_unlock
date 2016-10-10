@@ -52,7 +52,11 @@ public class RviService extends Service {
     //}
 
     public void setServerKeyStore(KeyStore serverKeyStore) {
-        RVILocalNode.setServerKeyStore(serverKeyStore);
+        try {
+            RVILocalNode.setServerKeyStore(serverKeyStore);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         //mServerKeyStore = serverKeyStore;
     }
@@ -62,7 +66,11 @@ public class RviService extends Service {
     //}
 
     public void setDeviceKeyStore(KeyStore deviceKeyStore) {
-        RVILocalNode.setDeviceKeyStore(deviceKeyStore);
+        try {
+            RVILocalNode.setDeviceKeyStore(deviceKeyStore);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         //mDeviceKeyStore = deviceKeyStore;
     }
@@ -72,7 +80,11 @@ public class RviService extends Service {
     //}
 
     public void setDeviceKeyStorePassword(String deviceKeyStorePassword) {
-        RVILocalNode.setDeviceKeyStorePassword(deviceKeyStorePassword);
+        try {
+            RVILocalNode.setDeviceKeyStorePassword(deviceKeyStorePassword);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         //mDeviceKeyStorePassword = deviceKeyStorePassword;
     }

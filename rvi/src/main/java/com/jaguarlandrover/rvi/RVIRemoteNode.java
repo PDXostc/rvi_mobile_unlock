@@ -342,10 +342,11 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
     }
 
     private void validateLocalCredentials() {
-        Certificate[] remoteCertificates = mRemoteConnectionManager.getRemoteCertificates();
-        Certificate[] localCertificates  = mRemoteConnectionManager.getLocalCertificates();
+        Certificate remoteCertificate = mRemoteConnectionManager.getRemoteDeviceCertificate();
+        Certificate localCertificate  = mRemoteConnectionManager.getLocalDeviceCertificate();
+        Certificate serverCertificate = mRemoteConnectionManager.getServerCertificate();
 
-        ArrayList<Credential> localCredentials  = RVILocalNode.getCredentials();
+        ArrayList<Credential> localCredentials = RVILocalNode.getCredentials();
 
         // Blah blah blah, validate credentials
 
@@ -353,8 +354,9 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
     }
 
     private void validateRemoteCredentials() {
-        Certificate[] remoteCertificates = mRemoteConnectionManager.getRemoteCertificates();
-        Certificate[] localCertificates  = mRemoteConnectionManager.getLocalCertificates();
+        Certificate remoteCertificate = mRemoteConnectionManager.getRemoteDeviceCertificate();
+        Certificate localCertificate  = mRemoteConnectionManager.getLocalDeviceCertificate();
+        Certificate serverCertificate = mRemoteConnectionManager.getServerCertificate();
 
         ArrayList<Credential> remoteCredentials = mRemoteCredentials;
 
@@ -364,8 +366,9 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
     }
 
     private void sortThroughLocalServices() {
-        Certificate[] remoteCertificates = mRemoteConnectionManager.getRemoteCertificates();
-        Certificate[] localCertificates  = mRemoteConnectionManager.getLocalCertificates();
+        Certificate remoteCertificate = mRemoteConnectionManager.getRemoteDeviceCertificate();
+        Certificate localCertificate  = mRemoteConnectionManager.getLocalDeviceCertificate();
+        Certificate serverCertificate = mRemoteConnectionManager.getServerCertificate();
 
         ArrayList<Service> allLocalServices  = RVILocalNode.getLocalServices();
         ArrayList<Service> authorizedLocalServices  = RVILocalNode.getLocalServices();
@@ -381,8 +384,9 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
     }
 
     private void sortThroughRemoteServices() {
-        Certificate[] remoteCertificates = mRemoteConnectionManager.getRemoteCertificates();
-        Certificate[] localCertificates  = mRemoteConnectionManager.getLocalCertificates();
+        Certificate remoteCertificate = mRemoteConnectionManager.getRemoteDeviceCertificate();
+        Certificate localCertificate  = mRemoteConnectionManager.getLocalDeviceCertificate();
+        Certificate serverCertificate = mRemoteConnectionManager.getServerCertificate();
 
         ArrayList<Service> allRemoteServices = new ArrayList<Service>(mAuthorizedRemoteServices.values());
         ArrayList<Service> authorizedRemoteServices = new ArrayList<Service>(mAuthorizedRemoteServices.values());
@@ -395,6 +399,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
 
         for (Service service : authorizedRemoteServices)
             mAuthorizedRemoteServices.put(service.getServiceIdentifier(), service);
+
     }
 
     @Override

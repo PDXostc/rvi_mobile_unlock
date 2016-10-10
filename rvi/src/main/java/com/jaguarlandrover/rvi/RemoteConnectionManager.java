@@ -16,6 +16,8 @@ package com.jaguarlandrover.rvi;
 
 import android.util.Log;
 
+import java.security.Key;
+import java.security.KeyStore;
 import java.security.cert.Certificate;
 
 /**
@@ -127,6 +129,12 @@ public class RemoteConnectionManager
         }
     }
 
+    void setKeyStores(KeyStore serverKeyStore, KeyStore deviceKeyStore, String deviceKeyStorePassword) {
+        mRemoteConnection.setServerKeyStore(serverKeyStore);
+        mRemoteConnection.setLocalDeviceKeyStore(deviceKeyStore);
+        mRemoteConnection.setLocalDeviceKeyStorePassword(deviceKeyStorePassword);
+    }
+
     /**
      * Sets the server url to the remote RVI node, when using a TCP/IP link to interface with a remote node.
      *
@@ -154,11 +162,15 @@ public class RemoteConnectionManager
         mListener = listener;
     }
 
-    Certificate[] getRemoteCertificates() {
-        return mRemoteConnection.getRemoteCertificates();
+    Certificate getRemoteDeviceCertificate() {
+        return mRemoteConnection.getRemoteDeviceCertificate();
     }
 
-    Certificate[] getLocalCertificates() {
-        return mRemoteConnection.getLocalCertificates();
+    Certificate getLocalDeviceCertificate() {
+        return mRemoteConnection.getLocalDeviceCertificate();
+    }
+
+    Certificate getServerCertificate() {
+        return mRemoteConnection.getServerCertificate();
     }
 }

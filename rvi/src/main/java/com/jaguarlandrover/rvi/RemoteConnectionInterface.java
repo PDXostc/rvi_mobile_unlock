@@ -14,6 +14,7 @@ package com.jaguarlandrover.rvi;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import java.security.KeyStore;
 import java.security.cert.Certificate;
 
 /**
@@ -58,10 +59,18 @@ interface RemoteConnectionInterface
      * @param remoteConnectionListener the remote connection listener
      */
     void setRemoteConnectionListener(RemoteConnectionListener remoteConnectionListener); // TODO: Probably bad architecture to expect interface implementations to correctly set and use an
-                                                                                         // TODO, cont'd: instance of the RemoteConnectionListener. Not sure what the best Java paradigm would be in this case
-    Certificate[] getRemoteCertificates();
 
-    Certificate[] getLocalCertificates();
+    void setServerKeyStore(KeyStore serverKeyStore);
+
+    void setLocalDeviceKeyStore(KeyStore localDeviceKeyStore);
+
+    void setLocalDeviceKeyStorePassword(String localDeviceKeyStorePassword);
+
+    Certificate getRemoteDeviceCertificate();
+
+    Certificate getLocalDeviceCertificate();
+
+    Certificate getServerCertificate();
 
     /**
      * The remote connection listener interface.

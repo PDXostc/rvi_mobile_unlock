@@ -24,10 +24,18 @@ import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.Key;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 import java.util.UUID;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -165,12 +173,31 @@ public class RVILocalNode {
         return new ArrayList<Service>(allLocalServices.values());
     }
 
+    private static void validateKeystore(KeyStore keyStore, String password) throws Exception {
+        if (keyStore != null) {
+            keyStore.load(null, password == null ? null : password.toCharArray());
+
+            Enumeration<String> aliases = keyStore.aliases();
+
+            if (!aliases.hasMoreElements())
+                return; /* If the device keystore requires a password, but we haven't passed the password yet, then loading the keystore results in no entries,
+                           which we don't really have to check for here anyway, because if keystore really doesn't have entries at time of connection when
+                           passing the password for real or bc maybe it was just empty, the connection would fail anyway. */
+
+            String firstAlias = aliases.nextElement();
+            if (aliases.hasMoreElements())
+                throw new Exception("Keystore contains more than one entry");
+        }
+    }
+
     static KeyStore getServerKeyStore() {
         return serverKeyStore;
     }
 
-    public static void setServerKeyStore(KeyStore serverKeyStore) {
+    public static void setServerKeyStore(KeyStore serverKeyStore) throws Exception {
         checkIfReady();
+
+        validateKeystore(serverKeyStore, null);
 
         RVILocalNode.serverKeyStore = serverKeyStore;
     }
@@ -179,8 +206,10 @@ public class RVILocalNode {
         return deviceKeyStore;
     }
 
-    public static void setDeviceKeyStore(KeyStore deviceKeyStore) {
+    public static void setDeviceKeyStore(KeyStore deviceKeyStore) throws Exception {
         checkIfReady();
+
+        validateKeystore(deviceKeyStore, RVILocalNode.deviceKeyStorePassword);
 
         RVILocalNode.deviceKeyStore = deviceKeyStore;
     }
@@ -189,11 +218,41 @@ public class RVILocalNode {
         return deviceKeyStorePassword;
     }
 
-    public static void setDeviceKeyStorePassword(String deviceKeyStorePassword) {
+    public static void setDeviceKeyStorePassword(String deviceKeyStorePassword) throws Exception {
         checkIfReady();
+
+        validateKeystore(RVILocalNode.deviceKeyStore, deviceKeyStorePassword);
 
         RVILocalNode.deviceKeyStorePassword = deviceKeyStorePassword;
     }
+
+//    static Certificate getDeviceCertificate() throws Exception {
+//        if (deviceKeyStore == null) throw new Exception("Device keystore is null");
+//
+//        deviceKeyStore.load(null, deviceKeyStorePassword == null ? null : deviceKeyStorePassword.toCharArray());
+//
+//        Enumeration<String> aliases = deviceKeyStore.aliases();
+//
+//        String alias = aliases.nextElement();
+//
+//        KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) deviceKeyStore.getEntry(alias, null);
+//
+//        return entry.getCertificate();
+//    }
+//
+//    static Certificate getServerCertificate() throws Exception {
+//        if (serverKeyStore == null) throw new Exception("Server keystore is null");
+//
+//        serverKeyStore.load(null);
+//
+//        Enumeration<String> aliases = serverKeyStore.aliases();
+//
+//        String alias = aliases.nextElement();
+//
+//        KeyStore.TrustedCertificateEntry entry = (KeyStore.TrustedCertificateEntry) serverKeyStore.getEntry(alias, null);
+//
+//        return entry.getTrustedCertificate();
+//    }
 
     private static void saveCredentials(Context context) {
         Gson gson = new Gson();
