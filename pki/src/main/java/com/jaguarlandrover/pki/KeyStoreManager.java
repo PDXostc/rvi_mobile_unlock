@@ -70,7 +70,7 @@ import javax.security.auth.x500.X500Principal;
 /* Code from here: http://stackoverflow.com/a/37898553 */
 class KeyStoreManager
 {
-    private final static String TAG = "PKI/KeyStoreManager    ";
+    private final static String TAG = "PKI/KeyStoreManager____";
 
     private final static String KEYSTORE_CLIENT_ALIAS = "RVI_CLIENT_KEYSTORE_ALIAS";
     private final static String KEYSTORE_SERVER_ALIAS = "RVI_SERVER_KEYSTORE_ALIAS";

@@ -40,7 +40,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 class ServerInterface
 {
-    private final static String TAG = "PKI/ServerInterface    ";
+    private final static String TAG = "PKI/ServerInterface____";
 
     static String sendStringToProvisioningServer(String baseUrl, String requestUrl, String data) {
 

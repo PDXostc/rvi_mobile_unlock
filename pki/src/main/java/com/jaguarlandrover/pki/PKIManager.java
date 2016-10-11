@@ -28,7 +28,7 @@ import java.util.Date;
 
 public class PKIManager
 {
-    private final static String TAG = "PKI/PKIManager         ";
+    private final static String TAG = "PKI/PKIManager_________";
 
     private static PKIManager ourInstance = new PKIManager();
 
