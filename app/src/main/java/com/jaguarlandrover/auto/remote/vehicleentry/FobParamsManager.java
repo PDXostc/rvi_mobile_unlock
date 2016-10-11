@@ -22,14 +22,14 @@ import android.os.Bundle;
 import android.util.Log;
 import com.google.gson.annotations.SerializedName;
 
-public class FobParamsManager
+class FobParamsManager
 {
     private final static String TAG = "UnlockDemo:FobParams";
 
     private static double lat = 0;
     private static double lon = 0;
 
-    LocationManager  mLocationManager  = (LocationManager) UnlockApplication.getContext().getSystemService(Context.LOCATION_SERVICE);
+    private LocationManager mLocationManager = (LocationManager) UnlockApplication.getContext().getSystemService(Context.LOCATION_SERVICE);
     private LocationListener mLocationListener = new LocationListener()
     {
         @Override
@@ -37,7 +37,7 @@ public class FobParamsManager
             lat = location.getLatitude();
             lon = location.getLongitude();
 
-            Log.d(TAG, "MY CURRENT LOCATION - Latitude = " + lat + " Longitude = " + lon);
+            //Log.d(TAG, "MY CURRENT LOCATION - Latitude = " + lat + " Longitude = " + lon);
         }
 
         @Override
@@ -62,11 +62,11 @@ public class FobParamsManager
         //    mLocationManager = (LocationManager) UnlockApplication.getContext().getSystemService(Context.LOCATION_SERVICE);
     }
 
-    public static void startUpdatingLocation() {
+    static void startUpdatingLocation() {
         ourInstance.mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60, 1, ourInstance.mLocationListener);
     }
 
-    public static void stopUpdatingLocation() {
+    static void stopUpdatingLocation() {
         ourInstance.mLocationManager.removeUpdates(ourInstance.mLocationListener);
     }
 
@@ -84,24 +84,27 @@ public class FobParamsManager
         @SerializedName("vehicleVIN")
         private String mVehicleVin;
 
-        public FobParams() {
-            UserCredentials userCredentials = ServerNode.getUserCredentials();
+        FobParams() {
+            //UserCredentials userCredentials = ServerNode.getUserData();
+            User userData = ServerNode.getUserData();
+
             mLat = lat;
             mLon = lon;
-            mUsername = userCredentials.getUserName();
-            mVehicleVin = userCredentials.getVehicleVin();
+            mUsername = userData.getUserName();
+
+            //mVehicleVin = userData.getVehicleVin(); // TODO: Make sure this isn't needed
         }
     }
 
 //    public static FobParamsManager getSnapshot() {
 //        Log.d(TAG, "getSnapshot()");
-//        UserCredentials userCredentials = ServerNode.getUserCredentials();
+//        UserCredentials userCredentials = ServerNode.getUserData();
 //        FobParamsManager copy = new FobParamsManager();
 //
 //        copy.mLat = ourInstance.mLat;
 //        copy.mLon = ourInstance.mLon;
 //        copy.mUsername = userCredentials.getUserName();
-//        copy.mVehicleVin = userCredentials.getVehicleVin();
+//        copy.mVehicleVin = userCredentials.getVehicleId();
 //
 //        return copy;
 //    }

@@ -62,8 +62,8 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
                         try{
-                            //RviService.sendKey(share_fragment.getRemoteCredentials());
-                            ServerNode.createRemoteCredentials(share_fragment.getRemoteCredentials());
+                            //RviService.sendKey(share_fragment.getSharingUser());
+                            ServerNode.authorizeServices(share_fragment.getSharingUser());
                             confirmationMessage();
                         } catch (Exception e) {
 

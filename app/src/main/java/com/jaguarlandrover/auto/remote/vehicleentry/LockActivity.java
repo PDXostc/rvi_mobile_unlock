@@ -192,14 +192,15 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         VehicleNode.sendFobSignal(cmd);
     }
 
-    public void keyUpdate(final UserCredentials userCredentials) {
+    //public void keyUpdate(final UserCredentials userCredentials) {
+    public void keyUpdate(final User user) {
         AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
         builder.setInverseBackgroundForced(true);
         builder.setMessage("Key updates have been made").setCancelable(false).setPositiveButton("OK",
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        lock_fragment.setButtons(userCredentials);
+                        lock_fragment.setButtons(user);
                     }
                 });
         AlertDialog alert = builder.create();
@@ -231,7 +232,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                 break;
             case "keychange":
                 try {
-                    ServerNode.requestRemoteCredentials();
+                    ServerNode.requestCredentials();
                     requestProgress = ProgressDialog.show(LockActivity.this, "","Retrieving keys...",true);
 
                     requestProgress.setCancelable(true);
@@ -251,21 +252,22 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         }
     }
 
-    public JSONArray Request() throws JSONException, java.lang.NullPointerException {
-        JSONObject request = new JSONObject();
-        request.put("vehicleVIN", ServerNode.getUserCredentials().getVehicleVin());
-
-        JSONArray jsonArray = new JSONArray();
-        jsonArray.put(request);
-        return jsonArray;
-    }
+//    public JSONArray Request() throws JSONException, java.lang.NullPointerException {
+//        JSONObject request = new JSONObject();
+//        request.put("vehicleVIN", ServerNode.getUserData().getVehicleVin());
+//
+//        JSONArray jsonArray = new JSONArray();
+//        jsonArray.put(request);
+//        return jsonArray;
+//    }
 
     public void checkForKeys() {
-        UserCredentials userCredentials = ServerNode.getUserCredentials();
+        //UserCredentials userCredentials = ServerNode.getUserData();
+        User userData = ServerNode.getUserData();
 
-        if (userCredentials != null && ServerNode.thereAreNewUserCredentials()) {
-            keyUpdate(userCredentials);
-            ServerNode.setThereAreNewUserCredentials(false);
+        if (userData != null && ServerNode.thereIsNewUserData()) {
+            keyUpdate(userData);
+            ServerNode.setThereIsNewUserData(false);
         }
     }
 
@@ -279,13 +281,14 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     }
 
     public void requestComplete() {
-        if (ServerNode.thereAreNewRemoteCredentials()) {
-            done();
-            ServerNode.setThereAreNewRemoteCredentials(false);
-            requestProgress.dismiss();
-            Intent intent = new Intent();
-            intent.setClass(LockActivity.this, KeyRevokeActivity.class);
-            startActivityForResult(intent, 0);
-        }
+        // TODO: What do here?
+//        if (ServerNode.thereAreNewRemoteCredentials()) {
+//            done();
+//            ServerNode.setThereAreNewRemoteCredentials(false);
+//            requestProgress.dismiss();
+//            Intent intent = new Intent();
+//            intent.setClass(LockActivity.this, KeyRevokeActivity.class);
+//            startActivityForResult(intent, 0);
+//        }
     }
 }

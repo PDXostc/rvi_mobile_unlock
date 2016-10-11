@@ -13,7 +13,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -26,9 +25,11 @@ public class KeyRevokeActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_key_change);
-        ArrayList<UserCredentials> arrayofusers = new ArrayList<UserCredentials>();
 
-        RemoteCredentialsAdapter adapter = new RemoteCredentialsAdapter(this, arrayofusers);
+        //ArrayList<UserCredentials> arrayofusers = new ArrayList<UserCredentials>();
+        ArrayList<User> guestUsers = new ArrayList<User>();
+
+        RemoteCredentialsAdapter adapter = new RemoteCredentialsAdapter(this, guestUsers);
         ListView listView = (ListView) findViewById(R.id.sharedKeys);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
@@ -50,7 +51,7 @@ public class KeyRevokeActivity extends ActionBarActivity {
                     case DialogInterface.BUTTON_POSITIVE:
                         try{
                             //RviService.revokeKey(selectKey());//share_fragment.getRemoteCredentials());
-                            ServerNode.modifyRemoteCredentials(selectKey());
+                            ServerNode.revokeAuthorization(selectKey());
                         } catch (Exception e){
 
                         }
@@ -69,16 +70,20 @@ public class KeyRevokeActivity extends ActionBarActivity {
                 .setNegativeButton("Cancel", dialogClickListener).show();
     }
 
-    public UserCredentials selectKey() {
+    //public UserCredentials selectKey() {
+    public User selectKey() {
         JSONArray revokeKeyOuter = new JSONArray();
         JSONArray revokeKey = new JSONArray();
 
-        UserCredentials revokingCredentials = new UserCredentials();
+        //UserCredentials revokingCredentials = new UserCredentials();
+        User revokingUser = new User();
 
         try {
-            ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(ServerNode.getRemoteCredentialsList());
+            //ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(ServerNode.getRemoteCredentialsList());
+            ArrayList<User> guestUsers = ServerNode.getUserData().getGuests();//new ArrayList<>(ServerNode.getRemoteCredentialsList());
 
-            UserCredentials selectedRemoteCredentials = remoteCredentialsList.get(mPosition);
+            //UserCredentials selectedRemoteCredentials = guestUsers.get(mPosition);
+            User selectedGuest = guestUsers.get(mPosition);
 
 //            /* Old code */
 //            JSONObject payload = new JSONObject();
@@ -105,20 +110,21 @@ public class KeyRevokeActivity extends ActionBarActivity {
             /* New code */
 //            UserCredentials revokingCredentials = new UserCredentials();
 
-            revokingCredentials.setCertId(selectedRemoteCredentials.getCertId());
+            //revokingUser.setCertId(selectedRemoteCredentials.getCertId()); // TODO: Probably should set the vehicle or something here
 
-            Log.d("REVOKE_NEW", revokingCredentials.toString());
+            Log.d("REVOKE_NEW", revokingUser.toString());
 
         } catch (Exception e) { e.printStackTrace(); }
 
-        return revokingCredentials;//revokeKey;
+        return revokingUser;//revokeKey;
     }
 
     public void addUsers(RemoteCredentialsAdapter adapter){
         try {
-            ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(ServerNode.getRemoteCredentialsList());
+            //ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(ServerNode.getRemoteCredentialsList());
+            ArrayList<User> guestUsers = ServerNode.getUserData().getGuests();
 
-            adapter.addAll(remoteCredentialsList);
+            adapter.addAll(guestUsers);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -145,5 +151,4 @@ public class KeyRevokeActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
 }

@@ -11,11 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -71,9 +71,10 @@ public class KeyShareActivityFragment extends Fragment {
         carPages = (ViewPager) view.findViewById(R.id.vehiclescroll);
         userheader = (TextView) view.findViewById(R.id.user);
 
-        UserCredentials userCredentials = ServerNode.getUserCredentials();
-        if (userCredentials != null) {
-            userheader.setText(userCredentials.getUserName());
+        //UserCredentials userCredentials = ServerNode.getUserData();
+        User user = ServerNode.getUserData();
+        if (user != null) {
+            userheader.setText(user.getUserName());
         }
 
         shareKeyBtn.setOnClickListener(l);
@@ -102,7 +103,8 @@ public class KeyShareActivityFragment extends Fragment {
     };
 
 
-    public UserCredentials getRemoteCredentials() throws JSONException {
+    //public UserCredentials getRemoteCredentials() throws JSONException {
+    public User getSharingUser() throws JSONException {
         String centerUser = getResources().getResourceEntryName(users[userPages.getCurrentItem()]);
         String centerVehicle = vins[carPages.getCurrentItem()];
 
@@ -161,26 +163,30 @@ public class KeyShareActivityFragment extends Fragment {
 //        Log.d("SHARE_OLD", jsonArray.toString());
 
         /* New code */
-        UserCredentials shareCredentials = new UserCredentials();
+        //UserCredentials shareCredentials = new UserCredentials();
+        User sharingGuest = new User();
+        Vehicle sharingVehicle = new Vehicle();
 
         try {
-            shareCredentials.setValidFrom(start);//convertTime(starttime.getText().toString()));
-            shareCredentials.setValidTo(end);//convertTime(endtime.getText().toString()));
+            sharingVehicle.setValidFrom(start);//convertTime(starttime.getText().toString()));
+            sharingVehicle.setValidTo(end);//convertTime(endtime.getText().toString()));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        shareCredentials.setUserName(centerUser);
-        shareCredentials.setVehicleVin(centerVehicle);
+        sharingGuest.setUserName(centerUser);
+        sharingVehicle.setVehicleId(centerVehicle);
 
-        shareCredentials.getAuthorizedServices().setEngine(engine_start.isChecked());
-        shareCredentials.getAuthorizedServices().setLights(trunk_lights.isChecked());
-        shareCredentials.getAuthorizedServices().setLock(lock_unlock.isChecked());
-        shareCredentials.getAuthorizedServices().setTrunk(trunk_lights.isChecked());
+        sharingVehicle.getAuthorizedServices().setEngine(engine_start.isChecked());
+        sharingVehicle.getAuthorizedServices().setLights(trunk_lights.isChecked());
+        sharingVehicle.getAuthorizedServices().setLock(lock_unlock.isChecked());
+        sharingVehicle.getAuthorizedServices().setTrunk(trunk_lights.isChecked());
 
-        Log.d("SHARE_NEW", shareCredentials.toString());
+        sharingGuest.setVehicles(new ArrayList<>(Arrays.asList(sharingVehicle)));
 
-        return shareCredentials;//jsonArray;
+        Log.d("SHARE_NEW", sharingGuest.toString());
+
+        return sharingGuest;//jsonArray;
     }
 
     public String convertTime(String time) throws Exception{

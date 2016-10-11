@@ -235,10 +235,12 @@ public class RviService extends Service {
             Log.d(TAG, "distance:" + ro.distance + ", weightedDistance:" + ro.weightedDistance + ", unlockDistance:" + unlockDistance + ", connectDistance:" + connectDistance);
             Log.d(TAG, "connected:" + connected + ", connecting:" + connecting + ", unlocked:" + unlocked);
 
-            UserCredentials userCredentials = ServerNode.getUserCredentials();
-            if (userCredentials != null) {
+            //UserCredentials userCredentials = ServerNode.getUserData();
+            User user = ServerNode.getUserData();
+            Vehicle vehicle = new Vehicle(); // TODO: Implement selected vehicle or something
+            if (user != null) {
                 try {
-                    if (userCredentials.getUserType().equals("guest") && (!userCredentials.getAuthorizedServices().isLock() || !userCredentials.isKeyValid())) { // TODO: Test
+                    if (vehicle.getUserType().equals("guest") && (!vehicle.getAuthorizedServices().isLock() || !vehicle.isKeyValid())) { // TODO: Test
                         Log.d(TAG, "User is not authorized to lock/unlock car.");
 
                         return;

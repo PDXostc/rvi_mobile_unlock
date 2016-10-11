@@ -87,12 +87,13 @@ public class LockActivityFragment extends Fragment {
         keyManagementLayout = (LinearLayout) view.findViewById(R.id.key_management_layout);
 //        panicOn = (Button) view.findViewById(R.id.panicOn);
 
-        UserCredentials userCredentials = ServerNode.getUserCredentials();
+        //UserCredentials userCredentials = ServerNode.getUserData();
+        User user = ServerNode.getUserData();
 
-        if (userCredentials == null) {
-            setButtons(new UserCredentials());
+        if (user == null) {
+            setButtons(new User());
         } else {
-            setButtons(userCredentials);
+            setButtons(user);
         }
 
         buttonSet = new Handler();
@@ -118,9 +119,11 @@ public class LockActivityFragment extends Fragment {
         @Override
         public void run() {
 
-            UserCredentials userCredentials = ServerNode.getUserCredentials();
-            if (userCredentials != null && userCredentials.getUserType().equals("guest") && !userCredentials.isKeyValid()) {
-                setButtons(userCredentials);
+            //UserCredentials userCredentials = ServerNode.getUserData();
+            User user = ServerNode.getUserData();
+            Vehicle vehicle = new Vehicle();//user.getVehicleName() != null ? user.getVehicleName() : "unknown"; // TODO: Implement selected vehicle or something
+            if (user != null && vehicle.getUserType().equals("guest") && !vehicle.isKeyValid()) { // TODO: Check logic now that changed
+                setButtons(user);
             }
 
             // Revoke check at the beginning of every minute
@@ -270,26 +273,28 @@ public class LockActivityFragment extends Fragment {
         public void keyShareCommand(String key);
     }
 
-    public void setButtons(UserCredentials userCredentials) {
-        if (userCredentials == null) userCredentials = new UserCredentials();
+    //public void setButtons(UserCredentials userCredentials) {
+    public void setButtons(User user) {
+        if (user == null) user = new User();
 
-        String username = userCredentials.getUserName() != null ? userCredentials.getUserName() : "unknown";
-        String vehicle  = userCredentials.getVehicleName() != null ? userCredentials.getVehicleName() : "unknown";
+        String  username    = user.getUserName() != null ? user.getUserName() : "unknown";
+        Vehicle vehicle     = new Vehicle();//user.getVehicleName() != null ? user.getVehicleName() : "unknown"; // TODO: Implement selected vehicle or something
+        String  vehicleName = vehicle.getVehicleName();//user.getVehicleName() != null ? user.getVehicleName() : "unknown"; // TODO: Implement selected vehicle or something
 
-        Log.d(TAG, "Saved userdata: " + userCredentials.toString());
+        Log.d(TAG, "Saved userdata: " + user.toString());
 
         userHeader.setText("User: " + username);
-        vehicleHeader.setText("Vehicle: " + vehicle);
+        vehicleHeader.setText("Vehicle: " + vehicleName);
 
         try {
             //JSONObject json = new JSONObject(authorizedServices);
-            if (userCredentials.getUserType().equals("guest")) {
+            if (vehicle.getUserType().equals("guest")) {
                 keylbl.setText("Key Valid To:");
 
                 keyManagementLayout.setVisibility(View.GONE);
                 validDate.setVisibility(View.VISIBLE);
 
-                if (!userCredentials.hasAnyAuthorizedServices() || !userCredentials.isKeyValid()) {
+                if (!vehicle.hasAnyAuthorizedServices() || !vehicle.isKeyValid()) {
                     lock.setEnabled(false);
                     unlock.setEnabled(false);
                     trunk.setEnabled(false);
@@ -300,18 +305,18 @@ public class LockActivityFragment extends Fragment {
 
                     validDate.setText("Revoked");
                 } else {
-                    lock.setEnabled(userCredentials.getAuthorizedServices().isLock());
-                    unlock.setEnabled(userCredentials.getAuthorizedServices().isLock());
-                    trunk.setEnabled(userCredentials.getAuthorizedServices().isTrunk());
-                    find.setEnabled(userCredentials.getAuthorizedServices().isLights());
-                    start.setEnabled(userCredentials.getAuthorizedServices().isEngine());
-                    stop.setEnabled(userCredentials.getAuthorizedServices().isEngine());
-                    panic.setEnabled(userCredentials.getAuthorizedServices().isHazard());
+                    lock.setEnabled(vehicle.getAuthorizedServices().isLock());
+                    unlock.setEnabled(vehicle.getAuthorizedServices().isLock());
+                    trunk.setEnabled(vehicle.getAuthorizedServices().isTrunk());
+                    find.setEnabled(vehicle.getAuthorizedServices().isLights());
+                    start.setEnabled(vehicle.getAuthorizedServices().isEngine());
+                    stop.setEnabled(vehicle.getAuthorizedServices().isEngine());
+                    panic.setEnabled(vehicle.getAuthorizedServices().isHazard());
 
-                    validDate.setText(userCredentials.getValidTo());
+                    validDate.setText(vehicle.getValidTo());
                 }
 
-            } else if (userCredentials.getUserType().equals("owner")) {
+            } else if (vehicle.getUserType().equals("owner")) {
                 validDate.setVisibility(View.GONE);
                 //validTime.setVisibility(View.GONE);
                 keyManagementLayout.setVisibility(View.VISIBLE);

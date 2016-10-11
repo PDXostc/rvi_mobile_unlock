@@ -70,6 +70,9 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
         mLoginActivityFragment.setVerifyButtonEnabled(true);
 
+        String foo = null;
+        assert foo != null;
+
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             Uri uri = intent.getData();
