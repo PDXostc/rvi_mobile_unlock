@@ -372,7 +372,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
 
         //sortThroughRemoteServices();
 
-        mValidRemoteCredentials.clear(); // TODO: Check w Ulf about assumptions made wrt remote services and creds/auth and deleting list vs. adding to list and not checking against own creds
+        mAuthorizedRemoteServices.clear(); // TODO: Check w Ulf about assumptions made wrt remote services and creds/auth and deleting list vs. adding to list and not checking against own creds
         if (mListener != null) mListener.nodeDidAuthorizeRemoteServices(this, mAuthorizedRemoteServices.keySet());
 
         announceServices();

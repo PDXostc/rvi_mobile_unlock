@@ -102,6 +102,7 @@ class ServerNode
     }
 
     private static ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
+    private static boolean needsToRequestNewCredentials = false;
 
     private static ServerNode ourInstance = new ServerNode();
 
@@ -113,6 +114,8 @@ class ServerNode
             public void nodeDidConnect(RVIRemoteNode node) {
                 Log.d(TAG, "Connected to RVI provisioning server!");
                 connectionStatus = ConnectionStatus.CONNECTED;
+
+                needsToRequestNewCredentials = true;
 
                 stopRepeatingTask();
             }
@@ -216,8 +219,12 @@ class ServerNode
                 Log.d(TAG, "Remote services available: " + serviceIdentifiers.toString());
 
                 for (String serviceIdentifier : serviceIdentifiers) {
-                    if (serviceIdentifier.equals(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + REQUEST_CREDENTIALS))
-                        requestRemoteCredentials();
+                    if (serviceIdentifier.equals(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + REQUEST_CREDENTIALS)) {
+                        if (needsToRequestNewCredentials) {
+                            needsToRequestNewCredentials = false;
+                            requestRemoteCredentials();
+                        }
+                    }
                 }
             }
         };
