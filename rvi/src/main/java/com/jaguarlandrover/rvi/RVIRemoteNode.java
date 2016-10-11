@@ -28,8 +28,9 @@ import java.util.HashMap;
 /**
  * The remote RVI node.
  */
-public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
-    private final static String TAG = "RVI:RVINode";
+public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
+{
+    private final static String TAG = "RVI/RVIRemoteNode      ";
 
     private RemoteConnectionManager mRemoteConnectionManager = new RemoteConnectionManager();
 

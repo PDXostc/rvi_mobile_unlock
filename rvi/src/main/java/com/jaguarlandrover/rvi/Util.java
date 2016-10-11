@@ -25,7 +25,7 @@ import java.util.IllegalFormatCodePointException;
  */
 class Util
 {
-    private static final String TAG = "RVI:Util";
+    private static final String TAG = "RVI/Util               ";
 
     /**
      * Gets the name of the current method on the stack.

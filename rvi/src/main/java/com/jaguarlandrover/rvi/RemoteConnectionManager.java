@@ -25,7 +25,7 @@ import java.security.cert.Certificate;
  */
 public class RemoteConnectionManager
 {
-    private final static String TAG = "RVI:RemoteCon...Manager";
+    private final static String TAG = "RVI/RemoteCon...Manager";
 
     private ServerConnection                mDirectServerConnection;
     private RemoteConnectionInterface       mRemoteConnection;

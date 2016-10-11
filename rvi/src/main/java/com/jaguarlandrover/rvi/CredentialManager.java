@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 
 class CredentialManager {
-    private final static String TAG = "UnlockDemo:RVICredentialManager";
+    private final static String TAG = "RVI/CredentialManager  ";
 
     private static CredentialManager ourInstance = new CredentialManager();
 

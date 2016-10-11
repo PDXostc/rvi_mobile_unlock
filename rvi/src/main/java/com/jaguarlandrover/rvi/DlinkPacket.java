@@ -24,7 +24,7 @@ import java.util.HashMap;
  */
 class DlinkPacket
 {
-    private final static String TAG = "RVI:DlinkPacket";
+    private final static String TAG = "RVI/DlinkPacket        ";
 
     /**
      * The Command enumeration, used to enumerate the different commands, or dlink packet types
