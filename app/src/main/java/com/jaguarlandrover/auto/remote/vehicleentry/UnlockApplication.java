@@ -16,6 +16,7 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
 

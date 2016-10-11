@@ -36,8 +36,8 @@ class ServerNode
     /* * * * * * * * * * * * * * * * * * * * Static variables * * * * * * * * * * * * * * * * * * **/
     private static Context applicationContext = UnlockApplication.getContext();
 
-    private static SharedPreferences        preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
-    private static Gson                     gson        = new Gson();
+    private static SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
+    private static Gson              gson        = new Gson();
 
     private static RVIRemoteNode rviNode = new RVIRemoteNode(null);
 
@@ -223,8 +223,9 @@ class ServerNode
                         if (needsToRequestNewCredentials) {
                             needsToRequestNewCredentials = false;
                             requestCredentials();
-                            requestUserData();
                         }
+                    } else if (serviceIdentifier.equals(ACCOUNT_MANAGEMENT_BUNDLE + "/" + GET_USER_DATA)) {
+                        requestUserData();
                     }
                 }
             }
@@ -344,7 +345,8 @@ class ServerNode
 
         User userData = new User();
         try {
-            userData = gson.fromJson(userStr, User.class);
+            if (userStr != null)
+                userData = gson.fromJson(userStr, User.class);
         } catch (Exception e) {
             e.printStackTrace();
         }

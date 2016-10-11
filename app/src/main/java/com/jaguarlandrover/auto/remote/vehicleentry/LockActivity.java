@@ -22,10 +22,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 
 public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener {
     private static final String TAG = "RVI";
@@ -207,7 +203,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         alert.show();
     }
 
-    public void notififyGuestUsedKey(final String guestUser, final String guestService) {
+    public void notifyGuestUsedKey(final String guestUser, final String guestService) {
         AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
         builder.setInverseBackgroundForced(true);
         builder.setMessage("Remote key used by "+ guestUser + "!")
@@ -230,9 +226,10 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                 intent.setClass(LockActivity.this, KeyShareActivity.class);
                 startActivityForResult(intent, 0);
                 break;
-            case "keychange":
+            case "keychange": // TODO: Does this ever get invoked?
                 try {
                     ServerNode.requestCredentials();
+                    ServerNode.requestUserData();
                     requestProgress = ProgressDialog.show(LockActivity.this, "","Retrieving keys...",true);
 
                     requestProgress.setCancelable(true);
@@ -275,20 +272,22 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         InvokedServiceReport report = ServerNode.getInvokedServiceReport();
 
         if (report != null && ServerNode.thereIsNewInvokedServiceReport()) {
-            notififyGuestUsedKey(report.getUserName(), report.getServiceIdentifier());
+            notifyGuestUsedKey(report.getUserName(), report.getServiceIdentifier());
             ServerNode.setThereIsNewInvokedServiceReport(false);
         }
     }
 
     public void requestComplete() {
         // TODO: What do here?
-//        if (ServerNode.thereAreNewRemoteCredentials()) {
-//            done();
-//            ServerNode.setThereAreNewRemoteCredentials(false);
-//            requestProgress.dismiss();
-//            Intent intent = new Intent();
-//            intent.setClass(LockActivity.this, KeyRevokeActivity.class);
-//            startActivityForResult(intent, 0);
-//        }
+        //if (ServerNode.thereAreNewRemoteCredentials()) {
+        if (ServerNode.thereIsNewUserData()) {
+            done();
+            //ServerNode.setThereAreNewRemoteCredentials(false);
+            ServerNode.setThereIsNewUserData(false);
+            requestProgress.dismiss();
+            Intent intent = new Intent();
+            intent.setClass(LockActivity.this, KeyRevokeActivity.class);
+            startActivityForResult(intent, 0);
+        }
     }
 }

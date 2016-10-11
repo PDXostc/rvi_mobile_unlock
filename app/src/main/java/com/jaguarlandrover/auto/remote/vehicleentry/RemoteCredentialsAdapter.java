@@ -23,8 +23,11 @@ public class RemoteCredentialsAdapter extends ArrayAdapter<User>{
     @Override
     public View getView(int position, View convertView, ViewGroup parent){
         //UserCredentials userCredentials = getItem(position);
-        User user = getItem(position);
-        Vehicle vehicle = new Vehicle(); // TODO: Pass in a "selected vehicle" to all this stuff
+        User user = ServerNode.getUserData();
+        User guestUser = getItem(position);
+
+        Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
+        Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle();
 
         if(convertView == null){
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.user_layout, parent, false);
@@ -37,7 +40,7 @@ public class RemoteCredentialsAdapter extends ArrayAdapter<User>{
         CheckBox lockUnlock = (CheckBox) convertView.findViewById(R.id.lock_unlock);
         CheckBox engineStart = (CheckBox) convertView.findViewById(R.id.engine_start);
 
-        name.setText(user != null ? user.getUserName() : "");
+        name.setText(guestUser != null ? guestUser.getUserName() : "");
 
         vehicleName.setText(vehicle.getVehicleName());
         validFrom.setText(vehicle.getValidFrom());

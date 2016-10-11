@@ -48,9 +48,9 @@ public class KeyShareActivityFragment extends Fragment {
 
     };
 
-    int[]    vehicles = {R.drawable.car1,
-            R.drawable.car2};
+    int[]    vehicles = {R.drawable.car1, R.drawable.car2};
     String[] vins     = {"stoffe", "stoffe"};
+
     private ShareFragmentButtonListener buttonListener;
 
     public KeyShareActivityFragment() {
@@ -164,8 +164,18 @@ public class KeyShareActivityFragment extends Fragment {
 
         /* New code */
         //UserCredentials shareCredentials = new UserCredentials();
+
+        User user = ServerNode.getUserData();
         User sharingGuest = new User();
-        Vehicle sharingVehicle = new Vehicle();
+
+        Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
+        Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle(); // TODO: Will always be valid so long as we always go back to last screen when new user data is available
+
+        // TODO: If new user data comes in and vehicle list changes, need to get out of here or bugs
+
+        Vehicle sharingVehicle = new Vehicle(vehicle.getVehicleId(), vehicle.getVehicleName());
+
+        sharingGuest.setUserName(centerUser);
 
         try {
             sharingVehicle.setValidFrom(start);//convertTime(starttime.getText().toString()));
@@ -174,8 +184,8 @@ public class KeyShareActivityFragment extends Fragment {
             e.printStackTrace();
         }
 
-        sharingGuest.setUserName(centerUser);
-        sharingVehicle.setVehicleId(centerVehicle);
+//        sharingGuest.setUserName(centerUser);
+//        sharingVehicle.setVehicleId(centerVehicle);
 
         sharingVehicle.getAuthorizedServices().setEngine(engine_start.isChecked());
         sharingVehicle.getAuthorizedServices().setLights(trunk_lights.isChecked());

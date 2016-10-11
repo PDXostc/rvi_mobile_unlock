@@ -55,13 +55,10 @@ public class Vehicle {
     Vehicle() {
     }
 
-    public Vehicle(String userName, String vehicle, String validFrom, String validTo, boolean lockUnlock, boolean engineStart) {
+    public Vehicle(String vehicleId, String vehicleName) {
 
-        this.setVehicleId(vehicle);
-        this.setValidFrom(validFrom);
-        this.setValidTo(validTo);
-        this.setLockUnlock(lockUnlock);
-        this.setEngineStart(engineStart);
+        this.setVehicleId(vehicleId);
+        this.setVehicleName(vehicleName);
     }
 
     public Vehicle(JSONObject object) {

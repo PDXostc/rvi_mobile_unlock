@@ -24,9 +24,11 @@ import android.widget.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
-public class LockActivityFragment extends Fragment {
+public class LockActivityFragment extends Fragment implements AdapterView.OnItemSelectedListener {
 
     public static final String STOPPED_LBL = "StartStop";
     public static final String LOCKED_LBL  = "OpenClose";
@@ -96,6 +98,27 @@ public class LockActivityFragment extends Fragment {
             setButtons(user);
         }
 
+
+        Spinner spinner = (Spinner) view.findViewById(R.id.vehicle_picker);
+
+        // Spinner click listener
+        spinner.setOnItemSelectedListener(this);
+
+        // Spinner Drop down elements
+        List<String> vehicles = new ArrayList<String>();
+        for (Vehicle vehicle : user.getVehicles()) {
+            vehicles.add(vehicle.getVehicleName());
+        }
+
+        // Creating adapter for spinner
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, vehicles);
+
+        // Drop down layout style - list view with radio button
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // attaching data adapter to spinner
+        spinner.setAdapter(dataAdapter);
+
         buttonSet = new Handler();
         startRepeatingTask();
 
@@ -117,12 +140,15 @@ public class LockActivityFragment extends Fragment {
     Runnable StatusCheck = new Runnable()
     {
         @Override
-        public void run() {
+        public void run() { // TODO: Still probably need to fix the logic here
 
             //UserCredentials userCredentials = ServerNode.getUserData();
             User user = ServerNode.getUserData();
-            Vehicle vehicle = new Vehicle();//user.getVehicleName() != null ? user.getVehicleName() : "unknown"; // TODO: Implement selected vehicle or something
-            if (user != null && vehicle.getUserType().equals("guest") && !vehicle.isKeyValid()) { // TODO: Check logic now that changed
+
+            Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
+            Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle();
+
+            if (vehicle.getUserType().equals("guest") && !vehicle.isKeyValid()) { // TODO: Check logic now that changed
                 setButtons(user);
             }
 
@@ -246,7 +272,6 @@ public class LockActivityFragment extends Fragment {
         boolean locked = sharedPref.getBoolean(LOCKED_LBL, true);
         boolean stopped = sharedPref.getBoolean(STOPPED_LBL, true);
 
-
 //        unlock.setSelected(!locked);
 //        lock.setSelected(locked);
 //        start.setSelected(stopped);
@@ -266,6 +291,22 @@ public class LockActivityFragment extends Fragment {
             Log.e(TAG, "Service = " + s);
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        User user = ServerNode.getUserData();
+        user.setSelectedVehicleIndex(position);
+
+        setButtons(user);
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        User user = ServerNode.getUserData();
+        user.setSelectedVehicleIndex(-1);
+
+        setButtons(user);
+    }
+
     public interface LockFragmentButtonListener
     {
         public void onButtonCommand(String cmd);
@@ -277,9 +318,11 @@ public class LockActivityFragment extends Fragment {
     public void setButtons(User user) {
         if (user == null) user = new User();
 
-        String  username    = user.getUserName() != null ? user.getUserName() : "unknown";
-        Vehicle vehicle     = new Vehicle();//user.getVehicleName() != null ? user.getVehicleName() : "unknown"; // TODO: Implement selected vehicle or something
-        String  vehicleName = vehicle.getVehicleName();//user.getVehicleName() != null ? user.getVehicleName() : "unknown"; // TODO: Implement selected vehicle or something
+        Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
+        Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle();
+
+        String username    = user.getUserName() != null ? user.getUserName() : "unknown";
+        String vehicleName = vehicle.getVehicleName() != null ? vehicle.getVehicleName() : "unknown";
 
         Log.d(TAG, "Saved userdata: " + user.toString());
 

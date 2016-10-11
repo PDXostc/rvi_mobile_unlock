@@ -14,19 +14,20 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.spongycastle.openssl.MiscPEMGenerator;
 
 import java.util.ArrayList;
 
 public class User {
     private final static String TAG = "UnlockDemo:User";
-
-    private final static String SERVER_DATE_TIME_FORMATTER = "yyyy-MM-dd'T'HH:mm:ss";
-    private final static String PRETTY_DATE_TIME_FORMATTER = "MM/dd/yyyy h:mm a z";
 
     @SerializedName("username")
     private String mUserName;
@@ -38,10 +39,10 @@ public class User {
     private String mLastName;
 
     @SerializedName("guests")
-    private ArrayList<User> mGuests;
+    private ArrayList<User> mGuests = new ArrayList<>();
 
     @SerializedName("vehicles")
-    private ArrayList<Vehicle> mVehicles;
+    private ArrayList<Vehicle> mVehicles = new ArrayList<>();
 
     User() {
     }
@@ -83,6 +84,7 @@ public class User {
     }
 
     public ArrayList<User> getGuests() {
+        if (mGuests == null) return new ArrayList<>();
         return mGuests;
     }
 
@@ -91,6 +93,7 @@ public class User {
     }
 
     public ArrayList<Vehicle> getVehicles() {
+        if (mVehicles == null) return new ArrayList<>();
         return mVehicles;
     }
 
@@ -98,9 +101,33 @@ public class User {
         mVehicles = vehicles;
     }
 
+    private final static String SELECTED_VEHICLE_INDEX_KEY = "SELECTED_VEHICLE_INDEX_KEY";
+
+    Integer getSelectedVehicleIndex() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(UnlockApplication.getContext());
+        Integer selectedIndex = preferences.getInt(SELECTED_VEHICLE_INDEX_KEY, -1);
+
+        if (mVehicles == null || selectedIndex < -1 || selectedIndex >= mVehicles.size()) {
+            setSelectedVehicleIndex(-1);
+            return -1;
+        }
+
+        return selectedIndex;
+    }
+
+    void setSelectedVehicleIndex(Integer selectedVehicleIndex) {
+        if (mVehicles == null || selectedVehicleIndex < -1 || selectedVehicleIndex >= mVehicles.size())
+            selectedVehicleIndex = -1;
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(UnlockApplication.getContext());
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt(SELECTED_VEHICLE_INDEX_KEY, selectedVehicleIndex);
+        editor.apply();
+    }
+
     @Override
     public String toString() {
         Gson gson = new Gson();
-        return gson.toJson(this, UserCredentials.class);
+        return gson.toJson(this, User.class);
     }
 }

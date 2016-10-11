@@ -15,6 +15,7 @@ import android.widget.ListView;
 import org.json.JSONArray;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class KeyRevokeActivity extends ActionBarActivity {
@@ -111,6 +112,17 @@ public class KeyRevokeActivity extends ActionBarActivity {
 //            UserCredentials revokingCredentials = new UserCredentials();
 
             //revokingUser.setCertId(selectedRemoteCredentials.getCertId()); // TODO: Probably should set the vehicle or something here
+
+            User user = ServerNode.getUserData();
+            Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
+            Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle(); // TODO: Will always be valid so long as we always go back to last screen when new user data is available
+
+            // TODO: If new user data comes in and vehicle list changes, need to get out of here or bugs
+
+            Vehicle sharingVehicle = new Vehicle(vehicle.getVehicleId(), vehicle.getVehicleName());
+
+            revokingUser.setVehicles(new ArrayList<>(Arrays.asList(sharingVehicle)));
+
 
             Log.d("REVOKE_NEW", revokingUser.toString());
 
