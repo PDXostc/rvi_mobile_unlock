@@ -43,19 +43,6 @@ class ServerNode
 
     private static final ConcurrentHashMap<String, String> certs = new ConcurrentHashMap<String, String>(1);
 
-
-    private enum ConnectionStatus
-    {
-        DISCONNECTED,
-        CONNECTING,
-        CONNECTED
-    }
-
-    private static ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
-    private static boolean needsToRequestNewCredentials = false;
-
-    private static ServerNode ourInstance = new ServerNode();
-
     /* * * * * * * * * * * * * * * * * * SharedPreferences keys * * * * * * * * * * * * * * * * * **/
     //private final static String NEW_CERTIFICATE_DATA_KEY        = "NEW_CERTIFICATE_DATA_KEY";
     //private final static String CERTIFICATE_DATA_KEY            = "CERTIFICATE_DATA_KEY";
@@ -110,6 +97,19 @@ class ServerNode
     private final static ArrayList<String> reportingBundleLocalServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
                     REPORTING_BUNDLE + "/" + SERVICE_INVOKED_BY_GUEST));
+
+
+    private enum ConnectionStatus
+    {
+        DISCONNECTED,
+        CONNECTING,
+        CONNECTED
+    }
+
+    private static ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
+    private static boolean needsToRequestNewCredentials = false;
+
+    private static ServerNode ourInstance = new ServerNode();
 
     private ServerNode() {
 
