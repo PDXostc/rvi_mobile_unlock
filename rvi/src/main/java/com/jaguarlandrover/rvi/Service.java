@@ -25,7 +25,7 @@ import java.util.HashMap;
  */
 class Service
 {
-    private final static String TAG = "RVI/Service            ";
+    private final static String TAG = "RVI/Service____________";
 
     @SerializedName("service")
     private String mFullyQualifiedServiceIdentifier = null;

@@ -23,7 +23,7 @@ import com.google.gson.Gson;
  */
 class DlinkPacketParser
 {
-    private final static String TAG = "RVI/DlinkPacketParser  ";
+    private final static String TAG = "RVI/DlinkPacketParser__";
 
     private String                    mBuffer;
     private DlinkPacketParserListener mDataParserListener;

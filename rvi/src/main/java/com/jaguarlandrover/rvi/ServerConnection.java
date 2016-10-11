@@ -29,7 +29,7 @@ import java.util.Enumeration;
  */
 class ServerConnection implements RemoteConnectionInterface
 {
-    private final static String TAG = "RVI/ServerConnection   ";
+    private final static String TAG = "RVI/ServerConnection___";
     private RemoteConnectionListener mRemoteConnectionListener;
 
     private String  mServerUrl;

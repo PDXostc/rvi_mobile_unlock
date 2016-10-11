@@ -41,7 +41,7 @@ import java.util.UUID;
 import static android.content.Context.MODE_PRIVATE;
 
 public class RVILocalNode {
-    private final static String TAG = "RVI/RVILocalNode       ";
+    private final static String TAG = "RVI/RVILocalNode_______";
 
     private final static String SAVED_CREDENTIALS_FILE = "org.genivi.rvi.saved_credentials";
 

@@ -32,8 +32,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.impl.DefaultClaims;
 
 class Credential {
-    private final static String FOO = "12345678901234567890123";
-    private final static String TAG = "RVI/Credential         ";
+    private final static String TAG = "RVI/Credential_________";
 
     @SerializedName("right_to_invoke")
     private ArrayList<String> mRightToInvoke = null;

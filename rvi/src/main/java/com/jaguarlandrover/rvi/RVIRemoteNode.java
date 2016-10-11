@@ -30,7 +30,7 @@ import java.util.HashMap;
  */
 public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 {
-    private final static String TAG = "RVI/RVIRemoteNode      ";
+    private final static String TAG = "RVI/RVIRemoteNode______";
 
     private RemoteConnectionManager mRemoteConnectionManager = new RemoteConnectionManager();
 

@@ -25,7 +25,7 @@ import java.util.HashMap;
  */
 class DlinkServiceAnnouncePacket extends DlinkPacket
 {
-    private final static String TAG = "RVI/DlinkSrvAn...Packet";
+    private final static String TAG = "RVI/DlinkSrvcAnncPacket";
 
     /**
      * The status.

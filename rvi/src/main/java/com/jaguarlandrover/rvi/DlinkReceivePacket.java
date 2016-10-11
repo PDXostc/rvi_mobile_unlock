@@ -22,7 +22,7 @@ import com.google.gson.annotations.SerializedName;
  */
 class DlinkReceivePacket extends DlinkPacket
 {
-    private final static String TAG = "RVI/DlinkReceivePacket ";
+    private final static String TAG = "RVI/DlinkReceivePacket_";
 
     /**
      * The mod parameter.
