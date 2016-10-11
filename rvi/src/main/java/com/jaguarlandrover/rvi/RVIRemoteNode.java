@@ -204,6 +204,43 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
     }
 
     /**
+     * Invoke/update a remote service on the remote RVI node
+     *
+     * @param serviceIdentifier the service identifier
+     * @param parameters the parameters; must be a json-serializable object, that serializes into a json object
+     * @param timeout the timeout, in milliseconds. This is added to the current system time.
+     */
+    public void invokeService(String serviceIdentifier, Object parameters, Integer timeout) {
+        Service service = getRemoteService(serviceIdentifier);
+
+        service.setParameters(parameters);
+        service.setTimeout(System.currentTimeMillis() + timeout);
+
+        if (service.hasNodeIdentifier())
+            invokeService(service);
+        else
+            queueServiceInvocation(serviceIdentifier, service);
+    }
+
+    /**
+     * Returns whether or not remote service is authorized for invocation on the remote node from the local node
+     * @param serviceIdentifier the service identifier
+     * @return if it's authorized
+     */
+    public boolean isRemoteServiceAuthorized(String serviceIdentifier) {
+        return mAuthorizedRemoteServices.containsKey(serviceIdentifier);
+    }
+
+    /**
+     * Returns whether or not remote service is authorized for invocation on the local node from the remote node
+     * @param serviceIdentifier the service identifier
+     * @return if it's authorized
+     */
+    public boolean isLocalServiceAuthorized(String serviceIdentifier) {
+        return mAuthorizedLocalServices.containsKey(serviceIdentifier);
+    }
+
+    /**
      * Gets a list of fully-qualified services names of all the local services.
      *
      * @return the local services
@@ -269,25 +306,6 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
     }
 
     /**
-     * Invoke/update a remote service on the remote RVI node
-     *
-     * @param serviceIdentifier the service identifier
-     * @param parameters the parameters; must be a json-serializable object, that serializes into a json object
-     * @param timeout the timeout, in milliseconds. This is added to the current system time.
-     */
-    public void invokeService(String serviceIdentifier, Object parameters, Integer timeout) {
-        Service service = getRemoteService(serviceIdentifier);
-
-        service.setParameters(parameters);
-        service.setTimeout(System.currentTimeMillis() + timeout);
-
-        if (service.hasNodeIdentifier())
-            invokeService(service);
-        else
-            queueServiceInvocation(serviceIdentifier, service);
-    }
-
-    /**
      * Have the local node announce all it's available services.
      */
     private void announceServices() {
@@ -304,6 +322,14 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
 
     private void handleReceivePacket(DlinkReceivePacket packet) {
         Service service = packet.getService();
+
+        if (!mAuthorizedLocalServices.containsKey(service.getServiceIdentifier())) {
+            return; // TODO: Throw error
+        }
+
+        if (mAuthorizedLocalServices.get(service.getServiceIdentifier()).getFullyQualifiedServiceIdentifier().equals(service.getFullyQualifiedServiceIdentifier())) {
+            return; // TODO: Throw error
+        }
 
         if (mListener != null) mListener.nodeReceiveServiceInvocationSucceeded(this, service.getServiceIdentifier(), service.getParameters());
     }
@@ -412,7 +438,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
         mAuthorizedLocalServices.clear();
 
         for (Service service : authorizedLocalServices)
-            mAuthorizedLocalServices.put(service.getFullyQualifiedServiceIdentifier(), service);
+            mAuthorizedLocalServices.put(service.getServiceIdentifier(), service);
 
         if (mListener != null) mListener.nodeDidAuthorizeLocalServices(this, mAuthorizedLocalServices.keySet());
     }
