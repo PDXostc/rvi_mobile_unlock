@@ -35,7 +35,7 @@ import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
 public class RviService extends Service {
-    private static final String TAG = "RVI:RVIService";
+    private static final String TAG = "UnlockDemo/RviService  ";
 
     private SharedPreferences prefs;
 

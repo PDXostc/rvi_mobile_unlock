@@ -20,7 +20,7 @@ import android.util.Log;
 public class BluetoothReceiver extends BroadcastReceiver
 {
     public static boolean BluetoothConnected;
-    private static final String TAG = "RVI";
+    private static final String TAG = "UnlockDemo/BltoothRecvr";
 
     public void onReceive(Context context, Intent intent) {
 

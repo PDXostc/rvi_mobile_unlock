@@ -24,7 +24,7 @@ import android.widget.TextView;
 
 
 public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener {
-    private static final String TAG = "RVI";
+    private static final String TAG = "UnlockDemo/LockActivity";
     private boolean bound = false;
     private String username;
     private TextView userHeader;

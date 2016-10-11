@@ -15,7 +15,7 @@ import android.view.MenuItem;
 import java.util.ArrayList;
 
 public class KeyShareActivity extends ActionBarActivity implements KeyShareActivityFragment.ShareFragmentButtonListener {
-    String TAG = "JSON DATA:";
+    private final static String TAG = "UnlockDemo/KeyShareActv";
     static final int dateDialog = 0;
     static final int timeDialog = 1;
 

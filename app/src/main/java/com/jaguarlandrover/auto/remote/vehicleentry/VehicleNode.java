@@ -25,7 +25,7 @@ import java.util.*;
 
 public class VehicleNode
 {
-    private final static String TAG = "UnlockDemo:VehicleNode";
+    private final static String TAG = "UnlockDemo/VehicleNode ";
 
     /* Static variables */
     private static Context applicationContext = UnlockApplication.getContext();

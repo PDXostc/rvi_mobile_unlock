@@ -33,7 +33,7 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
     public static final String STOPPED_LBL = "StartStop";
     public static final String LOCKED_LBL  = "OpenClose";
 
-    private static final String TAG = "RVI";
+    private static final String TAG = "UnlockDemo/LckActvtyFrg";
 
     private boolean revokeCheckStarted = false;
 

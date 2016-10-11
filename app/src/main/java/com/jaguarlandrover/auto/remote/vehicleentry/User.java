@@ -27,7 +27,7 @@ import org.spongycastle.openssl.MiscPEMGenerator;
 import java.util.ArrayList;
 
 public class User {
-    private final static String TAG = "UnlockDemo:User";
+    private final static String TAG = "UnlockDemo/User        ";
 
     @SerializedName("username")
     private String mUserName;

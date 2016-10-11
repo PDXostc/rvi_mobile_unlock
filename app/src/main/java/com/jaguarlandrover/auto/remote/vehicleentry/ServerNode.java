@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 class ServerNode
 {
-    private final static String TAG = "UnlockDemo:ServerNode";
+    private final static String TAG = "UnlockDemo/ServerNode  ";
 
     /* * * * * * * * * * * * * * * * * * * * Static variables * * * * * * * * * * * * * * * * * * **/
     private static Context applicationContext = UnlockApplication.getContext();

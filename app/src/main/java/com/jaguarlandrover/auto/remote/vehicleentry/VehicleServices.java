@@ -17,7 +17,7 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 import com.google.gson.annotations.SerializedName;
 
 public class VehicleServices {
-    private final static String TAG = "UnlockDemo:VehicleServices";
+    private final static String TAG = "UnlockDemo/VehicleSrvcs";
 
     @SerializedName("engine")
     private boolean mEngine = false;
