@@ -89,7 +89,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
             public void onRVIDidReceivePacket(DlinkPacket packet) {
                 if (packet == null) return;
 
-                Log.d(TAG, Util.getMethodName() + ": " + packet.getClass().toString());
+                //Log.d(TAG, Util.getMethodName() + ": " + packet.getClass().toString());
 
                 if (packet.getClass().equals(DlinkReceivePacket.class)) {
                     handleReceivePacket((DlinkReceivePacket) packet);
@@ -114,7 +114,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
             public void onRVIDidSendPacket(DlinkPacket packet) {
                 if (packet == null) return;
 
-                Log.d(TAG, Util.getMethodName() + ": " + packet.getClass().toString());
+                //Log.d(TAG, Util.getMethodName() + ": " + packet.getClass().toString());
 
                 //if (packet.getClass().equals(DlinkAuthPacket.class))
                 //    announceServices(); // TODO: Not here....

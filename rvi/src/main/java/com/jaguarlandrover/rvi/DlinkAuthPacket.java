@@ -65,4 +65,6 @@ class DlinkAuthPacket extends DlinkPacket
     public String getAddr() {
         return mAddr;
     }
+
+    String getType() { return "AU"; }
 }

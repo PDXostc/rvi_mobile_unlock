@@ -108,7 +108,7 @@ class DlinkPacketParser
     }
 
     private DlinkPacket stringToPacket(String string) {
-        Log.d(TAG, "Received packet: " + string);
+        //Log.d(TAG, "Received packet: " + string);
 
         if (mDataParserListener instanceof DlinkPacketParserTestCaseListener)
             ((DlinkPacketParserTestCaseListener) mDataParserListener).onJsonStringParsed(string);

@@ -39,6 +39,8 @@ public class RemoteConnectionManager
         {
             @Override
             public void onPacketParsed(DlinkPacket packet) {
+                Log.d(TAG, "RCVRVI(" + packet.getType() + "): " + packet.toJsonString());
+
                 if (mListener != null) mListener.onRVIDidReceivePacket(packet);
             }
 
@@ -116,7 +118,7 @@ public class RemoteConnectionManager
     void sendPacket(DlinkPacket dlinkPacket) {
         if (dlinkPacket == null) return;
 
-        Log.d(TAG, Util.getMethodName() + ": " + dlinkPacket.getClass().toString());
+        Log.d(TAG, "SNDRVI(" + dlinkPacket.getType() + "): " + dlinkPacket.toJsonString());
 
         if (mRemoteConnection == null) {
             if (mListener != null) mListener.onRVIDidFailToSendPacket(new Error("Interface not selected"));

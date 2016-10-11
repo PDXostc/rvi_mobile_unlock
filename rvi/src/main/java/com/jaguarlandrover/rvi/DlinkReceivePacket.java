@@ -75,4 +75,6 @@ class DlinkReceivePacket extends DlinkPacket
     void setService(Service service) {
         mService = service;
     }
+
+    String getType() { return "RV"; }
 }

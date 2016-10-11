@@ -270,7 +270,7 @@ class ServerConnection implements RemoteConnectionInterface
         protected Throwable doInBackground(Void... params) {
 
             String data = mPacket.toJsonString();//params[0];
-            Log.d(TAG, "Sending packet: " + data);
+            //Log.d(TAG, "Sending packet: " + data);
 
             try {
                 DataOutputStream wr = new DataOutputStream(mSocket.getOutputStream());

@@ -65,4 +65,6 @@ class DlinkServiceAnnouncePacket extends DlinkPacket
     ArrayList<String> getServices() {
         return mServices;
     }
+
+    String getType() { return "SA"; }
 }

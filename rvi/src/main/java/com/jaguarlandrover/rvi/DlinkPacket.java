@@ -130,4 +130,6 @@ class DlinkPacket
 //            mSig = (String) jsonHash.get("sign"); // TODO: Push for sign->sig
 
     }
+
+    String getType() { return "PK"; }
 }
