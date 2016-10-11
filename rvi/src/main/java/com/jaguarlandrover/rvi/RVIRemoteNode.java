@@ -327,7 +327,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener {
             return; // TODO: Throw error
         }
 
-        if (mAuthorizedLocalServices.get(service.getServiceIdentifier()).getFullyQualifiedServiceIdentifier().equals(service.getFullyQualifiedServiceIdentifier())) {
+        if (!mAuthorizedLocalServices.get(service.getServiceIdentifier()).getFullyQualifiedServiceIdentifier().equals(service.getFullyQualifiedServiceIdentifier())) {
             return; // TODO: Throw error
         }
 

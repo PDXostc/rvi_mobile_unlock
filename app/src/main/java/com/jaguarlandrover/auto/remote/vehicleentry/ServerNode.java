@@ -115,8 +115,6 @@ class ServerNode
                 connectionStatus = ConnectionStatus.CONNECTED;
 
                 stopRepeatingTask();
-
-                requestRemoteCredentials();
             }
 
             @Override
@@ -216,6 +214,11 @@ class ServerNode
             @Override
             public void nodeDidAuthorizeRemoteServices(RVIRemoteNode node, Set<String> serviceIdentifiers) {
                 Log.d(TAG, "Remote services available: " + serviceIdentifiers.toString());
+
+                for (String serviceIdentifier : serviceIdentifiers) {
+                    if (serviceIdentifier.equals(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + REQUEST_CREDENTIALS))
+                        requestRemoteCredentials();
+                }
             }
         };
 
