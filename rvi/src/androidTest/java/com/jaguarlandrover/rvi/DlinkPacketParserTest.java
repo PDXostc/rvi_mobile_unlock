@@ -19,7 +19,7 @@ import android.util.Log;
 
 public class DlinkPacketParserTest extends AndroidTestCase implements DlinkPacketParser.DlinkPacketParserTestCaseListener, DlinkPacketParser.DlinkPacketParserListener
 {
-    private final static String TAG = "RVI:DlinkPacketP...Test";
+    private final static String TAG = "RVI/DlinkPacketPrsrTest";
 
     private enum TestState {
         TEST1,

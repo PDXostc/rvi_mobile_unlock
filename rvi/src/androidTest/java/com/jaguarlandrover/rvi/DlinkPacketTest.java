@@ -22,7 +22,7 @@ import java.util.HashMap;
 
 public class DlinkPacketTest extends AndroidTestCase
 {
-    private final static String TAG = "RVI:DlinkPacketTest";
+    private final static String TAG = "RVI/DlinkPacketTest    ";
 
     private Integer tidCounter = 0;
 
