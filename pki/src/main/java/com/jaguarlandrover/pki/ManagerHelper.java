@@ -31,8 +31,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
-class ManagerHelper {
-    private final static String TAG = "UnlckDemo:ManagerHelper";
+class ManagerHelper
+{
+    private final static String TAG = "PKI:ManagerHelper      ";
 
     static void generateKeyPairAndCertificateSigningRequest(Context context, PKIManager.CertificateSigningRequestGeneratorListener listener, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
         new CertificateSigningRequestGeneratorTask(listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, context, startDate, endDate, principalFormatterPattern, principalFormatterArgs);

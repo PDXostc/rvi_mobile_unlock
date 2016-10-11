@@ -38,8 +38,9 @@ import java.util.ArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
 
-class ServerInterface {
-    private final static String TAG = "UnlockDemo:ServerInterface";
+class ServerInterface
+{
+    private final static String TAG = "PKI/ServerInterface    ";
 
     static String sendStringToProvisioningServer(String baseUrl, String requestUrl, String data) {
 
