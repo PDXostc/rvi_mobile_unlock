@@ -14,13 +14,10 @@ package com.jaguarlandrover.rvi;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-import android.util.Log;
-import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.LinkedTreeMap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -31,20 +28,20 @@ class Service
     private final static String TAG = "RVI:Service";
 
     @SerializedName("service")
-    private String mJsonService = null;
+    private String mFullyQualifiedServiceIdentifier = null;
 
     @SerializedName("parameters")
     private Object mJsonParameters = null;
 
-    private String mServiceIdentifier = null;
+    private transient String mServiceIdentifier = null;
 
-    private String mBundleIdentifier = null;
+    private transient String mBundleIdentifier = null;
 
-    private String mDomain = null;
+    private transient String mDomain = null;
 
-    private String mNodeIdentifier = null;
+    private transient String mNodeIdentifier = null;
 
-    private Object mParameters = null;
+    private transient Object mParameters = null;
 
     @SerializedName("timeout")
     private Long mTimeout;
@@ -53,19 +50,21 @@ class Service
 
     /**
      * Instantiates a new Vehicle service.
+     *   @param domain the domain
      *
-     * @param serviceIdentifier the service identifier
-     * @param domain the domain
-     * @param bundleIdentifier the bundle identifier
-     * @param prefix the service's prefix
+     *   @param nodeIdentifier the service's nodeIdentifier
+     *
+     *   @param bundleIdentifier the bundle identifier
+     *
+     *   @param serviceIdentifier the service identifier
      */
-    Service(String serviceIdentifier, String domain, String bundleIdentifier, String prefix) {
+    Service(String domain, String nodeIdentifier, String bundleIdentifier, String serviceIdentifier) {
+        mDomain            = domain;
+        mNodeIdentifier    = nodeIdentifier;
+        mBundleIdentifier  = bundleIdentifier;
         mServiceIdentifier = serviceIdentifier;
-        mBundleIdentifier = bundleIdentifier;
-        mDomain = domain;
-        mNodeIdentifier = prefix;
 
-        mJsonService = getFullyQualifiedServiceName();
+        mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceIdentifier();
     }
 
     HashMap unwrap(ArrayList<LinkedTreeMap> parameters) {
@@ -86,8 +85,8 @@ class Service
         return mJsonParameters != null && mParameters == null;
     }
 
-    private void parseParamters() {
-        // TODO: Why are parameters arrays of object, not just an object? This should probably get fixed everywhere.
+    private void parseParameters() {
+        // TODO: Why are parameters arrays of object, not just an object? This should probably get fixed everywhere. Has it been?
         if (mJsonParameters.getClass().equals(ArrayList.class) && ((ArrayList<LinkedTreeMap>)mJsonParameters).size() == 1)
             mParameters = ((ArrayList<LinkedTreeMap>) mJsonParameters).get(0);
         else if (mJsonParameters.getClass().equals(ArrayList.class) && ((ArrayList<LinkedTreeMap>)mJsonParameters).size() > 1)
@@ -96,21 +95,29 @@ class Service
             mParameters = mJsonParameters;
     }
 
-    /* If the Service object was deserialized from json, some of its fields might not be set, but the mJsonService field will be set.
-       If this is the case, parse out the mJsonService field into its parts and set the rest of the fields. */
+    /* If the Service object was deserialized from json, some of its fields might not be set, but the mFullyQualifiedServiceIdentifier field will be set.
+       If this is the case, parse out the mFullyQualifiedServiceIdentifier field into its parts and set the rest of the fields. */
     private Boolean shouldParseServiceName() {
-        return mJsonService != null && (mDomain == null || mNodeIdentifier == null || mBundleIdentifier == null || mServiceIdentifier == null);
+        return mFullyQualifiedServiceIdentifier != null && (mDomain == null || mNodeIdentifier == null || mServiceIdentifier == null);
     }
 
     private void parseFullyQualifiedServiceName() {
-        String[] serviceParts = mJsonService.split("/");
+        String[] serviceParts = mFullyQualifiedServiceIdentifier.split("/");
 
-        if (serviceParts.length != 5) return;
+        if (serviceParts.length < 4) return;
 
         mDomain = serviceParts[0];
         mNodeIdentifier = serviceParts[1] + "/" + serviceParts[2];
-        mBundleIdentifier = serviceParts[3];
-        mServiceIdentifier = serviceParts[4];
+
+        StringBuilder builder = new StringBuilder();
+        for (Integer i = 3; i < serviceParts.length; i++) {
+            builder.append(serviceParts[i]);
+
+            if (i < serviceParts.length - 1)
+                builder.append("/");
+        }
+
+        mServiceIdentifier = builder.toString();
     }
 
     /**
@@ -118,11 +125,11 @@ class Service
      *
      * @return the fully qualified service name
      */
-    String getFullyQualifiedServiceName() {
+    String getFullyQualifiedServiceIdentifier() {
         if (shouldParseServiceName())
             parseFullyQualifiedServiceName();
 
-        return mDomain + "/" + mNodeIdentifier + "/" + mBundleIdentifier + "/" + mServiceIdentifier;
+        return mDomain + "/" + mNodeIdentifier + "/" + mServiceIdentifier;
     }
 
     /**
@@ -135,7 +142,7 @@ class Service
         return mNodeIdentifier != null;
     }
 
-    private String getNodeIdentifier() {
+    String getNodeIdentifier() {
         return mNodeIdentifier;
     }
 
@@ -146,7 +153,7 @@ class Service
      */
     void setNodeIdentifier(String nodeIdentifier) {
         mNodeIdentifier = nodeIdentifier;
-        mJsonService = getFullyQualifiedServiceName();
+        mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceIdentifier();
     }
 
     /**
@@ -159,6 +166,11 @@ class Service
             parseFullyQualifiedServiceName();
 
         return mDomain;
+    }
+
+    public void setDomain(String domain) {
+        mDomain = domain;
+        mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceIdentifier();
     }
 
     /**
@@ -192,7 +204,7 @@ class Service
      */
     Object getParameters() {
         if (shouldParseParameters())
-            parseParamters();
+            parseParameters();
 
         return mParameters;
     }
@@ -203,7 +215,10 @@ class Service
      * @param parameters the parameters
      */
     void setParameters(Object parameters) {
-        this.mParameters = this.mJsonParameters = parameters;
+        if (parameters == null)
+            this.mParameters = this.mJsonParameters = new Object();
+        else
+            this.mParameters = this.mJsonParameters = parameters;
     }
 
     /**
@@ -225,7 +240,7 @@ class Service
     }
 
     public Service copy() {
-        Service copy = new Service(this.getServiceIdentifier(), this.getDomain(), this.getBundleIdentifier(), this.getNodeIdentifier());
+        Service copy = new Service(this.getDomain(), this.getNodeIdentifier(), this.getBundleIdentifier(), this.getServiceIdentifier());
 
         copy.setTimeout(this.getTimeout());
         copy.setParameters(this.getParameters());

@@ -21,6 +21,8 @@ import javax.net.SocketFactory;
 import javax.net.ssl.*;
 import java.io.*;
 import java.security.*;
+import java.security.cert.Certificate;
+import java.util.Enumeration;
 
 /**
  * The TCP/IP server @RemoteConnectionInterface implementation
@@ -30,15 +32,15 @@ class ServerConnection implements RemoteConnectionInterface
     private final static String TAG = "RVI:ServerConnection";
     private RemoteConnectionListener mRemoteConnectionListener;
 
-    private String   mServerUrl;
-    private Integer  mServerPort;
-    private KeyStore mClientKeyStore;
-    private KeyStore mServerKeyStore;
-    private String   mClientKeyStorePassword;
+    private String  mServerUrl;
+    private Integer mServerPort;
 
-    /**
-     * The socket.
-     */
+    private java.security.cert.Certificate mRemoteDeviceCertificate;
+
+    private KeyStore mServerKeyStore = null;
+    private KeyStore mLocalDeviceKeyStore = null;
+    private String   mLocalDeviceKeyStorePassword = null;
+
     private SSLSocket mSocket;
 
     @Override
@@ -49,7 +51,7 @@ class ServerConnection implements RemoteConnectionInterface
             return;
         }
 
-        new SendDataTask(dlinkPacket).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);//, dlinkPacket.toJsonString());
+        new SendDataTask(dlinkPacket).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     @Override
@@ -59,7 +61,7 @@ class ServerConnection implements RemoteConnectionInterface
 
     @Override
     public boolean isConfigured() {
-        return !(mServerUrl == null || mServerUrl.isEmpty() || mServerPort == 0 || mClientKeyStore == null || mServerKeyStore == null);
+        return !(mServerUrl == null || mServerUrl.isEmpty() || mServerPort == 0 || mServerKeyStore == null || mLocalDeviceKeyStore == null);
     }
 
     @Override
@@ -76,7 +78,9 @@ class ServerConnection implements RemoteConnectionInterface
             if (mSocket != null)
                 mSocket.close(); // TODO: Put on background thread (and probably do in BluetoothConnection too)
 
-            mSocket = null;
+            mRemoteDeviceCertificate = null;
+            mSocket                  = null;
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -92,7 +96,7 @@ class ServerConnection implements RemoteConnectionInterface
     private void connectSocket() {
         Log.d(TAG, "Connecting the socket: " + mServerUrl + ":" + mServerPort);
 
-        ConnectTask connectAndAuthorizeTask = new ConnectTask(mServerUrl, mServerPort, mServerKeyStore, mClientKeyStore, mClientKeyStorePassword);
+        ConnectTask connectAndAuthorizeTask = new ConnectTask(mServerUrl, mServerPort, mServerKeyStore, mLocalDeviceKeyStore, mLocalDeviceKeyStorePassword);
         connectAndAuthorizeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -135,43 +139,29 @@ class ServerConnection implements RemoteConnectionInterface
             clientKeyStorePassword = cksPass;
         }
 
-
-//        private KeyStore getKeyStore(String fileName, String type, String password) throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException { // type = "jks"?
-////            AssetManager assetManager = getAssetManager();
-////            AssetFileDescriptor fileDescriptor = assetManager.openFd(fileName);
-////            FileInputStream stream = fileDescriptor.createInputStream();
-//            File file = new File(fileName);
-//            FileInputStream fis = new FileInputStream(file);
-//            KeyStore ks = KeyStore.getInstance(type);
-//            ks.load(fis, password.toCharArray());
-//            fis.close(); // Now we initialize the TrustManagerFactory with this KeyStore
-//
-//            return ks;
-//        }
-//
-//        private KeyManager[] getKeyManagers(String keyStoreFileName, String keyStoreType, String keyStorePassword) throws IOException, GeneralSecurityException { // First, get the default KeyManagerFactory.
-//            String alg = KeyManagerFactory.getDefaultAlgorithm();
-//            KeyManagerFactory kmFact = KeyManagerFactory.getInstance(alg); // Next, set up the KeyStore to use. We need to load the file into // a KeyStore instance.
-//            kmFact.init(getKeyStore(keyStoreFileName, keyStoreType, keyStorePassword), keyStorePassword.toCharArray()); // And now get the TrustManagers
-//            KeyManager[] kms = kmFact.getKeyManagers();
-//
-//            return kms;
-//        }
-
-
         @Override
         protected Throwable doInBackground(Void... params) {
 
             try {
+
+                try {
+                    KeyStore keyStore = KeyStore.getInstance("BKS", "BC");
+                    keyStore.load(null, null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+
                 Log.d(TAG, "Creating socket factory");
 
-                String trustManagerAlgorithm = "X509";//TrustManagerFactory.getDefaultAlgorithm();
+                String trustManagerAlgorithm = "X509";
                 TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(trustManagerAlgorithm);
                 trustManagerFactory.init(serverKeyStore);
 
-                String keyManagerAlgorithm = "X509";//KeyManagerFactory.getDefaultAlgorithm();
+                String keyManagerAlgorithm = "X509";
                 KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(keyManagerAlgorithm);
-                keyManagerFactory.init(clientKeyStore, clientKeyStorePassword.toCharArray());
+                keyManagerFactory.init(clientKeyStore, clientKeyStorePassword != null ? clientKeyStorePassword.toCharArray() : null);
 
                 SSLContext context = SSLContext.getInstance("TLS");
                 context.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
@@ -181,6 +171,16 @@ class ServerConnection implements RemoteConnectionInterface
                 Log.d(TAG, "Creating ssl socket");
 
                 mSocket = (SSLSocket) sf.createSocket(dstAddress, dstPort);
+
+                SSLSession session  = mSocket.getSession();
+
+                java.security.cert.Certificate[] peerCertificates = session.getPeerCertificates();
+
+                if (peerCertificates == null || peerCertificates.length != 1) {
+                    throw new Exception("Remote certificate chain is null or contains more than 1 certificate");
+                }
+
+                mRemoteDeviceCertificate = peerCertificates[0];
 
                 Log.d(TAG, "Creating ssl socket complete");
 
@@ -298,10 +298,6 @@ class ServerConnection implements RemoteConnectionInterface
         }
     }
 
-    //public String getServerUrl() {
-    //    return mServerUrl;
-    //}
-
     /**
      * Sets server url.
      *
@@ -310,10 +306,6 @@ class ServerConnection implements RemoteConnectionInterface
     void setServerUrl(String serverUrl) {
         mServerUrl = serverUrl;
     }
-
-    //public Integer getServerPort() {
-    //    return mServerPort;
-    //}
 
     /**
      * Sets server port.
@@ -324,27 +316,61 @@ class ServerConnection implements RemoteConnectionInterface
         mServerPort = serverPort;
     }
 
-    /**
-     * Sets the key store of the server certs
-     * @param serverKeyStore the key store with the trusted server's cert used in TLS handshake
-     */
     public void setServerKeyStore(KeyStore serverKeyStore) {
         mServerKeyStore = serverKeyStore;
     }
 
-    /**
-     * Sets the key store of the client certs
-     * @param clientKeyStore the key store with the trusted client's cert used in TLS handshake
-     */
-    public void setClientKeyStore(KeyStore clientKeyStore) {
-        mClientKeyStore = clientKeyStore;
+    public void setLocalDeviceKeyStore(KeyStore localDeviceKeyStore) {
+        mLocalDeviceKeyStore = localDeviceKeyStore;
     }
 
-    /**
-     * Sets the key store of the client certs
-     * @param clientKeyStorePassword the password of the key store with the trusted client's cert
-     */
-    void setClientKeyStorePassword(String clientKeyStorePassword) {
-        mClientKeyStorePassword = clientKeyStorePassword;
+    public void setLocalDeviceKeyStorePassword(String localDeviceKeyStorePassword) {
+        mLocalDeviceKeyStorePassword = localDeviceKeyStorePassword;
+    }
+
+    public Certificate getRemoteDeviceCertificate() {
+        return mRemoteDeviceCertificate;
+    }
+
+    public Certificate getLocalDeviceCertificate() {
+        try {
+            if (mLocalDeviceKeyStore == null) throw new Exception("Device keystore is null");
+
+            Enumeration<String> aliases = mLocalDeviceKeyStore.aliases();
+
+            String alias = aliases.nextElement();
+
+            KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) mLocalDeviceKeyStore.getEntry(alias, null);
+
+            return entry.getCertificate();
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            disconnect(e);
+        }
+
+        return null;
+    }
+
+    public Certificate getServerCertificate() {
+        try {
+            if (mServerKeyStore == null) throw new Exception("Server keystore is null");
+
+            Enumeration<String> aliases = mServerKeyStore.aliases();
+
+            String alias = aliases.nextElement();
+
+            KeyStore.TrustedCertificateEntry entry = (KeyStore.TrustedCertificateEntry) mServerKeyStore.getEntry(alias, null);
+
+            // TODO: Maybe check here if have more than one entry?
+
+            return entry.getTrustedCertificate();
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            disconnect(e);
+        }
+
+        return null;
     }
 }

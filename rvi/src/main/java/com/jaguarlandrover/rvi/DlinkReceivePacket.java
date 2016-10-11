@@ -36,13 +36,6 @@ class DlinkReceivePacket extends DlinkPacket
      */
     @SerializedName("data")
     private Service mService;
-//    private transient Service mService;
-
-    /**
-     * The service is converted to a json string, then base64 encoded to be embedded in the packet's json.
-     */
-//    @SerializedName("data")
-//    private String mData;
 
     /**
      * Instantiates a new Dlink receive packet.
@@ -61,14 +54,6 @@ class DlinkReceivePacket extends DlinkPacket
         mMod = "proto_json_rpc";
         mService = service.copy();
     }
-
-//    public DlinkReceivePacket(HashMap jsonHash) {
-//        super(Command.RECEIVE, jsonHash);
-//
-//        mMod = (String) jsonHash.get("mod");
-//
-//        mService = new Service(new String(Base64.decode((String)jsonHash.get("data"), Base64.DEFAULT)));
-//    }
 
     /**
      * Gets the service that is being invoked over the network.

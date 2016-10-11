@@ -33,7 +33,7 @@ public class UserCredentials
     private String mValidFrom = "1971-09-09T22:00:00.000Z";
 
     @SerializedName("validTo")
-    private String mValidTo   = "1971-09-09T23:00:00.000Z";
+    private String mValidTo = "1971-09-09T23:00:00.000Z";
 
     @SerializedName("userType")
     private String mUserType = "guest";

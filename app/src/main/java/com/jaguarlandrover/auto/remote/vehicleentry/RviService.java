@@ -22,6 +22,8 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.jaguarlandrover.rvi.RVILocalNode;
+
 import org.json.JSONObject;
 
 import java.security.KeyStore;
@@ -37,44 +39,64 @@ public class RviService extends Service {
 
     private SharedPreferences prefs;
 
-    private KeyStore          mServerKeyStore         = null;
-    private KeyStore          mDeviceKeyStore         = null;
-    private String            mDeviceKeyStorePassword = null;
-    private ArrayList<String> mPrivileges             = null;
+    //private KeyStore          mServerKeyStore         = null;
+    //private KeyStore          mDeviceKeyStore         = null;
+    //private String            mDeviceKeyStorePassword = null;
+    //private ArrayList<String> mPrivileges             = null;
 
     public RviService() {
     }
 
-    public KeyStore getServerKeyStore() {
-        return mServerKeyStore;
-    }
+    //public KeyStore getServerKeyStore() {
+    //    return mServerKeyStore;
+    //}
 
     public void setServerKeyStore(KeyStore serverKeyStore) {
-        mServerKeyStore = serverKeyStore;
+        try {
+            RVILocalNode.setServerKeyStore(serverKeyStore);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //mServerKeyStore = serverKeyStore;
     }
 
-    public KeyStore getDeviceKeyStore() {
-        return mDeviceKeyStore;
-    }
+    //public KeyStore getDeviceKeyStore() {
+    //    return mDeviceKeyStore;
+    //}
 
     public void setDeviceKeyStore(KeyStore deviceKeyStore) {
-        mDeviceKeyStore = deviceKeyStore;
+        try {
+            RVILocalNode.setDeviceKeyStore(deviceKeyStore);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //mDeviceKeyStore = deviceKeyStore;
     }
 
-    public String getDeviceKeyStorePassword() {
-        return mDeviceKeyStorePassword;
-    }
+    //public String getDeviceKeyStorePassword() {
+    //    return mDeviceKeyStorePassword;
+    //}
 
     public void setDeviceKeyStorePassword(String deviceKeyStorePassword) {
-        mDeviceKeyStorePassword = deviceKeyStorePassword;
+        try {
+            RVILocalNode.setDeviceKeyStorePassword(deviceKeyStorePassword);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //mDeviceKeyStorePassword = deviceKeyStorePassword;
     }
 
-    public ArrayList<String> getPrivileges() {
-        return mPrivileges;
-    }
+    //public ArrayList<String> getPrivileges() {
+    //    return mPrivileges;
+    //}
 
     public void setPrivileges(ArrayList<String> privileges) {
-        mPrivileges = privileges;
+        RVILocalNode.setCredentials(this, privileges);
+
+        //mPrivileges = privileges;
     }
 
     /**
@@ -110,6 +132,8 @@ public class RviService extends Service {
         br.start();
         Observable<RangeObject> obs =  br.getRangeStream();
         obs.observeOn(Schedulers.newThread()).subscribeOn(Schedulers.newThread()).subscribe(beaconSubscriber);
+
+        //RVILocalNode.start(this);
     }
 
     @Override
@@ -140,15 +164,15 @@ public class RviService extends Service {
     }
 
     private void connectServerNode() {
-        ServerNode.setKeyStoresAndPrivileges(mServerKeyStore, mDeviceKeyStore, mDeviceKeyStorePassword, mPrivileges);
+        //ServerNode.setKeyStoresAndPrivileges(mServerKeyStore, mDeviceKeyStore, mDeviceKeyStorePassword, mPrivileges);
 
         ServerNode.connect();
     }
 
     public void connectVehicleNode(String deviceAddress) {
-        VehicleNode.setKeyStoresAndPrivileges(mServerKeyStore, mDeviceKeyStore, mDeviceKeyStorePassword, mPrivileges);
+        //VehicleNode.setKeyStoresAndPrivileges(mServerKeyStore, mDeviceKeyStore, mDeviceKeyStorePassword, mPrivileges);
 
-//        VehicleNode.setDeviceAddress(deviceAddress);
+        //VehicleNode.setDeviceAddress(deviceAddress);
         VehicleNode.connect();
     }
 
