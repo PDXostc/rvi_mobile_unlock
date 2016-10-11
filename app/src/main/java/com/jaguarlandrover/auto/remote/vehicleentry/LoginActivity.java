@@ -33,7 +33,7 @@ import rx.schedulers.Schedulers;
 
 public class LoginActivity extends ActionBarActivity implements LoginActivityFragment.LoginFragmentButtonListener{
 
-    private static final String TAG = "UnlockDemo/LoginActvty ";
+    private static final String TAG = "UnlockDemo/LoginActvty_";
     private String status = "false";
     private Boolean auth = Boolean.FALSE;
     private RviService rviService = null;

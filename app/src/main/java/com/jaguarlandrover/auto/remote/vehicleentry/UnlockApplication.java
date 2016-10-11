@@ -22,7 +22,7 @@ import android.support.multidex.MultiDexApplication;
 
 public class UnlockApplication extends MultiDexApplication
 {
-    private final static String TAG = "UnlockDemo/UnlockApp   ";
+    private final static String TAG = "UnlockDemo/UnlockApp___";
 
     private static Application instance;
 

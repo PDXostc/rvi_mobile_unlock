@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class Vehicle {
-    private final static String TAG = "UnlockDemo/Vehicle     ";
+    private final static String TAG = "UnlockDemo/Vehicle_____";
 
     private final static String SERVER_DATE_TIME_FORMATTER = "yyyy-MM-dd'T'HH:mm:ss";
     private final static String PRETTY_DATE_TIME_FORMATTER = "MM/dd/yyyy h:mm a z";

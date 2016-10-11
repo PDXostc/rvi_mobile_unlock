@@ -16,7 +16,7 @@ import android.util.Log;
 
 public class CloudReceiver extends BroadcastReceiver
 {
-    private static final String TAG = "UnlockDemo/CloudRecvr  ";
+    private static final String TAG = "UnlockDemo/CloudRecvr__";
 
     @Override
     public void onReceive(Context context, Intent intent) {
