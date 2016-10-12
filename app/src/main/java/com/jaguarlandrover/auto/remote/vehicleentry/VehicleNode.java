@@ -88,7 +88,7 @@ public class VehicleNode
                 connectionStatus = ConnectionStatus.DISCONNECTED;
 
                 ///* Try and reconnect */
-                //startRepeatingTask();
+                //startRepeatingTasks();
             }
 
             @Override

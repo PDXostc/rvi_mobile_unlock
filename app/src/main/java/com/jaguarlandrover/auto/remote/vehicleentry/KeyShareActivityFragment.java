@@ -24,8 +24,8 @@ import java.util.TimeZone;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class KeyShareActivityFragment extends Fragment {
-
+public class KeyShareActivityFragment extends Fragment
+{
     int year_x, month_x, day_x, hour_x, min_x, hour_end, min_end;
     String am_pm;
     TextView startdate, enddate, starttime, endtime;
@@ -40,7 +40,9 @@ public class KeyShareActivityFragment extends Fragment {
     private Switch     engine_start;
     private Switch     trunk_lights;
     private ViewPager  userPages;
-    private ViewPager  carPages;
+    //private ViewPager  carPages;
+
+    Vehicle mSelectedVehicle = null;
 
     int[] users = {R.drawable.lilli,
             R.drawable.magnus,
@@ -48,8 +50,8 @@ public class KeyShareActivityFragment extends Fragment {
 
     };
 
-    int[]    vehicles = {R.drawable.car1, R.drawable.car2};
-    String[] vins     = {"stoffe", "stoffe"};
+    //int[]    vehicles = {R.drawable.car1, R.drawable.car2};
+    //String[] vins     = {"stoffe", "stoffe"};
 
     private ShareFragmentButtonListener buttonListener;
 
@@ -57,8 +59,7 @@ public class KeyShareActivityFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_key_share, container, false);
 
@@ -68,7 +69,7 @@ public class KeyShareActivityFragment extends Fragment {
         trunk_lights = (Switch) view.findViewById(R.id.trunk_lights);
         //auth_switch_grid = (GridLayout) view.findViewById(R.id.auth_switch_grid);
         userPages = (ViewPager) view.findViewById(R.id.userscroll);
-        carPages = (ViewPager) view.findViewById(R.id.vehiclescroll);
+        //carPages = (ViewPager) view.findViewById(R.id.vehiclescroll);
         userheader = (TextView) view.findViewById(R.id.user);
 
         //UserCredentials userCredentials = ServerNode.getUserData();
@@ -105,8 +106,8 @@ public class KeyShareActivityFragment extends Fragment {
 
     //public UserCredentials getRemoteCredentials() throws JSONException {
     public User getSharingUser() throws JSONException {
-        String centerUser = getResources().getResourceEntryName(users[userPages.getCurrentItem()]);
-        String centerVehicle = vins[carPages.getCurrentItem()];
+        //String centerUser = getResources().getResourceEntryName(users[userPages.getCurrentItem()]);
+        //String centerVehicle = vins[carPages.getCurrentItem()];
 
         /* Old code */
         String start = null;
@@ -166,14 +167,19 @@ public class KeyShareActivityFragment extends Fragment {
         //UserCredentials shareCredentials = new UserCredentials();
 
         User user = ServerNode.getUserData();
-        User sharingGuest = new User(centerUser);
+        Integer selectedUserIndex = userPages.getCurrentItem();
 
-        Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
-        Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle(); // TODO: Will always be valid so long as we always go back to last screen when new user data is available
+        if (selectedUserIndex >= user.getGuests().size())
+            return null;
+
+        User sharingGuest = user.getGuests().get(selectedUserIndex);
+
+        //Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
+        //Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle(); // TODO: Will always be valid so long as we always go back to last screen when new user data is available
 
         // TODO: If new user data comes in and vehicle list changes, need to get out of here or bugs
 
-        Vehicle sharingVehicle = new Vehicle(vehicle.getVehicleId());
+        Vehicle sharingVehicle = new Vehicle(mSelectedVehicle.getVehicleId());
 
         try {
             sharingVehicle.setValidFrom(start);//convertTime(starttime.getText().toString()));
@@ -195,6 +201,10 @@ public class KeyShareActivityFragment extends Fragment {
         Log.d("SHARE_NEW", sharingGuest.toString());
 
         return sharingGuest;//jsonArray;
+    }
+
+    public void setSelectedVehicle(Vehicle selectedVehicle) {
+        this.mSelectedVehicle = selectedVehicle;
     }
 
     public String convertTime(String time) throws Exception{
@@ -372,15 +382,15 @@ public class KeyShareActivityFragment extends Fragment {
         //userPages.setFadingEdgeLength(50);
     }
 
-    public void showCarSelect(){
-        ScrollPageAdapter carPageAdapter = new ScrollPageAdapter(getActivity(), vehicles);
-        carPages.setAdapter(carPageAdapter);
-        carPages.setOffscreenPageLimit(2);
-        Log.d("ScrollPager", "Vehicles");
-        //carPages.setPageMargin(-500);
-        carPages.setHorizontalFadingEdgeEnabled(true);
-        //carPages.setFadingEdgeLength(50);
-    }
+//    public void showCarSelect(){
+//        ScrollPageAdapter carPageAdapter = new ScrollPageAdapter(getActivity(), vehicles);
+//        carPages.setAdapter(carPageAdapter);
+//        carPages.setOffscreenPageLimit(2);
+//        Log.d("ScrollPager", "Vehicles");
+//        //carPages.setPageMargin(-500);
+//        carPages.setHorizontalFadingEdgeEnabled(true);
+//        //carPages.setFadingEdgeLength(50);
+//    }
 
     private DatePickerDialog.OnDateSetListener dpickerListener
             =new DatePickerDialog.OnDateSetListener(){

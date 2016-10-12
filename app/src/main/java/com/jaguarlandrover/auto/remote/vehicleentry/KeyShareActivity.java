@@ -12,6 +12,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 
 public class KeyShareActivity extends ActionBarActivity implements KeyShareActivityFragment.ShareFragmentButtonListener {
@@ -19,7 +21,8 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
     static final int dateDialog = 0;
     static final int timeDialog = 1;
 
-    KeyShareActivityFragment share_fragment;
+    KeyShareActivityFragment mShareFragment;
+    String mVehicleString = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +32,11 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
 
         setContentView(R.layout.activity_key_share);
 
-        share_fragment = (KeyShareActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentshare);
+        mShareFragment = (KeyShareActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentshare);
+
+        Gson gson = new Gson();
+        Vehicle selectedVehicle = gson.fromJson(mVehicleString, Vehicle.class);
+        mShareFragment.setSelectedVehicle(selectedVehicle);
 
         ArrayList<String> userList = new ArrayList<String>();
         ArrayList<String> vehicleList = new ArrayList<String>();
@@ -39,9 +46,9 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
 
         //setUserImage(userList);
         //setVehicleImage(vehicleList);
-        share_fragment.showUserSelect();
-        share_fragment.showCarSelect();
-        share_fragment.showDialog();
+        mShareFragment.showUserSelect();
+//        mShareFragment.showCarSelect();
+        mShareFragment.showDialog();
         //String selectedUser = getResources().getString(users[userPages.getCurrentItem()]);
         //Toast.makeText(keyShareActivity.this, selectedUser, Toast.LENGTH_LONG).show();
     }
@@ -49,9 +56,9 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
     @Override
     protected Dialog onCreateDialog(int id) {
         if (id == dateDialog)
-            return new DatePickerDialog(this, share_fragment.getdplistener(), share_fragment.getyear(), share_fragment.getmonth() - 1, share_fragment.getday());
+            return new DatePickerDialog(this, mShareFragment.getdplistener(), mShareFragment.getyear(), mShareFragment.getmonth() - 1, mShareFragment.getday());
         if (id == timeDialog)
-            return new TimePickerDialog(this, share_fragment.gettplistener(), share_fragment.gethour(), share_fragment.getmin(), false);
+            return new TimePickerDialog(this, mShareFragment.gettplistener(), mShareFragment.gethour(), mShareFragment.getmin(), false);
         return null;
     }
 
@@ -62,8 +69,8 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
                         try{
-                            //RviService.sendKey(share_fragment.getSharingUser());
-                            ServerNode.authorizeServices(share_fragment.getSharingUser());
+                            //RviService.sendKey(mShareFragment.getSharingUser());
+                            ServerNode.authorizeServices(mShareFragment.getSharingUser());
                             confirmationMessage();
                         } catch (Exception e) {
 
@@ -124,6 +131,10 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
                         }
                     });
             alertDialogBuilder.create().show();
+        }
+
+        if (extras != null) {
+            mVehicleString = (String) extras.get("selectedVehicle");
         }
     }
 

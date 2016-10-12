@@ -41,15 +41,10 @@ class ServerNode
 
     private static RVIRemoteNode rviNode = new RVIRemoteNode(null);
 
-    private static final ConcurrentHashMap<String, String> certs = new ConcurrentHashMap<String, String>(1);
 
     /* * * * * * * * * * * * * * * * * * SharedPreferences keys * * * * * * * * * * * * * * * * * **/
-    //private final static String NEW_CERTIFICATE_DATA_KEY        = "NEW_CERTIFICATE_DATA_KEY";
-    //private final static String CERTIFICATE_DATA_KEY            = "CERTIFICATE_DATA_KEY";
     private final static String NEW_USER_DATA_KEY               = "NEW_USER_DATA_KEY";
     private final static String USER_DATA_KEY                   = "USER_DATA_KEY";
-    //private final static String NEW_REMOTE_CREDENTIALS_LIST_KEY = "NEW_REMOTE_CREDENTIALS_LIST_KEY";
-    //private final static String REMOTE_CREDENTIALS_LIST_KEY     = "REMOTE_CREDENTIALS_LIST_KEY";
     private final static String NEW_INVOKED_SERVICE_REPORT_KEY  = "NEW_INVOKED_SERVICE_REPORT_KEY";
     private final static String INVOKED_SERVICE_REPORT_KEY      = "INVOKED_SERVICE_REPORT_KEY";
 
@@ -98,7 +93,7 @@ class ServerNode
             new ArrayList<>(Arrays.asList(
                     REPORTING_BUNDLE + "/" + SERVICE_INVOKED_BY_GUEST));
 
-
+    /* * * * * * * * * * * * * * * * * * * * Other stuff * * * * * * * * * * * * * * * * * * * * **/
     private enum ConnectionStatus
     {
         DISCONNECTED,
@@ -130,7 +125,7 @@ class ServerNode
                 Log.d(TAG, "Failed to connect to RVI provisioning server!");
                 connectionStatus = ConnectionStatus.DISCONNECTED;
 
-                //startRepeatingTask();
+                //startRepeatingTasks();
             }
 
             @Override
@@ -162,7 +157,6 @@ class ServerNode
                     case CREDENTIAL_MANAGEMENT_BUNDLE:
                         switch (serviceParts[1]) {
                             case UPDATE_CREDENTIALS:
-
                                 // TODO: Check this
                                 ArrayList<String> credentials = (ArrayList<String>) ((LinkedTreeMap<String, Object>) parameters).get("credentials");
                                 RVILocalNode.setCredentials(applicationContext, credentials);
@@ -170,11 +164,9 @@ class ServerNode
                                 break;
 
                             case REVOKE_CREDENTIALS:
-
                                 RVILocalNode.setCredentials(applicationContext, null);
 
                                 break;
-
                         }
 
                         break;
@@ -182,7 +174,6 @@ class ServerNode
                     case ACCOUNT_MANAGEMENT_BUNDLE:
                         switch (serviceParts[1]) {
                             case SET_USER_DATA:
-
                                 ServerNode.setUserData(gson.toJson(parameters));
 
                                 break;
@@ -193,7 +184,6 @@ class ServerNode
                     case REPORTING_BUNDLE:
                         switch (serviceParts[1]) {
                             case SERVICE_INVOKED_BY_GUEST:
-
                                 ServerNode.setInvokedServiceReport(gson.toJson(parameters));
 
                                 break;
@@ -301,44 +291,21 @@ class ServerNode
         rviNode.invokeService(ACCOUNT_MANAGEMENT_BUNDLE + "/" + GET_USER_DATA, parameters, 60 * 1000);
     }
 
-    static void revokeAuthorization(User remoteUser) {//UserCredentials remoteCredentials) {
+    static void revokeAuthorization(User remoteUser) {
         Log.d(TAG, "Revoking authorization for user on RVI provisioning server.");
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
         rviNode.invokeService(ACCOUNT_MANAGEMENT_BUNDLE + "/" + REVOKE_AUTHORIZATION, remoteUser, 60 * 1000);
-        //rviNode.invokeService(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + CERT_MODIFY, remoteCredentials, 5000);
     }
 
-    static void authorizeServices(User remoteUser) {//UserCredentials remoteCredentials) {
+    static void authorizeServices(User remoteUser) {
         Log.d(TAG, "Creating remote credentials on RVI provisioning server.");
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
         rviNode.invokeService(ACCOUNT_MANAGEMENT_BUNDLE + "/" + AUTHORIZE_SERVICES, remoteUser, 60 * 1000);
-        //rviNode.invokeService(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + CERT_CREATE, remoteCredentials, 5000);
     }
-
-//    public static Certificate getCertificate() {
-//        String certStr = preferences.getString(CERTIFICATE_DATA_KEY, null);
-//
-//        Certificate certificate = new Certificate();
-//        try {
-//            certificate =  gson.fromJson(certStr, Certificate.class);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        return certificate;
-//    }
-//
-//    private static void setCertificate(String certStr) {
-//        SharedPreferences.Editor editor = preferences.edit();
-//        editor.putString(CERTIFICATE_DATA_KEY, certStr);
-//        editor.commit();
-//
-//        ServerNode.setThereIsNewCertificateData(true);
-//    }
 
     static User getUserData() {
         String userStr = preferences.getString(USER_DATA_KEY, null);

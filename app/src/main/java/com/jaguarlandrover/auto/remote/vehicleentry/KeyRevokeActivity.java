@@ -12,6 +12,8 @@ import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
+import com.google.gson.Gson;
+
 import org.json.JSONArray;
 
 import java.util.ArrayList;
@@ -22,15 +24,39 @@ public class KeyRevokeActivity extends ActionBarActivity {
     LinearLayout layout;
     int mPosition;
 
+    Vehicle mSelectedVehicle = new Vehicle();
+    User mSnapshotUser = new User();
+
+    ArrayList<User> mFilteredRemotes = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_key_change);
 
-        //ArrayList<UserCredentials> arrayofusers = new ArrayList<UserCredentials>();
-        ArrayList<User> guestUsers = new ArrayList<User>();
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            Gson gson = new Gson();
 
-        RemoteCredentialsAdapter adapter = new RemoteCredentialsAdapter(this, guestUsers);
+            String vehicleString = (String) extras.get("selectedVehicle");
+            mSelectedVehicle = gson.fromJson(vehicleString, Vehicle.class);
+
+            String userString = (String) extras.get("snapShotUser");
+            mSnapshotUser = gson.fromJson(userString, User.class);
+
+            for (User guestUser : mSnapshotUser.getGuests()) {
+                for (Vehicle vehicle : guestUser.getVehicles()) {
+                    if (vehicle.getVehicleId().equals(mSelectedVehicle.getVehicleId()) && vehicle.getUserType().equals("guest")) {
+                        User remote = new User(guestUser.getUserName());
+                        remote.addVehicle(vehicle);
+
+                        mFilteredRemotes.add(remote);
+                    }
+                }
+            }
+        }
+
+        RemoteCredentialsAdapter adapter = new RemoteCredentialsAdapter(this, mFilteredRemotes);
         ListView listView = (ListView) findViewById(R.id.sharedKeys);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
@@ -42,7 +68,7 @@ public class KeyRevokeActivity extends ActionBarActivity {
         });
 
         listView.setAdapter(adapter);
-        addUsers(adapter);
+        //addUsers(adapter);
     }
 
     public void alertMessage(){
@@ -51,10 +77,9 @@ public class KeyRevokeActivity extends ActionBarActivity {
                 switch(which){
                     case DialogInterface.BUTTON_POSITIVE:
                         try{
-                            //RviService.revokeKey(selectKey());//share_fragment.getRemoteCredentials());
                             ServerNode.revokeAuthorization(selectKey());
                         } catch (Exception e){
-
+                            e.printStackTrace();
                         }
                         finish();
                         break;
@@ -71,76 +96,23 @@ public class KeyRevokeActivity extends ActionBarActivity {
                 .setNegativeButton("Cancel", dialogClickListener).show();
     }
 
-    //public UserCredentials selectKey() {
     public User selectKey() {
-        JSONArray revokeKeyOuter = new JSONArray();
-        JSONArray revokeKey = new JSONArray();
 
-        //UserCredentials revokingCredentials = new UserCredentials();
-        User revokingUser = new User();
+        ArrayList<User> guestUsers = ServerNode.getUserData().getGuests();
 
-        try {
-            //ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(ServerNode.getRemoteCredentialsList());
-            ArrayList<User> guestUsers = ServerNode.getUserData().getGuests();//new ArrayList<>(ServerNode.getRemoteCredentialsList());
-
-            //UserCredentials selectedRemoteCredentials = guestUsers.get(mPosition);
-            User selectedGuest = guestUsers.get(mPosition);
-
-//            /* Old code */
-//            JSONObject payload = new JSONObject();
-//            JSONArray authServices = new JSONArray();
-//
-//            authServices.put(new JSONObject().put("lock", "false"));
-//            authServices.put(new JSONObject().put("start", "false"));
-//            authServices.put(new JSONObject().put("trunk", "false"));
-//            authServices.put(new JSONObject().put("windows", "false"));
-//            authServices.put(new JSONObject().put("lights", "false"));
-//            authServices.put(new JSONObject().put("hazard", "false"));
-//            authServices.put(new JSONObject().put("horn", "false"));
-//
-//            payload.put("authorizedServices", authServices);
-//            payload.put("validTo", "1971-09-09T23:00:00.000Z");
-//            payload.put("validFrom", "1971-09-09T22:00:00.000Z");
-//            payload.put("certid", selectedRemoteCredentials.getCertId());
-//
-//            revokeKey.put(payload);
-//            revokeKeyOuter.put(revokeKey);
-//
-//            Log.d("REVOKE_OLD", revokeKey.toString());
-
-            /* New code */
-//            UserCredentials revokingCredentials = new UserCredentials();
-
-            //revokingUser.setCertId(selectedRemoteCredentials.getCertId()); // TODO: Probably should set the vehicle or something here
-
-            User user = ServerNode.getUserData();
-            Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
-            Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle(); // TODO: Will always be valid so long as we always go back to last screen when new user data is available
-
-            // TODO: If new user data comes in and vehicle list changes, need to get out of here or bugs
-
-            Vehicle revokingVehicle = new Vehicle(vehicle.getVehicleId());
-
-            revokingUser.addVehicle(revokingVehicle);
-
-
-            Log.d("REVOKE_NEW", revokingUser.toString());
-
-        } catch (Exception e) { e.printStackTrace(); }
-
-        return revokingUser;//revokeKey;
+        return guestUsers.get(mPosition);
     }
 
-    public void addUsers(RemoteCredentialsAdapter adapter){
-        try {
-            //ArrayList<UserCredentials> remoteCredentialsList = new ArrayList<>(ServerNode.getRemoteCredentialsList());
-            ArrayList<User> guestUsers = ServerNode.getUserData().getGuests();
-
-            adapter.addAll(guestUsers);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    public void addUsers(RemoteCredentialsAdapter adapter){
+//        try {
+//
+//            ArrayList<User> guestUsers = ServerNode.getUserData().getGuests();
+//
+//            adapter.addAll(guestUsers);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

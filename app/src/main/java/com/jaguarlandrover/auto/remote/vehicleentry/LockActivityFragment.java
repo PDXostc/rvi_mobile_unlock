@@ -87,13 +87,6 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
         vehicleHeader = (TextView) view.findViewById(R.id.vehicle_header);
         keyManagementLayout = (LinearLayout) view.findViewById(R.id.key_management_layout);
 
-//        User user = ServerNode.getUserData();
-//        if (user == null) {
-//            updateUserInterface(new User());
-//        } else {
-//            updateUserInterface(user);
-//        }
-
         buttonSet = new Handler();
         startRepeatingTask();
 
@@ -130,7 +123,7 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
             Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle();
 
             if (vehicle.getUserType().equals("guest") && !vehicle.isKeyValid()) { // TODO: Check logic now that changed
-                updateUserInterface();//user);
+                updateUserInterface();
             }
 
             // Revoke check at the beginning of every minute
@@ -145,7 +138,7 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
             }
 
 //            updateUserInterface();
-//            buttonSet.postDelayed(StatusCheck, 15000);
+//            buttonSet.postDelayed(userDataCheckerRunnable, 15000);
         }
     };
 
@@ -214,11 +207,11 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
                     break;
                 case R.id.share:
                     Log.i(TAG, "ShareBtn");
-                    buttonListener.keyShareCommand("keyshare");
+                    buttonListener.keyShareCommand("key_share");
                     break;
                 case R.id.change:
                     Log.i(TAG, "ChangeBtn");
-                    buttonListener.keyShareCommand("keychange");
+                    buttonListener.keyShareCommand("key_revoke");
                     break;
                 case R.id.panic:
                     Log.i(TAG, "PanicBtn");
@@ -264,7 +257,7 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
         User user = ServerNode.getUserData();
         user.setSelectedVehicleIndex(position);
 
-        updateUserInterface();//user);
+        updateUserInterface();
     }
 
     @Override
@@ -272,7 +265,7 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
         User user = ServerNode.getUserData();
         user.setSelectedVehicleIndex(-1);
 
-        updateUserInterface();//user);
+        updateUserInterface();
     }
 
     public interface LockFragmentButtonListener
@@ -303,9 +296,7 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
         vehicleSpinner.setAdapter(dataAdapter);
     }
 
-    public void updateUserInterface() {//User user) {
-        //if (user == null) user = new User();
-
+    public void updateUserInterface() {
         User user = ServerNode.getUserData();
 
         Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
@@ -314,8 +305,6 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
         String username = user.getFirstName() != null ? user.getFirstName() : "unknown";
 
         updateVehicleSpinnerAdapter(user.getVehicles());
-
-//        if (selectedVehicleIndex != -1 && selectedVehicleIndex != vehicleSpinner.getSelectedItemPosition()) vehicleSpinner.setSelection(selectedVehicleIndex);
 
         Log.d(TAG, "Saved userdata: " + user.toString());
 

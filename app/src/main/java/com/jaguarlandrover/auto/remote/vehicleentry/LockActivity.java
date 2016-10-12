@@ -10,7 +10,6 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,19 +19,15 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 
 public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener {
     private static final String TAG = "UnlockDemo/LockActivity";
-    private boolean bound = false;
-    private String username;
-    private TextView userHeader;
-    private Handler keyCheck;
-    private Handler request;
-    private Handler guestServiceCheck;
+
+    private Handler userDataCheckerHandler;
+    private Handler guestActivityCheckerHandler;
     LockActivityFragment lock_fragment = null;
-    ProgressDialog requestProgress;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,64 +36,51 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
         handleExtra(getIntent());
 
-        keyCheck = new Handler();
-        request = new Handler();
-        guestServiceCheck = new Handler();
+        userDataCheckerHandler = new Handler();
+        guestActivityCheckerHandler = new Handler();
 
         setContentView(R.layout.activity_lock);
         lock_fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlock);
 
-        startRepeatingTask();
+        startRepeatingTasks();
     }
 
-    Runnable StatusCheck = new Runnable()
+    Runnable userDataCheckerRunnable = new Runnable()
     {
         @Override
         public void run() {
             try {
-                checkForKeys();
-            } catch (Exception e1) {
-                Log.w(TAG, "EXCEPTION Check for Key Status: " + e1.toString());
+                checkForUserData();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
-            keyCheck.postDelayed(StatusCheck, 5000);
+            userDataCheckerHandler.postDelayed(userDataCheckerRunnable, 3 * 1000);
         }
     };
 
-    Runnable guestCheck = new Runnable()
+    Runnable guestActivityCheckerRunnable = new Runnable()
     {
         @Override
         public void run() {
             try {
                 checkForGuestActivity();
-            } catch (Exception e1) {
-                Log.w(TAG, "JCheck for Guest Activity: " + e1.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
-            guestServiceCheck.postDelayed(guestCheck, 10000);
+            guestActivityCheckerHandler.postDelayed(guestActivityCheckerRunnable, 10 * 1000);
         }
     };
 
-    Runnable requestCheck = new Runnable()
-    {
-        @Override
-        public void run() {
-            requestComplete();
-            request.postDelayed(requestCheck, 750);
-        }
-    };
-
-    void startRequest() {
-        requestCheck.run();
+    void startRepeatingTasks() {
+        userDataCheckerRunnable.run();
+        guestActivityCheckerRunnable.run();
     }
 
-    void done() {
-        request.removeCallbacks(requestCheck);
-    }
-
-    void startRepeatingTask() {
-        StatusCheck.run();
-        guestCheck.run();
+    private void stopRepeatingTasks() {
+        userDataCheckerHandler.removeCallbacks(userDataCheckerRunnable);
+        guestActivityCheckerHandler.removeCallbacks(guestActivityCheckerRunnable);
     }
 
     @Override
@@ -139,6 +121,8 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     public void onDestroy() {
         Log.i(TAG, "onDestroy() Activity");
+
+        stopRepeatingTasks();
 
         super.onDestroy();
     }
@@ -214,50 +198,44 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     public void keyShareCommand(String key) {
         Intent intent = new Intent();
+
+        User user = ServerNode.getUserData();
+        Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
+
+        if (selectedVehicleIndex == -1) {
+            return; // TODO: error
+        }
+
+        String vehicleString = user.getVehicles().get(selectedVehicleIndex).toString();
+        String userString = user.toString();
+
         switch (key) {
-            case "keyshare":
+            case "key_share":
                 intent.setClass(LockActivity.this, KeyShareActivity.class);
+                intent.putExtra("selectedVehicle", vehicleString);
                 startActivityForResult(intent, 0);
+
                 break;
-            case "keychange": // TODO: Does this ever get invoked?
-                try {
-                    ServerNode.requestCredentials();
-                    ServerNode.requestUserData();
-                    requestProgress = ProgressDialog.show(LockActivity.this, "","Retrieving keys...",true);
 
-                    requestProgress.setCancelable(true);
-                    requestProgress.setOnCancelListener(new DialogInterface.OnCancelListener()
-                    {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                             // TODO: ?
-                        }
-                    });
+            case "key_revoke":
+                intent.setClass(LockActivity.this, KeyRevokeActivity.class);
+                intent.putExtra("selectedVehicle", vehicleString);
+                intent.putExtra("snapshotUser", userString);
+                startActivityForResult(intent, 0);
 
-                    startRequest();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
                 break;
         }
     }
 
-//    public JSONArray Request() throws JSONException, java.lang.NullPointerException {
-//        JSONObject request = new JSONObject();
-//        request.put("vehicleVIN", ServerNode.getUserData().getVehicleVin());
-//
-//        JSONArray jsonArray = new JSONArray();
-//        jsonArray.put(request);
-//        return jsonArray;
-//    }
-
-    public void checkForKeys() {
+    public void checkForUserData() {
         User userData = ServerNode.getUserData();
 
         if (userData != null && ServerNode.thereIsNewUserData()) {
             keyUpdate(userData);
             ServerNode.setThereIsNewUserData(false);
         }
+
+        ServerNode.requestUserData();
     }
 
     public void checkForGuestActivity() {
@@ -266,20 +244,6 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         if (report != null && ServerNode.thereIsNewInvokedServiceReport()) {
             notifyGuestUsedKey(report.getUserName(), report.getServiceIdentifier());
             ServerNode.setThereIsNewInvokedServiceReport(false);
-        }
-    }
-
-    public void requestComplete() {
-        // TODO: What do here?
-        //if (ServerNode.thereAreNewRemoteCredentials()) {
-        if (ServerNode.thereIsNewUserData()) {
-            done();
-            //ServerNode.setThereAreNewRemoteCredentials(false);
-            ServerNode.setThereIsNewUserData(false);
-            requestProgress.dismiss();
-            Intent intent = new Intent();
-            intent.setClass(LockActivity.this, KeyRevokeActivity.class);
-            startActivityForResult(intent, 0);
         }
     }
 }
