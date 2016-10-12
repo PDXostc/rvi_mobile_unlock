@@ -15,14 +15,10 @@ package com.jaguarlandrover.pki;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.content.Context;
-import android.os.AsyncTask;
-import android.util.Log;
 
 //import java.net.URL;
-import java.security.Key;
 import java.security.KeyStore;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 
 
@@ -113,8 +109,12 @@ public class PKIManager
         ManagerHelper.sendTokenVerificationRequest(context, listener, baseUrl, requestUrl, tokenVerificationString);
     }
 
-    public static void deleteKeysAndCerts(Context context) {
-        KeyStoreManager.deleteKeysAndCerts(context);
+    public static void deleteAllKeysAndCerts(Context context) {
+        KeyStoreManager.deleteAllKeysAndCerts(context);
+    }
+
+    public static void deleteServerCerts(Context context) {
+        KeyStoreManager.deleteServerCerts(context);
     }
 
 //    public static Boolean hasValidCerts(Context context) {

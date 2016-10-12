@@ -122,7 +122,7 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
 //            Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
 //            Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle();
 //
-//            if (vehicle.getUserType().equals("guest") && !vehicle.isKeyValid()) { // TODO: Check logic now that changed
+//            if (vehicle.getUserType().equals("guest") && !vehicle.isKeyValid()) { // TODO: Check logic now that changed. Just delete #amm
 //                updateUserInterface();
 //            }
 //

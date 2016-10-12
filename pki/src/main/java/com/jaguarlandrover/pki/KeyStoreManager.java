@@ -237,7 +237,7 @@ class KeyStoreManager
         return null;
     }
 
-    static void deleteKeysAndCerts(Context context) {
+    static void deleteAllKeysAndCerts(Context context) {
         KeyStore deviceKeyStore = null;
 
         try {
@@ -252,6 +252,16 @@ class KeyStoreManager
             context.deleteFile(KEYSTORE_SERVER_ALIAS);
 
         } catch (FileNotFoundException ignored) {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void deleteServerCerts(Context context) {
+        try {
+
+            context.deleteFile(KEYSTORE_SERVER_ALIAS);
 
         } catch (Exception e) {
             e.printStackTrace();

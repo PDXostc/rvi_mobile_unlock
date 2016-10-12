@@ -235,9 +235,23 @@ public class RviService extends Service {
             Log.d(TAG, "distance:" + ro.distance + ", weightedDistance:" + ro.weightedDistance + ", unlockDistance:" + unlockDistance + ", connectDistance:" + connectDistance);
             Log.d(TAG, "connected:" + connected + ", connecting:" + connecting + ", unlocked:" + unlocked);
 
-            //UserCredentials userCredentials = ServerNode.getUserData();
-            User user = ServerNode.getUserData();
-            Vehicle vehicle = new Vehicle(); // TODO: Implement selected vehicle or something
+            User user = null;
+            Vehicle vehicle = null;
+
+            try {
+                user = ServerNode.getUserData();
+
+                if (user.getSelectedVehicleIndex() == -1)
+                    return;
+
+                vehicle = user.getVehicles().get(user.getSelectedVehicleIndex());
+
+            } catch (Exception justHereBecauseOfWeirdExceptionThatHappensOnLaunch) {
+                justHereBecauseOfWeirdExceptionThatHappensOnLaunch.printStackTrace();
+
+                return;
+            }
+
             if (user != null) {
                 try {
                     if (vehicle.getUserType().equals("guest") && (!vehicle.getAuthorizedServices().isLock() || !vehicle.isKeyValid())) { // TODO: Test

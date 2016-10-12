@@ -2,7 +2,6 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
 import android.content.*;
-import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -17,12 +16,7 @@ import android.widget.Toast;
 import com.jaguarlandrover.pki.PKIManager;
 import com.jaguarlandrover.rvi.RVILocalNode;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -45,7 +39,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
     private final static String DEFAULT_PROVISIONING_SERVER_BASE_URL         = "http://192.168.16.245:8000";
     private final static String DEFAULT_PROVISIONING_SERVER_CSR_URL          = "/csr";
-    private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification"; // TODO: 'Verification' or 'validation'?
+    private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification"; // TODO: 'Verification' or 'validation'? #amm
 
     private boolean mRviServerConnected    = false;
     private boolean mAllValidCertsAcquired = false;
@@ -202,7 +196,6 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         }
     };
 
-
     private void doTheRviThingIfEverythingElseIsComplete() {
         if (mRviServerConnected && mAllValidCertsAcquired) {
             rviService.setServerKeyStore(mServerCertificateKeyStoreHolder);
@@ -292,7 +285,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
             @Override
             public void generateCertificateSigningRequestFailed(Throwable reason) {
-                // TODO: Update ui with failure message
+                // TODO: Update ui with failure message #amm
             }
 
         }, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT, email.replace("+", "\\+"));
@@ -312,6 +305,59 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         return true;
     }
 
+    void confirmationAlert(final int id, String actionMessage) {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        if (id == R.id.action_delete_all_keys_certs) {
+
+                            PKIManager.deleteAllKeysAndCerts(LoginActivity.this);
+                            RVILocalNode.removeAllCredentials(LoginActivity.this);
+                            ServerNode.deleteUserData();
+
+                            mValidatingToken       = false;
+                            mAllValidCertsAcquired = false;
+
+                            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
+                            mLoginActivityFragment.hideControls(false);
+                            mLoginActivityFragment.setVerifyButtonEnabled(true);
+
+                        } else if (id == R.id.action_delete_server_certs) {
+
+                            PKIManager.deleteServerCerts(LoginActivity.this);
+                            RVILocalNode.removeAllCredentials(LoginActivity.this);
+
+                            mValidatingToken       = false;
+                            mAllValidCertsAcquired = false;
+
+                            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
+                            mLoginActivityFragment.hideControls(false);
+                            mLoginActivityFragment.setVerifyButtonEnabled(true);
+
+                        } else if (id == R.id.action_restore_defaults) {
+
+                            PreferenceManager.getDefaultSharedPreferences(LoginActivity.this).edit().clear().apply();
+                            PreferenceManager.setDefaultValues(LoginActivity.this, R.xml.advanced, true);
+
+                        }
+
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure you want to " + actionMessage + "?")
+                .setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("Cancel", dialogClickListener).show();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -328,31 +374,14 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
             return true;
 
-        } else if (id == R.id.action_reset) {
-            // TODO: Dialog
+        } else if (id == R.id.action_delete_all_keys_certs) {
+            confirmationAlert(id, "delete all your keys and certificates");
 
-            PKIManager.deleteKeysAndCerts(this);
-            RVILocalNode.removeAllCredentials(this);
+        } else if (id == R.id.action_delete_server_certs) {
+            confirmationAlert(id, "delete the server certificates");
 
-            mValidatingToken       = false;
-            mAllValidCertsAcquired = false;
-
-            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
-            mLoginActivityFragment.hideControls(false);
-            mLoginActivityFragment.setVerifyButtonEnabled(true);
-
-        } else if (id == R.id.action_reset_2) {
-            // TODO: Dialog
-
-            //PKIManager.deleteKeysAndCerts(this);
-            RVILocalNode.removeAllCredentials(this);
-
-            mValidatingToken       = false;
-            mAllValidCertsAcquired = false;
-
-            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
-            mLoginActivityFragment.hideControls(false);
-            mLoginActivityFragment.setVerifyButtonEnabled(true);
+        } else if (id == R.id.action_restore_defaults) {
+            confirmationAlert(id, "reset all the settings");
 
         }
 

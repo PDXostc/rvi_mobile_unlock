@@ -156,7 +156,7 @@ class ServerNode
                     case CREDENTIAL_MANAGEMENT_BUNDLE:
                         switch (serviceParts[1]) {
                             case UPDATE_CREDENTIALS:
-                                // TODO: Check this
+                                // TODO: Check this #amm
                                 ArrayList<String> credentials = (ArrayList<String>) ((LinkedTreeMap<String, Object>) parameters).get("credentials");
                                 RVILocalNode.setCredentials(applicationContext, credentials);
 
@@ -331,6 +331,10 @@ class ServerNode
 
         if (!previousUserData.equals(getUserData()))
             ServerNode.setThereIsNewUserData(true);
+    }
+
+    static void deleteUserData() {
+        setUserData(new User().toString());
     }
 
     static InvokedServiceReport getInvokedServiceReport() {

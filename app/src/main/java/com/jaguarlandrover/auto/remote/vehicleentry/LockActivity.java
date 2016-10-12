@@ -20,6 +20,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.jaguarlandrover.pki.PKIManager;
+import com.jaguarlandrover.rvi.RVILocalNode;
+
 
 public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener {
     private static final String TAG = "UnlockDemo/LockActivity";
@@ -134,6 +137,60 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         return true;
     }
 
+    void confirmationAlert(final int id, String actionMessage) {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        if (id == R.id.action_delete_all_keys_certs) {
+
+                            PKIManager.deleteAllKeysAndCerts(LockActivity.this);
+                            RVILocalNode.removeAllCredentials(LockActivity.this);
+                            ServerNode.deleteUserData();
+
+                            Intent intent = new Intent();
+                            intent.setClass(LockActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+
+                        } else if (id == R.id.action_delete_server_certs) {
+
+                            PKIManager.deleteServerCerts(LockActivity.this);
+                            RVILocalNode.removeAllCredentials(LockActivity.this);
+
+                            Intent intent = new Intent();
+                            intent.setClass(LockActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+
+                        } else if (id == R.id.action_restore_defaults) {
+
+                            PreferenceManager.getDefaultSharedPreferences(LockActivity.this).edit().clear().apply();
+                            PreferenceManager.setDefaultValues(LockActivity.this, R.xml.advanced, true);
+
+                        } else if (id == R.id.action_quit) {
+                            Intent i = new Intent(LockActivity.this, RviService.class);
+                            stopService(i);
+                            finish();
+
+                        }
+
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure you want to " + actionMessage + "?")
+                .setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("Cancel", dialogClickListener).show();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -145,16 +202,17 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
             return true;
 
-        } else if (id == R.id.action_reset) {
-            PreferenceManager.getDefaultSharedPreferences(this).edit().clear().apply();
-            PreferenceManager.setDefaultValues(this, R.xml.advanced, true);
+        } else if (id == R.id.action_delete_all_keys_certs) {
+            confirmationAlert(id, "delete all your keys and certificates");
 
-            return true;
+        } else if (id == R.id.action_delete_server_certs) {
+            confirmationAlert(id, "delete the server certificates");
+
+        } else if (id == R.id.action_restore_defaults) {
+            confirmationAlert(id, "reset all the settings");
 
         } else if (id == R.id.action_quit) {
-            Intent i = new Intent(this, RviService.class);
-            stopService(i);
-            finish();
+            confirmationAlert(id, "quit");
 
         }
 
@@ -203,7 +261,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
 
         if (selectedVehicleIndex == -1) {
-            return; // TODO: error
+            return; // TODO: error #amm
         }
 
         String vehicleString = user.getVehicles().get(selectedVehicleIndex).toString();
