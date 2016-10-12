@@ -4,24 +4,19 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.google.gson.Gson;
-
-import org.json.JSONArray;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 
 
-public class KeyRevokeActivity extends ActionBarActivity {
-    LinearLayout layout;
+
+public class KeyRevokeActivity extends ActionBarActivity
+{
     int mPosition;
 
     Vehicle mSelectedVehicle = new Vehicle();
@@ -68,7 +63,6 @@ public class KeyRevokeActivity extends ActionBarActivity {
         });
 
         listView.setAdapter(adapter);
-        //addUsers(adapter);
     }
 
     public void alertMessage(){
@@ -103,32 +97,16 @@ public class KeyRevokeActivity extends ActionBarActivity {
         return guestUsers.get(mPosition);
     }
 
-//    public void addUsers(RemoteCredentialsAdapter adapter){
-//        try {
-//
-//            ArrayList<User> guestUsers = ServerNode.getUserData().getGuests();
-//
-//            adapter.addAll(guestUsers);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_key_change, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }

@@ -14,15 +14,16 @@ import android.view.MenuItem;
 
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
 
-public class KeyShareActivity extends ActionBarActivity implements KeyShareActivityFragment.ShareFragmentButtonListener {
+public class KeyShareActivity extends ActionBarActivity implements KeyShareActivityFragment.ShareFragmentButtonListener
+{
     private final static String TAG = "UnlockDemo/KeyShareActv";
     static final int dateDialog = 0;
     static final int timeDialog = 1;
 
     KeyShareActivityFragment mShareFragment;
-    String mVehicleString = null;
+    Vehicle mSelectedVehicle = new Vehicle();
+    User mSnapshotUser = new User();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,31 +35,31 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
 
         mShareFragment = (KeyShareActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentshare);
 
-        Gson gson = new Gson();
-        Vehicle selectedVehicle = gson.fromJson(mVehicleString, Vehicle.class);
-        mShareFragment.setSelectedVehicle(selectedVehicle);
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            Gson gson = new Gson();
 
-        ArrayList<String> userList = new ArrayList<String>();
-        ArrayList<String> vehicleList = new ArrayList<String>();
-        //userList = rcvDataList(dummyData(), getResources().getString(R.string.USERNAME));
-        //vehicleList = rcvDataList(dummyData(), getResources().getString(R.string.VEHICLE));
-        //Log.i(TAG, dummyData().toString());
+            String vehicleString = (String) extras.get("selectedVehicle");
+            mSelectedVehicle = gson.fromJson(vehicleString, Vehicle.class);
 
-        //setUserImage(userList);
-        //setVehicleImage(vehicleList);
+            String userString = (String) extras.get("snapshotUser");
+            mSnapshotUser = gson.fromJson(userString, User.class);
+
+            mShareFragment.setSelectedVehicle(mSelectedVehicle);
+            mShareFragment.setSnapshotUser(mSnapshotUser);
+
+        }
+
         mShareFragment.showUserSelect();
-//        mShareFragment.showCarSelect();
         mShareFragment.showDialog();
-        //String selectedUser = getResources().getString(users[userPages.getCurrentItem()]);
-        //Toast.makeText(keyShareActivity.this, selectedUser, Toast.LENGTH_LONG).show();
     }
 
     @Override
     protected Dialog onCreateDialog(int id) {
         if (id == dateDialog)
-            return new DatePickerDialog(this, mShareFragment.getdplistener(), mShareFragment.getyear(), mShareFragment.getmonth() - 1, mShareFragment.getday());
+            return new DatePickerDialog(this, mShareFragment.getDatePickerListener(), mShareFragment.getYear(), mShareFragment.getMonth() - 1, mShareFragment.getDay());
         if (id == timeDialog)
-            return new TimePickerDialog(this, mShareFragment.gettplistener(), mShareFragment.gethour(), mShareFragment.getmin(), false);
+            return new TimePickerDialog(this, mShareFragment.getTimePickerListener(), mShareFragment.getHour(), mShareFragment.getMin(), false);
         return null;
     }
 
@@ -69,11 +70,10 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
                         try{
-                            //RviService.sendKey(mShareFragment.getSharingUser());
                             ServerNode.authorizeServices(mShareFragment.getSharingUser());
                             confirmationMessage();
                         } catch (Exception e) {
-
+                            e.printStackTrace();
                         }
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
@@ -91,19 +91,14 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_key_share, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -115,7 +110,7 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
         Bundle extras = intent.getExtras();
         if (extras != null && extras.size() > 0) {
             for(String k : extras.keySet()) {
-                Log.i(TAG, "k = " + k+" : "+extras.getString(k));
+                Log.i(TAG, "k = " + k + " : " + extras.getString(k));
             }
         }
 
@@ -132,21 +127,13 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
                     });
             alertDialogBuilder.create().show();
         }
-
-        if (extras != null) {
-            mVehicleString = (String) extras.get("selectedVehicle");
-        }
     }
 
     @Override
     public void onDestroy() {
         Log.i(TAG, "onDestroy() Activity");
-        //doUnbindService();
 
         super.onDestroy();
-        //For testing cleanup
-        //Intent i = new Intent(this, RviService.class);
-        //stopService(i);
     }
 
     @Override
@@ -173,7 +160,5 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Key successfully shared")
                 .setPositiveButton("Ok", dialogClickListener).show();
-
     }
-
 }

@@ -14,8 +14,6 @@ import android.widget.*;
 import org.json.JSONException;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -33,25 +31,21 @@ public class KeyShareActivityFragment extends Fragment
     static final int timeDialog = 1;
     private TextView   activeDialog;
     private TextView   activeTime;
-    private TextView   userheader;
+    private TextView userHeader;
     private Button     shareKeyBtn;
-    //private GridLayout auth_switch_grid;
     private Switch     lock_unlock;
     private Switch     engine_start;
     private Switch     trunk_lights;
     private ViewPager  userPages;
-    //private ViewPager  carPages;
 
-    Vehicle mSelectedVehicle = null;
+    Vehicle mSelectedVehicle = new Vehicle();
+    User mSnapshotUser = new User();
 
     int[] users = {R.drawable.lilli,
             R.drawable.magnus,
             R.drawable.anson,
 
     };
-
-    //int[]    vehicles = {R.drawable.car1, R.drawable.car2};
-    //String[] vins     = {"stoffe", "stoffe"};
 
     private ShareFragmentButtonListener buttonListener;
 
@@ -67,15 +61,12 @@ public class KeyShareActivityFragment extends Fragment
         lock_unlock = (Switch) view.findViewById(R.id.lockUnlock);
         engine_start = (Switch) view.findViewById(R.id.engine);
         trunk_lights = (Switch) view.findViewById(R.id.trunk_lights);
-        //auth_switch_grid = (GridLayout) view.findViewById(R.id.auth_switch_grid);
         userPages = (ViewPager) view.findViewById(R.id.userscroll);
-        //carPages = (ViewPager) view.findViewById(R.id.vehiclescroll);
-        userheader = (TextView) view.findViewById(R.id.user);
+        userHeader = (TextView) view.findViewById(R.id.user);
 
-        //UserCredentials userCredentials = ServerNode.getUserData();
         User user = ServerNode.getUserData();
         if (user != null) {
-            userheader.setText(user.getUserName());
+            userHeader.setText(user.getUserName());
         }
 
         shareKeyBtn.setOnClickListener(l);
@@ -103,25 +94,20 @@ public class KeyShareActivityFragment extends Fragment
         }
     };
 
-
-    //public UserCredentials getRemoteCredentials() throws JSONException {
     public User getSharingUser() throws JSONException {
-        //String centerUser = getResources().getResourceEntryName(users[userPages.getCurrentItem()]);
-        //String centerVehicle = vins[carPages.getCurrentItem()];
-
-        /* Old code */
         String start = null;
         String end = null;
-        String end_time=null;
-        String start_time=null;
+        String end_time = null;
+        String start_time = null;
 
         try {
             start_time = convertTime(starttime.getText().toString());
             end_time = convertTime(endtime.getText().toString());
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
-        String start_date = startdate.getText().toString() + " "+start_time;
-        String end_date = enddate.getText().toString()+" "+end_time;
+        String start_date = startdate.getText().toString() + " " + start_time;
+        String end_date = enddate.getText().toString() + " " + end_time;
         try {
             SimpleDateFormat outputformat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.000Z'");
             SimpleDateFormat inputformat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
@@ -136,60 +122,20 @@ public class KeyShareActivityFragment extends Fragment
             e.printStackTrace();
         }
 
-//        Boolean lockSwitch = lock_unlock.isChecked();
-//        Boolean engineSwitch = engine_start.isChecked();
-//        Boolean trunkLights = trunk_lights.isChecked();
-//
-//        JSONArray authServ = new JSONArray();
-//        authServ.put(new JSONObject().put("lock", lockSwitch.toString()));
-//        authServ.put(new JSONObject().put("start", engineSwitch.toString()));
-//
-//        authServ.put(new JSONObject().put("trunk", trunkLights.toString()));
-//        authServ.put(new JSONObject().put("windows", "false"));
-//        authServ.put(new JSONObject().put("lights", trunkLights.toString()));
-//        authServ.put(new JSONObject().put("hazard", "false"));
-//        authServ.put(new JSONObject().put("horn", "false"));
-//
-//
-//        JSONObject payload = new JSONObject();
-//        payload.put("username", centerUser);
-//        payload.put("vehicleVIN", centerVehicle);
-//        payload.put("authorizedServices", authServ);
-//        payload.put("validFrom", start);
-//        payload.put("validTo", end);
-//
-//        JSONArray jsonArray = new JSONArray();
-//        jsonArray.put(payload);
-//
-//        Log.d("SHARE_OLD", jsonArray.toString());
-
-        /* New code */
-        //UserCredentials shareCredentials = new UserCredentials();
-
-        User user = ServerNode.getUserData();
         Integer selectedUserIndex = userPages.getCurrentItem();
-
-        if (selectedUserIndex >= user.getGuests().size())
+        if (selectedUserIndex >= mSnapshotUser.getGuests().size())
             return null;
 
-        User sharingGuest = user.getGuests().get(selectedUserIndex);
-
-        //Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
-        //Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle(); // TODO: Will always be valid so long as we always go back to last screen when new user data is available
-
-        // TODO: If new user data comes in and vehicle list changes, need to get out of here or bugs
+        User sharingGuest = mSnapshotUser.getGuests().get(selectedUserIndex);
 
         Vehicle sharingVehicle = new Vehicle(mSelectedVehicle.getVehicleId());
 
         try {
-            sharingVehicle.setValidFrom(start);//convertTime(starttime.getText().toString()));
-            sharingVehicle.setValidTo(end);//convertTime(endtime.getText().toString()));
+            sharingVehicle.setValidFrom(start);
+            sharingVehicle.setValidTo(end);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-//        sharingGuest.setUserName(centerUser);
-//        sharingVehicle.setVehicleId(centerVehicle);
 
         sharingVehicle.getAuthorizedServices().setEngine(engine_start.isChecked());
         sharingVehicle.getAuthorizedServices().setLights(trunk_lights.isChecked());
@@ -200,11 +146,15 @@ public class KeyShareActivityFragment extends Fragment
 
         Log.d("SHARE_NEW", sharingGuest.toString());
 
-        return sharingGuest;//jsonArray;
+        return sharingGuest;
     }
 
     public void setSelectedVehicle(Vehicle selectedVehicle) {
         this.mSelectedVehicle = selectedVehicle;
+    }
+
+    public void setSnapshotUser(User snapshotUser) {
+        mSnapshotUser = snapshotUser;
     }
 
     public String convertTime(String time) throws Exception{
@@ -241,57 +191,59 @@ public class KeyShareActivityFragment extends Fragment
         endHour = String.valueOf(hour_end);
         endMin = String.valueOf(min_end);
 
-        if(min_x <10){
-            startMin = "0"+startMin;
+        if (min_x < 10) {
+            startMin = "0" + startMin;
         }
 
-        if(hour_x >11){
+        if (hour_x > 11) {
             ampm = "pm";
-            if(hour_x == 12)
-            {}
-            else {
+            if (hour_x == 12) {
+            } else {
                 startHour = String.valueOf(hour_x - 12);
-                if(hour_x -12 < 10){
-                    startHour = "0"+startHour;
+                if (hour_x - 12 < 10) {
+                    startHour = "0" + startHour;
                 }
             }
         }
-        if(hour_x == 0)
-        {
-            startHour=String.valueOf(hour_x+12);
-        }
-        if(hour_x < 10){
-            startHour = "0"+startHour;
+
+        if (hour_x == 0) {
+            startHour = String.valueOf(hour_x + 12);
         }
 
-        if(min_end < 10){
-            endMin = "0"+min_end;
+        if (hour_x < 10) {
+            startHour = "0" + startHour;
         }
 
-        if(hour_end >11){
+        if (min_end < 10) {
+            endMin = "0" + min_end;
+        }
+
+        if (hour_end > 11) {
             ampm = "pm";
-            if(hour_end== 12)
-            {}
-            else {
+
+            if (hour_end == 12) {
+            } else {
                 endHour = String.valueOf(hour_end - 12);
-                if(hour_end -12 < 10){
-                    endHour = "0"+endHour;
+                if (hour_end - 12 < 10) {
+                    endHour = "0" + endHour;
                 }
             }
         }
-        if(hour_end == 0)
-        {
-            endHour=String.valueOf(hour_end+12);
-        }
-        if(hour_end < 10){
-            endHour = "0"+hour_end;
+
+        if (hour_end == 0) {
+            endHour = String.valueOf(hour_end + 12);
         }
 
-        if(day_x < 10){
-            newDay = "0"+newDay;
+        if (hour_end < 10) {
+            endHour = "0" + hour_end;
         }
-        if(month_x < 10){
-            newMonth = "0"+newMonth;
+
+        if (day_x < 10) {
+            newDay = "0" + newDay;
+        }
+
+        if (month_x < 10) {
+            newMonth = "0" + newMonth;
         }
 
         startdate = new TextView(getActivity());
@@ -299,13 +251,13 @@ public class KeyShareActivityFragment extends Fragment
         starttime = new TextView(getActivity());
         endtime = new TextView(getActivity());
 
-        startdate =(TextView)getActivity().findViewById(R.id.startlblDate);
+        startdate = (TextView) getActivity().findViewById(R.id.startlblDate);
         enddate = (TextView) getActivity().findViewById(R.id.endlblDate);
         starttime = (TextView) getActivity().findViewById(R.id.starttimeLbl);
         endtime = (TextView) getActivity().findViewById(R.id.endtimeLbl);
 
-        starttime.setText(startHour+":"+startMin+" "+ampm);
-        endtime.setText(endHour+":"+endMin+" "+ampm);
+        starttime.setText(startHour + ":" + startMin + " " + ampm);
+        endtime.setText(endHour + ":" + endMin + " " + ampm);
         startdate.setText(newMonth + "/" + newDay + "/" + year_x);
         enddate.setText(newMonth + "/" + newDay + "/" + year_x);
 
@@ -347,81 +299,64 @@ public class KeyShareActivityFragment extends Fragment
         String newMonth;
         newDay = String.valueOf(day_x);
         newMonth = String.valueOf(month_x);
-        if(day_x < 10){
-            newDay = "0"+newDay;
+        if (day_x < 10) {
+            newDay = "0" + newDay;
         }
-        if(month_x < 10){
-            newMonth = "0"+newMonth;
+        if (month_x < 10) {
+            newMonth = "0" + newMonth;
         }
-        dateDisplay.setText(newMonth+"/"+newDay+"/"+year_x);
+        dateDisplay.setText(newMonth + "/" + newDay + "/" + year_x);
     }
 
-    private void updateTime(TextView timeDisplay){
+    private void updateTime(TextView timeDisplay) {
         String newMin;
         String newHour;
         newHour = String.valueOf(hour_x);
         newMin = String.valueOf(min_x);
-        if (min_x <10)
-        {
-            newMin = "0"+newMin;
+        if (min_x < 10) {
+            newMin = "0" + newMin;
         }
-        if(hour_x<10){
-            newHour = "0"+newHour;
+        if (hour_x < 10) {
+            newHour = "0" + newHour;
         }
         timeDisplay.setText(newHour + ":" + newMin + " " + am_pm);
     }
 
-    public void showUserSelect(){
-
-        ScrollPageAdapter userPageAdapter = new ScrollPageAdapter(getActivity(),users);
+    public void showUserSelect() {
+        ScrollPageAdapter userPageAdapter = new ScrollPageAdapter(getActivity(), users);
         userPages.setAdapter(userPageAdapter);
         userPages.setOffscreenPageLimit(2);
         Log.d("ScrollPager", "Users");
-        //userPages.setPageMargin(-500);
         userPages.setHorizontalFadingEdgeEnabled(true);
-        //userPages.setFadingEdgeLength(50);
     }
 
-//    public void showCarSelect(){
-//        ScrollPageAdapter carPageAdapter = new ScrollPageAdapter(getActivity(), vehicles);
-//        carPages.setAdapter(carPageAdapter);
-//        carPages.setOffscreenPageLimit(2);
-//        Log.d("ScrollPager", "Vehicles");
-//        //carPages.setPageMargin(-500);
-//        carPages.setHorizontalFadingEdgeEnabled(true);
-//        //carPages.setFadingEdgeLength(50);
-//    }
-
-    private DatePickerDialog.OnDateSetListener dpickerListener
-            =new DatePickerDialog.OnDateSetListener(){
+    private DatePickerDialog.OnDateSetListener datePickerListener
+            = new DatePickerDialog.OnDateSetListener() {
         @Override
-        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayofMonth){
+        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayofMonth) {
             year_x = year;
-            month_x = monthOfYear+1;
+            month_x = monthOfYear + 1;
             day_x = dayofMonth;
             updateDisplay(activeDialog);
 
         }
     };
 
-    private TimePickerDialog.OnTimeSetListener tpickerListener = new TimePickerDialog.OnTimeSetListener(){
+    private TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
         @Override
-        public void onTimeSet(TimePicker view,int hourOfDay, int minute ){
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             am_pm = "am";
             hour_x = hourOfDay;
 
-            if(hourOfDay > 11)
-            {
+            if (hourOfDay > 11) {
                 am_pm = "pm";
-                if(hourOfDay == 12)
-                {}
-                else {
+                if (hourOfDay == 12) {
+                } else {
                     hour_x = hourOfDay - 12;
                 }
             }
-            if(hourOfDay == 0)
-            {
-                hour_x=hourOfDay+12;
+            if (hourOfDay == 0) {
+                hour_x = hourOfDay + 12;
             }
 
             min_x = minute;
@@ -430,14 +365,31 @@ public class KeyShareActivityFragment extends Fragment
         }
     };
 
-    public DatePickerDialog.OnDateSetListener getdplistener(){
-        return dpickerListener;
+    public DatePickerDialog.OnDateSetListener getDatePickerListener() {
+        return datePickerListener;
     }
-    public TimePickerDialog.OnTimeSetListener gettplistener(){return tpickerListener;}
 
-    public int getyear(){return year_x;}
-    public int getmonth(){return month_x;}
-    public int getday(){return day_x;}
-    public int gethour(){return hour_x;}
-    public int getmin(){return min_x;}
+    public TimePickerDialog.OnTimeSetListener getTimePickerListener() {
+        return timePickerListener;
+    }
+
+    public int getYear() {
+        return year_x;
+    }
+
+    public int getMonth() {
+        return month_x;
+    }
+
+    public int getDay() {
+        return day_x;
+    }
+
+    public int getHour() {
+        return hour_x;
+    }
+
+    public int getMin() {
+        return min_x;
+    }
 }
