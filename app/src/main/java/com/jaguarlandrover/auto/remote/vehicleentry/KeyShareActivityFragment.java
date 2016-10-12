@@ -14,8 +14,10 @@ import android.widget.*;
 import org.json.JSONException;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 
@@ -31,7 +33,7 @@ public class KeyShareActivityFragment extends Fragment
     static final int timeDialog = 1;
     private TextView   activeDialog;
     private TextView   activeTime;
-    private TextView userHeader;
+    private TextView   userHeader;
     private Button     shareKeyBtn;
     private Switch     lock_unlock;
     private Switch     engine_start;
@@ -44,8 +46,9 @@ public class KeyShareActivityFragment extends Fragment
     int[] users = {R.drawable.lilli,
             R.drawable.magnus,
             R.drawable.anson,
-
     };
+
+    List<String> mGuestUsers = new ArrayList<>();
 
     private ShareFragmentButtonListener buttonListener;
 
@@ -64,15 +67,31 @@ public class KeyShareActivityFragment extends Fragment
         userPages = (ViewPager) view.findViewById(R.id.userscroll);
         userHeader = (TextView) view.findViewById(R.id.user);
 
-        User user = ServerNode.getUserData();
-        if (user != null) {
-            userHeader.setText(user.getUserName());
-        }
+        userHeader.setText(mSnapshotUser.getDisplayName());
 
         shareKeyBtn.setOnClickListener(l);
         buttonListener = (ShareFragmentButtonListener) getActivity();
 
         lock_unlock.setChecked(true);
+
+        //List<String> guestUsers = new ArrayList<String>();
+        for (User user : mSnapshotUser.getGuests()) {
+            mGuestUsers.add(user.getDisplayName() + "(" + user.getUserName() + ")");
+        }
+
+//        ArrayAdapter<String> guestUserAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_selectable_list_item, guestUsers);
+//        ListView listView = (ListView) view.findViewById(R.id.guestUsers);
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+//        {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                mPosition = position;
+//                alertMessage();
+//            }
+//        });
+//
+//        listView.setAdapter(adapter);
+
 
         return view;
     }
@@ -109,14 +128,14 @@ public class KeyShareActivityFragment extends Fragment
         String start_date = startdate.getText().toString() + " " + start_time;
         String end_date = enddate.getText().toString() + " " + end_time;
         try {
-            SimpleDateFormat outputformat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.000Z'");
-            SimpleDateFormat inputformat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
-            outputformat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.000Z'");
+            SimpleDateFormat inputFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+            outputFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-            Date newStart = inputformat.parse(start_date);
-            Date newEnd = inputformat.parse(end_date);
-            start = outputformat.format(newStart);
-            end = outputformat.format(newEnd);
+            Date newStart = inputFormat.parse(start_date);
+            Date newEnd = inputFormat.parse(end_date);
+            start = outputFormat.format(newStart);
+            end = outputFormat.format(newEnd);
         } catch (Exception e) {
             Log.d("DATE", "ERROR IN DATE FORMAT");
             e.printStackTrace();
@@ -126,7 +145,7 @@ public class KeyShareActivityFragment extends Fragment
         if (selectedUserIndex >= mSnapshotUser.getGuests().size())
             return null;
 
-        User sharingGuest = mSnapshotUser.getGuests().get(selectedUserIndex);
+        User sharingGuest = new User(mSnapshotUser.getGuests().get(selectedUserIndex).getUserName());
 
         Vehicle sharingVehicle = new Vehicle(mSelectedVehicle.getVehicleId());
 
@@ -155,6 +174,19 @@ public class KeyShareActivityFragment extends Fragment
 
     public void setSnapshotUser(User snapshotUser) {
         mSnapshotUser = snapshotUser;
+        userHeader.setText(mSnapshotUser.getDisplayName());
+
+        for (User user : mSnapshotUser.getGuests()) {
+            mGuestUsers.add(user.getDisplayName() + "\n(" + user.getUserName() + ")");
+        }
+    }
+
+    public void showUserSelect() {
+        ScrollPageAdapter userPageAdapter = new ScrollPageAdapter(getActivity(), mGuestUsers);
+        userPages.setAdapter(userPageAdapter);
+        userPages.setOffscreenPageLimit(2);
+        Log.d("ScrollPager", "Users");
+        userPages.setHorizontalFadingEdgeEnabled(true);
     }
 
     public String convertTime(String time) throws Exception{
@@ -294,44 +326,7 @@ public class KeyShareActivityFragment extends Fragment
 
     }
 
-    private void updateDisplay(TextView dateDisplay) {
-        String newDay;
-        String newMonth;
-        newDay = String.valueOf(day_x);
-        newMonth = String.valueOf(month_x);
-        if (day_x < 10) {
-            newDay = "0" + newDay;
-        }
-        if (month_x < 10) {
-            newMonth = "0" + newMonth;
-        }
-        dateDisplay.setText(newMonth + "/" + newDay + "/" + year_x);
-    }
-
-    private void updateTime(TextView timeDisplay) {
-        String newMin;
-        String newHour;
-        newHour = String.valueOf(hour_x);
-        newMin = String.valueOf(min_x);
-        if (min_x < 10) {
-            newMin = "0" + newMin;
-        }
-        if (hour_x < 10) {
-            newHour = "0" + newHour;
-        }
-        timeDisplay.setText(newHour + ":" + newMin + " " + am_pm);
-    }
-
-    public void showUserSelect() {
-        ScrollPageAdapter userPageAdapter = new ScrollPageAdapter(getActivity(), users);
-        userPages.setAdapter(userPageAdapter);
-        userPages.setOffscreenPageLimit(2);
-        Log.d("ScrollPager", "Users");
-        userPages.setHorizontalFadingEdgeEnabled(true);
-    }
-
-    private DatePickerDialog.OnDateSetListener datePickerListener
-            = new DatePickerDialog.OnDateSetListener() {
+    private DatePickerDialog.OnDateSetListener datePickerListener = new DatePickerDialog.OnDateSetListener() {
         @Override
         public void onDateSet(DatePicker view, int year, int monthOfYear, int dayofMonth) {
             year_x = year;
@@ -364,6 +359,34 @@ public class KeyShareActivityFragment extends Fragment
             updateTime(activeTime);
         }
     };
+
+    private void updateDisplay(TextView dateDisplay) {
+        String newDay;
+        String newMonth;
+        newDay = String.valueOf(day_x);
+        newMonth = String.valueOf(month_x);
+        if (day_x < 10) {
+            newDay = "0" + newDay;
+        }
+        if (month_x < 10) {
+            newMonth = "0" + newMonth;
+        }
+        dateDisplay.setText(newMonth + "/" + newDay + "/" + year_x);
+    }
+
+    private void updateTime(TextView timeDisplay) {
+        String newMin;
+        String newHour;
+        newHour = String.valueOf(hour_x);
+        newMin = String.valueOf(min_x);
+        if (min_x < 10) {
+            newMin = "0" + newMin;
+        }
+        if (hour_x < 10) {
+            newHour = "0" + newHour;
+        }
+        timeDisplay.setText(newHour + ":" + newMin + " " + am_pm);
+    }
 
     public DatePickerDialog.OnDateSetListener getDatePickerListener() {
         return datePickerListener;

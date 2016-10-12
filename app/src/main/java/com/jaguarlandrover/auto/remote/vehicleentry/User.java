@@ -52,6 +52,10 @@ public class User {
         mUserName = userName;
     }
 
+    boolean notEmpty(String string) {
+        return string != null && string.length() > 0;
+    }
+
     String getUserName() {
         return mUserName;
     }
@@ -62,6 +66,14 @@ public class User {
 
     String getLastName() {
         return mLastName;
+    }
+
+    String getDisplayName() {
+        if (notEmpty(mFirstName) && notEmpty(mLastName)) return mFirstName + " " + mLastName;
+        if (notEmpty(mFirstName)) return mFirstName;
+        if (notEmpty(mLastName)) return mLastName;
+
+        return mUserName;
     }
 
     ArrayList<User> getGuests() {

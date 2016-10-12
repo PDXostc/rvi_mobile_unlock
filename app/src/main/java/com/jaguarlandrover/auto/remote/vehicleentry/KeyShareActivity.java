@@ -47,7 +47,6 @@ public class KeyShareActivity extends ActionBarActivity implements KeyShareActiv
 
             mShareFragment.setSelectedVehicle(mSelectedVehicle);
             mShareFragment.setSnapshotUser(mSnapshotUser);
-
         }
 
         mShareFragment.showUserSelect();

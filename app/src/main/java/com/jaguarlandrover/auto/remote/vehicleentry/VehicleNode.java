@@ -142,8 +142,8 @@ public class VehicleNode
 
         Log.d(TAG, "Attempting to connect to vehicle.");
 
-        rviNode.setServerUrl(preferences.getString("pref_rvi_vehicle_url", "38.129.64.40"));
-        rviNode.setServerPort(Integer.parseInt(preferences.getString("pref_rvi_vehicle_port", "8807")));
+        rviNode.setServerUrl("192.168.16.78");//preferences.getString("pref_rvi_vehicle_url", "38.129.64.40"));
+        rviNode.setServerPort(9010);//Integer.parseInt(preferences.getString("pref_rvi_vehicle_port", "8807")));
 
         connectionStatus = ConnectionStatus.CONNECTING;
 

@@ -209,22 +209,22 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         String vehicleString = user.getVehicles().get(selectedVehicleIndex).toString();
         String userString = user.toString();
 
+        intent.putExtra("selectedVehicle", vehicleString);
+        intent.putExtra("snapshotUser", userString);
+
         switch (key) {
             case "key_share":
                 intent.setClass(LockActivity.this, KeyShareActivity.class);
-                intent.putExtra("selectedVehicle", vehicleString);
-                startActivityForResult(intent, 0);
 
                 break;
 
             case "key_revoke":
                 intent.setClass(LockActivity.this, KeyRevokeActivity.class);
-                intent.putExtra("selectedVehicle", vehicleString);
-                intent.putExtra("snapshotUser", userString);
-                startActivityForResult(intent, 0);
 
                 break;
         }
+
+        startActivityForResult(intent, 0);
     }
 
     public void checkForUserData() {
@@ -234,8 +234,6 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             keyUpdate(userData);
             ServerNode.setThereIsNewUserData(false);
         }
-
-        ServerNode.requestUserData();
     }
 
     public void checkForGuestActivity() {

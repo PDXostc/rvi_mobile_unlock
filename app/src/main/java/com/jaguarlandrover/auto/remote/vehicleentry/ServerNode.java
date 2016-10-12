@@ -234,12 +234,12 @@ class ServerNode
         public void run() {
             if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
-            timerHandler.postDelayed(this, 3000);
+            timerHandler.postDelayed(this, 60 * 1000);
         }
     };
 
     private void startRepeatingTask() {
-        timerHandler.postDelayed(timerRunnable, 30 * 1000);
+        timerHandler.postDelayed(timerRunnable, 60 * 1000);
     }
 
     private void stopRepeatingTask() {
