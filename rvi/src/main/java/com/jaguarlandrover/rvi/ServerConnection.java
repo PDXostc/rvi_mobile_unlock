@@ -176,9 +176,9 @@ class ServerConnection implements RemoteConnectionInterface
 
                 java.security.cert.Certificate[] peerCertificates = session.getPeerCertificates();
 
-                if (peerCertificates == null || peerCertificates.length != 1) {
-                    throw new Exception("Remote certificate chain is null or contains more than 1 certificate");
-                }
+//                if (peerCertificates == null || peerCertificates.length != 1) {
+//                    throw new Exception("Remote certificate chain is null or contains more than 1 certificate");
+//                }
 
                 mRemoteDeviceCertificate = peerCertificates[0];
 

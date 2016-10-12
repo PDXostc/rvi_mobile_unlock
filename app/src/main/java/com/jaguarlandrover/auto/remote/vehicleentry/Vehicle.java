@@ -52,6 +52,12 @@ public class Vehicle {
     @SerializedName("display_name")
     private String mDisplayName = "";
 
+    @SerializedName("vehicle_url")
+    private String mVehicleUrl = "";
+
+    @SerializedName("vehicle_port")
+    private Integer mVehiclePort = 0;
+
     @SerializedName("authorized_services")
     private VehicleServices mAuthorizedServices = new VehicleServices();
 
@@ -208,6 +214,14 @@ public class Vehicle {
         return mAuthorizedServices;
     }
 
+    public String getVehicleUrl() {
+        return mVehicleUrl;
+    }
+
+    public Integer getVehiclePort() {
+        return mVehiclePort;
+    }
+
     @Override
     public String toString() {
         Gson gson = new Gson();
@@ -226,7 +240,9 @@ public class Vehicle {
         if (getValidTo() != null ? !getValidTo().equals(vehicle.getValidTo()) : vehicle.getValidTo() != null) return false;
         if (getUserType() != null ? !getUserType().equals(vehicle.getUserType()) : vehicle.getUserType() != null) return false;
         if (getDisplayName() != null ? !getDisplayName().equals(vehicle.getDisplayName()) : vehicle.getDisplayName() != null) return false;
-        return getAuthorizedServices().equals(vehicle.getAuthorizedServices());
+        if (getVehicleUrl() != null ? !getVehicleUrl().equals(vehicle.getVehicleUrl()) : vehicle.getVehicleUrl() != null) return false;
+        if (getVehiclePort() != null ? !getVehiclePort().equals(vehicle.getVehiclePort()) : vehicle.getVehiclePort() != null) return false;
+        return getAuthorizedServices() != null ? getAuthorizedServices().equals(vehicle.getAuthorizedServices()) : vehicle.getAuthorizedServices() == null;
 
     }
 
@@ -237,7 +253,36 @@ public class Vehicle {
         result = 31 * result + (getValidTo() != null ? getValidTo().hashCode() : 0);
         result = 31 * result + (getUserType() != null ? getUserType().hashCode() : 0);
         result = 31 * result + (getDisplayName() != null ? getDisplayName().hashCode() : 0);
-        result = 31 * result + getAuthorizedServices().hashCode();
+        result = 31 * result + (getVehicleUrl() != null ? getVehicleUrl().hashCode() : 0);
+        result = 31 * result + (getVehiclePort() != null ? getVehiclePort().hashCode() : 0);
+        result = 31 * result + (getAuthorizedServices() != null ? getAuthorizedServices().hashCode() : 0);
         return result;
     }
+
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (!(o instanceof Vehicle)) return false;
+//
+//        Vehicle vehicle = (Vehicle) o;
+//
+//        if (getVehicleId() != null ? !getVehicleId().equals(vehicle.getVehicleId()) : vehicle.getVehicleId() != null) return false;
+//        if (getValidFrom() != null ? !getValidFrom().equals(vehicle.getValidFrom()) : vehicle.getValidFrom() != null) return false;
+//        if (getValidTo() != null ? !getValidTo().equals(vehicle.getValidTo()) : vehicle.getValidTo() != null) return false;
+//        if (getUserType() != null ? !getUserType().equals(vehicle.getUserType()) : vehicle.getUserType() != null) return false;
+//        if (getDisplayName() != null ? !getDisplayName().equals(vehicle.getDisplayName()) : vehicle.getDisplayName() != null) return false;
+//        return getAuthorizedServices().equals(vehicle.getAuthorizedServices());
+//
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        int result = getVehicleId() != null ? getVehicleId().hashCode() : 0;
+//        result = 31 * result + (getValidFrom() != null ? getValidFrom().hashCode() : 0);
+//        result = 31 * result + (getValidTo() != null ? getValidTo().hashCode() : 0);
+//        result = 31 * result + (getUserType() != null ? getUserType().hashCode() : 0);
+//        result = 31 * result + (getDisplayName() != null ? getDisplayName().hashCode() : 0);
+//        result = 31 * result + getAuthorizedServices().hashCode();
+//        return result;
+//    }
 }

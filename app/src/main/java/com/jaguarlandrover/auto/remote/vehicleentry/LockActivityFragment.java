@@ -258,6 +258,7 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
         user.setSelectedVehicleIndex(position);
 
         updateUserInterface();
+        updateVehicleConnection();
     }
 
     @Override
@@ -294,6 +295,22 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         vehicleSpinner.setAdapter(dataAdapter);
+    }
+
+    void updateVehicleConnection() {
+        User user = ServerNode.getUserData();
+
+        Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
+        VehicleNode.disconnect();
+
+        if (selectedVehicleIndex != -1) {
+            Vehicle vehicle = user.getVehicles().get(selectedVehicleIndex);
+
+            VehicleNode.setServerUrl(vehicle.getVehicleUrl());
+            VehicleNode.setServerPort(vehicle.getVehiclePort());
+
+            VehicleNode.connect();
+        }
     }
 
     public void updateUserInterface() {
