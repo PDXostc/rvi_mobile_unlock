@@ -10,7 +10,6 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,23 +19,15 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener {
-    private static final String TAG = "RVI";
-    private boolean bound = false;
-    private String username;
-    private TextView userHeader;
-    private Handler keyCheck;
-    private Handler request;
-    private Handler guestServiceCheck;
+    private static final String TAG = "UnlockDemo/LockActivity";
+
+    private Handler userDataCheckerHandler;
+    private Handler guestActivityCheckerHandler;
     LockActivityFragment lock_fragment = null;
-    ProgressDialog requestProgress;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,63 +36,51 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
         handleExtra(getIntent());
 
-        keyCheck = new Handler();
-        request = new Handler();
-        guestServiceCheck = new Handler();
+        userDataCheckerHandler = new Handler();
+        guestActivityCheckerHandler = new Handler();
 
         setContentView(R.layout.activity_lock);
         lock_fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlock);
-        startRepeatingTask();
+
+        startRepeatingTasks();
     }
 
-    Runnable StatusCheck = new Runnable()
+    Runnable userDataCheckerRunnable = new Runnable()
     {
         @Override
         public void run() {
             try {
-                checkForKeys();
-            } catch (Exception e1) {
-                Log.w(TAG, "EXCEPTION Check for Key Status: " + e1.toString());
+                checkForUserData();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
-            keyCheck.postDelayed(StatusCheck, 5000);
+            userDataCheckerHandler.postDelayed(userDataCheckerRunnable, 3 * 1000);
         }
     };
 
-    Runnable guestCheck = new Runnable()
+    Runnable guestActivityCheckerRunnable = new Runnable()
     {
         @Override
         public void run() {
             try {
                 checkForGuestActivity();
-            } catch (Exception e1) {
-                Log.w(TAG, "JCheck for Guest Activity: " + e1.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
-            guestServiceCheck.postDelayed(guestCheck, 10000);
+            guestActivityCheckerHandler.postDelayed(guestActivityCheckerRunnable, 10 * 1000);
         }
     };
 
-    Runnable requestCheck = new Runnable()
-    {
-        @Override
-        public void run() {
-            requestComplete();
-            request.postDelayed(requestCheck, 750);
-        }
-    };
-
-    void startRequest() {
-        requestCheck.run();
+    void startRepeatingTasks() {
+        userDataCheckerRunnable.run();
+        guestActivityCheckerRunnable.run();
     }
 
-    void done() {
-        request.removeCallbacks(requestCheck);
-    }
-
-    void startRepeatingTask() {
-        StatusCheck.run();
-        guestCheck.run();
+    private void stopRepeatingTasks() {
+        userDataCheckerHandler.removeCallbacks(userDataCheckerRunnable);
+        guestActivityCheckerHandler.removeCallbacks(guestActivityCheckerRunnable);
     }
 
     @Override
@@ -142,18 +121,16 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     public void onDestroy() {
         Log.i(TAG, "onDestroy() Activity");
-        //doUnbindService();
+
+        stopRepeatingTasks();
 
         super.onDestroy();
-        //For testing cleanup
-        //Intent i = new Intent(this, RviService.class);
-        //stopService(i);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_lock, menu);
+
         return true;
     }
 
@@ -165,48 +142,45 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             Intent intent = new Intent();
             intent.setClass(LockActivity.this, AdvancedPreferenceActivity.class);
             startActivityForResult(intent, 0);
+
             return true;
+
         } else if (id == R.id.action_reset) {
-            PreferenceManager.getDefaultSharedPreferences(this).edit().clear().apply(); //reset
+            PreferenceManager.getDefaultSharedPreferences(this).edit().clear().apply();
             PreferenceManager.setDefaultValues(this, R.xml.advanced, true);
+
             return true;
+
         } else if (id == R.id.action_quit) {
             Intent i = new Intent(this, RviService.class);
             stopService(i);
             finish();
+
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-//    public void clickedStart(View v){
-//        SharedPreferences.Editor ed = sharedPref.edit();
-//        ed.putBoolean(LockActivityFragment.STOPPED_LBL, true);
-//        rviService.service("start", LockActivity.this);
-//        ed.commit();
-//    }
-
     @Override
     public void onButtonCommand(String cmd) {
-        //RviService.triggerFobSignal(cmd, LockActivity.this);
         VehicleNode.sendFobSignal(cmd);
     }
 
-    public void keyUpdate(final UserCredentials userCredentials) {
+    public void keyUpdate(final User user) {
         AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
         builder.setInverseBackgroundForced(true);
         builder.setMessage("Key updates have been made").setCancelable(false).setPositiveButton("OK",
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        lock_fragment.setButtons(userCredentials);
+                        lock_fragment.updateUserInterface();
                     }
                 });
         AlertDialog alert = builder.create();
         alert.show();
     }
 
-    public void notififyGuestUsedKey(final String guestUser, final String guestService) {
+    public void notifyGuestUsedKey(final String guestUser, final String guestService) {
         AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
         builder.setInverseBackgroundForced(true);
         builder.setMessage("Remote key used by "+ guestUser + "!")
@@ -224,48 +198,41 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     public void keyShareCommand(String key) {
         Intent intent = new Intent();
+
+        User user = ServerNode.getUserData();
+        Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
+
+        if (selectedVehicleIndex == -1) {
+            return; // TODO: error
+        }
+
+        String vehicleString = user.getVehicles().get(selectedVehicleIndex).toString();
+        String userString = user.toString();
+
+        intent.putExtra("selectedVehicle", vehicleString);
+        intent.putExtra("snapshotUser", userString);
+
         switch (key) {
-            case "keyshare":
+            case "key_share":
                 intent.setClass(LockActivity.this, KeyShareActivity.class);
-                startActivityForResult(intent, 0);
+
                 break;
-            case "keychange":
-                try {
-                    ServerNode.requestRemoteCredentials();
-                    requestProgress = ProgressDialog.show(LockActivity.this, "","Retrieving keys...",true);
 
-                    requestProgress.setCancelable(true);
-                    requestProgress.setOnCancelListener(new DialogInterface.OnCancelListener()
-                    {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                             // TODO: ?
-                        }
-                    });
+            case "key_revoke":
+                intent.setClass(LockActivity.this, KeyRevokeActivity.class);
 
-                    startRequest();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
                 break;
         }
+
+        startActivityForResult(intent, 0);
     }
 
-    public JSONArray Request() throws JSONException, java.lang.NullPointerException {
-        JSONObject request = new JSONObject();
-        request.put("vehicleVIN", ServerNode.getUserCredentials().getVehicleVin());
+    public void checkForUserData() {
+        User userData = ServerNode.getUserData();
 
-        JSONArray jsonArray = new JSONArray();
-        jsonArray.put(request);
-        return jsonArray;
-    }
-
-    public void checkForKeys() {
-        UserCredentials userCredentials = ServerNode.getUserCredentials();
-
-        if (userCredentials != null && ServerNode.thereAreNewUserCredentials()) {
-            keyUpdate(userCredentials);
-            ServerNode.setThereAreNewUserCredentials(false);
+        if (userData != null && ServerNode.thereIsNewUserData()) {
+            keyUpdate(userData);
+            ServerNode.setThereIsNewUserData(false);
         }
     }
 
@@ -273,19 +240,8 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         InvokedServiceReport report = ServerNode.getInvokedServiceReport();
 
         if (report != null && ServerNode.thereIsNewInvokedServiceReport()) {
-            notififyGuestUsedKey(report.getUserName(), report.getServiceIdentifier());
+            notifyGuestUsedKey(report.getUserName(), report.getServiceIdentifier());
             ServerNode.setThereIsNewInvokedServiceReport(false);
-        }
-    }
-
-    public void requestComplete() {
-        if (ServerNode.thereAreNewRemoteCredentials()) {
-            done();
-            ServerNode.setThereAreNewRemoteCredentials(false);
-            requestProgress.dismiss();
-            Intent intent = new Intent();
-            intent.setClass(LockActivity.this, KeyRevokeActivity.class);
-            startActivityForResult(intent, 0);
         }
     }
 }

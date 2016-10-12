@@ -24,7 +24,7 @@ import java.util.Arrays;
  */
 class DlinkAuthPacket extends DlinkPacket
 {
-    private final static String TAG = "RVI:DlinkAuthPacket";
+    private final static String TAG = "RVI/DlinkAuthPacket____";
 
     @SerializedName("addr")
     private String mAddr;
@@ -49,4 +49,22 @@ class DlinkAuthPacket extends DlinkPacket
         mVer = "1.0";
         mCreds = creds;
     }
+
+    public ArrayList<String> getCreds() {
+        return mCreds;
+    }
+
+    public String getVer() {
+        return mVer;
+    }
+
+    public Integer getPort() {
+        return mPort;
+    }
+
+    public String getAddr() {
+        return mAddr;
+    }
+
+    String getType() { return "AU"; }
 }

@@ -16,92 +16,83 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.util.Base64;
 import android.util.Log;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.jaguarlandrover.rvi.RVINode;
-import com.jaguarlandrover.rvi.ServiceBundle;
+import com.google.gson.internal.LinkedTreeMap;
+import com.jaguarlandrover.pki.PKIManager;
+import com.jaguarlandrover.rvi.RVILocalNode;
+import com.jaguarlandrover.rvi.RVIRemoteNode;
+import com.jaguarlandrover.rvi.RVIRemoteNodeListener;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Type;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
-import javax.xml.transform.sax.SAXTransformerFactory;
-
-public class ServerNode
+class ServerNode
 {
-    private final static String TAG = "UnlockDemo:ServerNode";
+    private final static String TAG = "UnlockDemo/ServerNode__";
 
-    /* Static variables */
+    /* * * * * * * * * * * * * * * * * * * * Static variables * * * * * * * * * * * * * * * * * * **/
     private static Context applicationContext = UnlockApplication.getContext();
 
-    private static SharedPreferences        preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
-    private static SharedPreferences.Editor editor      = preferences.edit();
-    private static Gson                     gson        = new Gson();
+    private static SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
+    private static Gson              gson        = new Gson();
 
-    private static RVINode rviNode = new RVINode(null);
+    private static RVIRemoteNode rviNode = new RVIRemoteNode(null);
 
-    private static final ConcurrentHashMap<String, String> certs = new ConcurrentHashMap<String, String>(1);
 
-    /* SharedPreferences keys */
-    private final static String NEW_CERTIFICATE_DATA_KEY        = "NEW_CERTIFICATE_DATA_KEY";
-    private final static String CERTIFICATE_DATA_KEY            = "CERTIFICATE_DATA_KEY";
-    private final static String NEW_USER_CREDENTIALS_KEY        = "NEW_USER_CREDENTIALS_KEY";
-    private final static String USER_CREDENTIALS_KEY            = "USER_CREDENTIALS_KEY";
-    private final static String NEW_REMOTE_CREDENTIALS_LIST_KEY = "NEW_REMOTE_CREDENTIALS_LIST_KEY";
-    private final static String REMOTE_CREDENTIALS_LIST_KEY     = "REMOTE_CREDENTIALS_LIST_KEY";
+    /* * * * * * * * * * * * * * * * * * SharedPreferences keys * * * * * * * * * * * * * * * * * **/
+    private final static String NEW_USER_DATA_KEY               = "NEW_USER_DATA_KEY";
+    private final static String USER_DATA_KEY                   = "USER_DATA_KEY";
     private final static String NEW_INVOKED_SERVICE_REPORT_KEY  = "NEW_INVOKED_SERVICE_REPORT_KEY";
     private final static String INVOKED_SERVICE_REPORT_KEY      = "INVOKED_SERVICE_REPORT_KEY";
 
-    /* RVI fully-qualified service identifier parts */
-    private final static String RVI_DOMAIN       = "genivi.org";
-    private final static String CERT_PROV_BUNDLE = "dm";
+
+    /* * * * * * * * * * * * * * * * * RVI service identifier parts * * * * * * * * * * * * * * * **/
+    /* * * *  Service bundle * * * */
+    private final static String CREDENTIAL_MANAGEMENT_BUNDLE = "credential_management";
+    /* Local services */
+    private final static String REVOKE_CREDENTIALS  = "revoke_credentials";
+    private final static String UPDATE_CREDENTIALS  = "update_credentials";
+    /* Remote services */
+    private final static String REQUEST_CREDENTIALS = "request_credentials";
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    /* * * *  Service bundle * * * */
+    private final static String ACCOUNT_MANAGEMENT_BUNDLE = "account_management";
+    /* Remote services */
+    private final static String AUTHORIZE_SERVICES   = "authorize_services";
+    private final static String REVOKE_AUTHORIZATION = "revoke_authorization";
+    /* Local and remote services */
+    private final static String GET_USER_DATA = "get_user_data";
+    private final static String SET_USER_DATA = "set_user_data";
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    /* * * *  Service bundle * * * */
     private final static String REPORTING_BUNDLE = "report";
-
-    /* Remote service identifiers */
-    private final static String CERT_REQUESTALL = "cert_requestall";
-    private final static String CERT_CREATE     = "cert_create";
-    private final static String CERT_MODIFY     = "cert_modify";
-
-    private final static String GET_CREDENTIALS = "request_credentials";
+    /* Remote services */
+    private final static String SERVICE_INVOKED_BY_GUEST  = "service_invoked_by_guest";
 
 
-    /* Local service identifiers */
-    private final static String CERT_PROVISION       = "cert_provision";
-    private final static String CERT_RESPONSE        = "cert_response";
-    private final static String CERT_ACCOUNT_DETAILS = "cert_accountdetails";
-
-
-    private final static String REVOKE_CREDENTIALS = "revoke_credentials";
-    private final static String ADD_CREDENTIALS    = "add_credentials";
-
-
-    private final static String SERVICE_INVOKED_BY_GUEST = "serviceinvokedbyguest";
-
-    private final static ArrayList<String> certProvServiceIdentifiers =
+    /* * * * * * * * * * * * * * * * Local service identifier lists * * * * * * * * * * * * * * * **/
+    private final static ArrayList<String> credentialManagementBundleLocalServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
-                    CERT_PROVISION,
-                    CERT_RESPONSE,
-                    CERT_ACCOUNT_DETAILS));
+                    CREDENTIAL_MANAGEMENT_BUNDLE + "/" + REVOKE_CREDENTIALS,
+                    CREDENTIAL_MANAGEMENT_BUNDLE + "/" + UPDATE_CREDENTIALS));
 
-    private final static ArrayList<String> reportingServiceIdentifiers =
+    @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
+    private final static ArrayList<String> accountManagementBundleLocalServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
-                    SERVICE_INVOKED_BY_GUEST));
+                    ACCOUNT_MANAGEMENT_BUNDLE + "/" + SET_USER_DATA));
 
-    /* Service bundles */
-    private final static ServiceBundle certProvServiceBundle  = new ServiceBundle(applicationContext, RVI_DOMAIN, CERT_PROV_BUNDLE, certProvServiceIdentifiers);
-    private final static ServiceBundle reportingServiceBundle = new ServiceBundle(applicationContext, RVI_DOMAIN, REPORTING_BUNDLE, reportingServiceIdentifiers);
+    @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
+    private final static ArrayList<String> reportingBundleLocalServiceIdentifiers =
+            new ArrayList<>(Arrays.asList(
+                    REPORTING_BUNDLE + "/" + SERVICE_INVOKED_BY_GUEST));
 
+    /* * * * * * * * * * * * * * * * * * * * Other stuff * * * * * * * * * * * * * * * * * * * * **/
     private enum ConnectionStatus
     {
         DISCONNECTED,
@@ -110,112 +101,130 @@ public class ServerNode
     }
 
     private static ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
+    private static boolean needsToRequestNewCredentials = false;
 
     private static ServerNode ourInstance = new ServerNode();
 
-    //public static ServerNode getInstance() {
-    //    return ourInstance;
-    //}
-
     private ServerNode() {
-        /* Listeners */
-        ServiceBundle.ServiceBundleListener serviceBundleListener = new ServiceBundle.ServiceBundleListener()
+
+        RVIRemoteNodeListener nodeListener = new RVIRemoteNodeListener()
         {
             @Override
-            public void onServiceInvoked(ServiceBundle serviceBundle, String serviceIdentifier, Object parameters) {
-                if (serviceBundle.getBundleIdentifier().equals(CERT_PROV_BUNDLE)) {
-                    switch (serviceIdentifier) {
-                        case CERT_RESPONSE:
-                            //Type collectionType = new TypeToken<Collection<UserCredentials>>() {}.getType();
-                            //Collection<UserCredentials> remoteCredentials =
-                            //        gson.fromJson(gson.toJson(gson.fromJson((String) parameters, HashMap.class).get("certificates")), collectionType);
-
-                            ServerNode.setRemoteCredentialsList(gson.toJson(gson.fromJson((String) parameters, HashMap.class).get("certificates")));
-
-                            break;
-                        case CERT_PROVISION:
-                            String certId = ((HashMap<String, String>) parameters).get("certid");
-                            String certificateJwt = ((HashMap<String, String>) parameters).get("certificate");
-
-                            // TODO: Need to handle certs? Probably certs (potentially renamed 'credentials') should be stored and handled in lower-level RVI SDK
-                            certs.put(certId, certificateJwt);
-
-                            String[] token = parseAndValidateJWT(certificateJwt);
-
-                            ServerNode.setCertificate(token[1]);
-
-                            // TODO: Set up notification system to notify UI that stuff is coming from the server instead of the current polling mechanism
-                            //sendNotification(RviService.this, getResources().getString(R.string.not_new_key) + " : " + key.getString("id"), "dialog", "New Key", key.getString("id"));
-                            break;
-
-                        case CERT_ACCOUNT_DETAILS:
-                            ServerNode.setUserCredentials(gson.toJson(parameters));
-
-                            break;
-                        }
-
-                } else if (serviceBundle.getBundleIdentifier().equals(REPORTING_BUNDLE)) {
-                    if (serviceIdentifier.equals(SERVICE_INVOKED_BY_GUEST)) {
-                        ServerNode.setInvokedServiceReport(gson.toJson(parameters));
-                    }
-                }
-            }
-        };
-
-        RVINode.RVINodeListener nodeListener = new RVINode.RVINodeListener()
-        {
-            @Override
-            public void nodeDidConnect() {
+            public void nodeDidConnect(RVIRemoteNode node) {
                 Log.d(TAG, "Connected to RVI provisioning server!");
                 connectionStatus = ConnectionStatus.CONNECTED;
+
+                needsToRequestNewCredentials = true;
 
                 stopRepeatingTask();
             }
 
             @Override
-            public void nodeDidFailToConnect(Throwable trigger) {
+            public void nodeDidFailToConnect(RVIRemoteNode node, Throwable reason) {
                 Log.d(TAG, "Failed to connect to RVI provisioning server!");
                 connectionStatus = ConnectionStatus.DISCONNECTED;
 
-                //startRepeatingTask();
+                //startRepeatingTasks();
             }
 
             @Override
-            public void nodeDidDisconnect(Throwable trigger) {
+            public void nodeDidDisconnect(RVIRemoteNode node, Throwable reason) {
                 Log.d(TAG, "Disconnected from RVI provisioning server!");
                 connectionStatus = ConnectionStatus.DISCONNECTED;
 
                 /* Try and reconnect */
                 startRepeatingTask();
             }
+
+            @Override
+            public void nodeSendServiceInvocationSucceeded(RVIRemoteNode node, String serviceIdentifier) {
+
+            }
+
+            @Override
+            public void nodeSendServiceInvocationFailed(RVIRemoteNode node, String serviceIdentifier, Throwable reason) {
+
+            }
+
+            @Override
+            public void nodeReceiveServiceInvocationSucceeded(RVIRemoteNode node, String serviceIdentifier, Object parameters) {
+                String[] serviceParts = serviceIdentifier.split("/");
+
+                if (serviceParts.length < 2) return;
+
+                switch (serviceParts[0]) {
+                    case CREDENTIAL_MANAGEMENT_BUNDLE:
+                        switch (serviceParts[1]) {
+                            case UPDATE_CREDENTIALS:
+                                // TODO: Check this
+                                ArrayList<String> credentials = (ArrayList<String>) ((LinkedTreeMap<String, Object>) parameters).get("credentials");
+                                RVILocalNode.setCredentials(applicationContext, credentials);
+
+                                break;
+
+                            case REVOKE_CREDENTIALS:
+                                RVILocalNode.setCredentials(applicationContext, null);
+
+                                break;
+                        }
+
+                        break;
+
+                    case ACCOUNT_MANAGEMENT_BUNDLE:
+                        switch (serviceParts[1]) {
+                            case SET_USER_DATA:
+                                ServerNode.setUserData(gson.toJson(parameters));
+
+                                break;
+                        }
+
+                        break;
+
+                    case REPORTING_BUNDLE:
+                        switch (serviceParts[1]) {
+                            case SERVICE_INVOKED_BY_GUEST:
+                                ServerNode.setInvokedServiceReport(gson.toJson(parameters));
+
+                                break;
+                        }
+
+                        break;
+
+                }
+            }
+
+            @Override
+            public void nodeReceiveServiceInvocationFailed(RVIRemoteNode node, String serviceIdentifier, Throwable reason) {
+
+            }
+
+            @Override
+            public void nodeDidAuthorizeLocalServices(RVIRemoteNode node, Set<String> serviceIdentifiers) {
+                Log.d(TAG, "Local services available: " + serviceIdentifiers.toString());
+            }
+
+            @Override
+            public void nodeDidAuthorizeRemoteServices(RVIRemoteNode node, Set<String> serviceIdentifiers) {
+                Log.d(TAG, "Remote services available: " + serviceIdentifiers.toString());
+
+                for (String serviceIdentifier : serviceIdentifiers) {
+                    if (serviceIdentifier.equals(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + REQUEST_CREDENTIALS)) {
+                        if (needsToRequestNewCredentials) {
+                            needsToRequestNewCredentials = false;
+                            requestCredentials();
+                        }
+                    } else if (serviceIdentifier.equals(ACCOUNT_MANAGEMENT_BUNDLE + "/" + GET_USER_DATA)) {
+                        requestUserData();
+                    }
+                }
+            }
         };
-
-//        try {
-//            rviNode.setKeyStores(getKeyStore("server-certs", "BKS", "password"), getKeyStore("client.p12", "PKCS12", "password"), "password");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        rviNode.addJWTCredentials("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJyaWdodF90b19pbnZva2UiOlsiZ2VuaXZpLm9yZyJdLCJpc3MiOiJqbHIuY29tIiwiZGV2aWNlX2NlcnQiOiJNSUlCOHpDQ0FWd0NBUUV3RFFZSktvWklodmNOQVFFTEJRQXdRakVMTUFrR0ExVUVCaE1DVlZNeER6QU5CZ05WQkFnTUJrOXlaV2R2YmpFUk1BOEdBMVVFQnd3SVVHOXlkR3hoYm1ReER6QU5CZ05WQkFvTUJrZEZUa2xXU1RBZUZ3MHhOVEV4TWpjeU16RTBOVEphRncweE5qRXhNall5TXpFME5USmFNRUl4Q3pBSkJnTlZCQVlUQWxWVE1ROHdEUVlEVlFRSURBWlBjbVZuYjI0eEVUQVBCZ05WQkFjTUNGQnZjblJzWVc1a01ROHdEUVlEVlFRS0RBWkhSVTVKVmtrd2daOHdEUVlKS29aSWh2Y05BUUVCQlFBRGdZMEFNSUdKQW9HQkFKdHZpTThBUklyRnF1UGMwbXlCOUJ1RjlNZGtBLzJTYXRxYlpNV2VUT1VKSEdyakJERUVNTFE3ems4QXlCbWk3UnF1WVlaczY3U3lMaHlsVkdLaDZzSkFsZWN4YkhVd2o3Y1pTUzFibUtNamU2TDYxZ0t3eEJtMk5JRlUxY1ZsMmpKbFRhVTlWWWhNNHhrNTd5ajI4bmtOeFNZV1AxdmJGWDJORFgyaUg3YjVBZ01CQUFFd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ1lFQWhicVZyOUUvME03MjluYzZESStxZ3FzUlNNZm95dkEzQ21uL0VDeGwxeWJHa3V6TzdzQjhmR2pnTVE5enpjYjZxMXVQM3dHalBpb3FNeW1pWVlqVW1DVHZ6ZHZSQlorNlNEanJaZndVdVlleGlLcUk5QVA2WEthSGxBTDE0K3JLKzZITjR1SWtaY0l6UHdTTUhpaDFic1RScHlZNVozQ1VEY0RKa1l0VmJZcz0iLCJ2YWxpZGl0eSI6eyJzdGFydCI6MTQ1MjE5Mjc3Nywic3RvcCI6MTQ4MzcyODc3N30sInJpZ2h0X3RvX3JlZ2lzdGVyIjpbImdlbml2aS5vcmciXSwiY3JlYXRlX3RpbWVzdGFtcCI6MTQ1MjE5Mjc3NywiaWQiOiJpbnNlY3VyZV9jcmVkZW50aWFscyJ9.TBDUJFL1IQ039Lz7SIkcblhz62jO35STJ8OiclL_xlxEE_L_EjnELrDOGvkIh7zhhl8RMHkUJcTFQKF7P6WDJ5rUJejXJlkTRf-aVmHqEhpspRw6xD2u_2A9wmTWLJF94_wsEb7M7xWCXVrbexu_oik85zmuxRQgRE5wrTC7DDQ");
-
-        certProvServiceBundle.setListener(serviceBundleListener);
-        reportingServiceBundle.setListener(serviceBundleListener);
 
         rviNode.setListener(nodeListener);
 
-        rviNode.addBundle(certProvServiceBundle);
-        rviNode.addBundle(reportingServiceBundle);
-    }
-
-    private static KeyStore getKeyStore(String fileName, String type, String password) throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException { // type = "jks"?
-        AssetManager assetManager = applicationContext.getAssets();
-        InputStream fis = assetManager.open(fileName);
-
-        KeyStore ks = KeyStore.getInstance(type);
-        ks.load(fis, password.toCharArray());
-        fis.close();
-
-        return ks;
+        RVILocalNode.addLocalServices(UnlockApplication.getContext(), credentialManagementBundleLocalServiceIdentifiers);
+        RVILocalNode.addLocalServices(UnlockApplication.getContext(), accountManagementBundleLocalServiceIdentifiers);
+        RVILocalNode.addLocalServices(UnlockApplication.getContext(), reportingBundleLocalServiceIdentifiers);
     }
 
     Handler  timerHandler  = new Handler();
@@ -225,27 +234,19 @@ public class ServerNode
         public void run() {
             if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
-            timerHandler.postDelayed(this, 3000);
+            timerHandler.postDelayed(this, 60 * 1000);
         }
     };
 
-    void startRepeatingTask() {
-        timerHandler.postDelayed(timerRunnable, 30 * 1000);
+    private void startRepeatingTask() {
+        timerHandler.postDelayed(timerRunnable, 60 * 1000);
     }
 
-    void stopRepeatingTask() {
+    private void stopRepeatingTask() {
         timerHandler.removeCallbacks(timerRunnable);
     }
 
-    public static void setKeyStoresAndPrivileges(KeyStore serverKeyStore, KeyStore deviceKeyStore, String deviceKeyStorePassword, ArrayList<String> privileges) {
-        rviNode.setKeyStores(serverKeyStore, deviceKeyStore, deviceKeyStorePassword);
-
-        if (privileges != null)
-            for (String jwt : privileges)
-                rviNode.addJWTCredentials(jwt);
-    }
-
-    public static void connect() {
+    static void connect() {
         Log.d(TAG, "Attempting to connect to RVI provisioning server.");
 
         rviNode.setServerUrl(preferences.getString("pref_rvi_server", "38.129.64.40"));
@@ -256,106 +257,83 @@ public class ServerNode
         rviNode.connect();
     }
 
-    public static void requestRemoteCredentials() {
-        Log.d(TAG, "Requesting remote credentials from RVI provisioning server.");
+    static void requestCredentials() {
+        Log.d(TAG, "Requesting credentials from RVI provisioning server.");
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
         HashMap<String, String> parameters = new HashMap<>();
 
         try {
-            parameters.put("mobileUUID", RVINode.getLocalNodeIdentifier(applicationContext).substring("android/".length()));
-            parameters.put("vehicleVIN", ServerNode.getUserCredentials().getVehicleVin());
+            parameters.put("node_identifier", RVILocalNode.getLocalNodeIdentifier(applicationContext).substring("android/".length()));
+            parameters.put("public_key", PKIManager.getPublicKey(applicationContext));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        certProvServiceBundle.invokeService(CERT_REQUESTALL, parameters, 5000);
+        rviNode.invokeService(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + REQUEST_CREDENTIALS, parameters, 60 * 1000);
     }
 
-    public static void modifyRemoteCredentials(UserCredentials remoteCredentials) {
-        Log.d(TAG, "Modifying remote credentials on RVI provisioning server.");
+    static void requestUserData() {
+        Log.d(TAG, "Requesting user data from RVI provisioning server.");
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
-        certProvServiceBundle.invokeService(CERT_MODIFY, remoteCredentials, 5000);
+        HashMap<String, String> parameters = new HashMap<>();
+
+        try {
+            parameters.put("node_identifier", RVILocalNode.getLocalNodeIdentifier(applicationContext).substring("android/".length()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        rviNode.invokeService(ACCOUNT_MANAGEMENT_BUNDLE + "/" + GET_USER_DATA, parameters, 60 * 1000);
     }
 
-    public static void createRemoteCredentials(UserCredentials remoteCredentials) {
+    static void revokeAuthorization(User remoteUser) {
+        Log.d(TAG, "Revoking authorization for user on RVI provisioning server.");
+
+        if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
+
+        rviNode.invokeService(ACCOUNT_MANAGEMENT_BUNDLE + "/" + REVOKE_AUTHORIZATION, remoteUser, 60 * 1000);
+    }
+
+    static void authorizeServices(User remoteUser) {
         Log.d(TAG, "Creating remote credentials on RVI provisioning server.");
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
-        certProvServiceBundle.invokeService(CERT_CREATE, remoteCredentials, 5000);
+        rviNode.invokeService(ACCOUNT_MANAGEMENT_BUNDLE + "/" + AUTHORIZE_SERVICES, remoteUser, 60 * 1000);
     }
 
-    public static Certificate getCertificate() {
-        String certStr = preferences.getString(CERTIFICATE_DATA_KEY, null);
+    static User getUserData() {
+        String userStr = preferences.getString(USER_DATA_KEY, null);
 
-        Certificate certificate = new Certificate();
+        User userData = new User();
         try {
-            certificate =  gson.fromJson(certStr, Certificate.class);
+            if (userStr != null)
+                userData = gson.fromJson(userStr, User.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return certificate;
+        return userData;
     }
 
-    private static void setCertificate(String certStr) {
-        editor.putString(CERTIFICATE_DATA_KEY, certStr);
+    private static void setUserData(String userCredsStr) {
+        //userCredsStr = "  {  \"username\": \"pdxostc.android@gmail.com\",  \"first_name\": \"Pdxostc\",  \"last_name\": \"Android\",  \"guests\": [{   \"username\": \"admin\",   \"first_name\": \"Admin\",   \"last_name\": \"Overlord\"  }, {   \"username\": \"pdxostc.android@gmail.com\",   \"first_name\": \"Pdxostc\",   \"last_name\": \"Android\"  }, {   \"username\": \"android.pdxostc@gmail.com\",   \"first_name\": \"Android\",   \"last_name\": \"Pdxostc\"  }],  \"vehicles\": [{   \"vehicle_id\": \"fake1\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"fake1\",   \"user_type\": \"guest\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"false\",    \"windows\": \"false\",    \"lock\": \"True\",    \"hazard\": \"false\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }, {   \"vehicle_id\": \"fake2\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"fake2\",   \"user_type\": \"guest\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"True\",    \"windows\": \"True\",    \"lock\": \"True\",    \"hazard\": \"True\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }, {   \"vehicle_id\": \"genivi-amm-ftype\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"F-Type\",   \"user_type\": \"owner\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"True\",    \"windows\": \"True\",    \"lock\": \"True\",    \"hazard\": \"True\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }, {   \"vehicle_id\": \"DummyL405\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"L405-Test\",   \"user_type\": \"owner\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"True\",    \"windows\": \"True\",    \"lock\": \"True\",    \"hazard\": \"True\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }] }";
+
+        User previousUserData = getUserData();
+
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(USER_DATA_KEY, userCredsStr);
         editor.commit();
 
-        ServerNode.setThereIsNewCertificateData(true);
+        if (!previousUserData.equals(getUserData()))
+            ServerNode.setThereIsNewUserData(true);
     }
 
-    public static UserCredentials getUserCredentials() {
-        String userStr = preferences.getString(USER_CREDENTIALS_KEY, null);
-
-        UserCredentials userCreds = new UserCredentials();
-        try {
-            userCreds = gson.fromJson(userStr, UserCredentials.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return userCreds;
-    }
-
-    private static void setUserCredentials(String userCredsStr) {
-        editor.putString(USER_CREDENTIALS_KEY, userCredsStr);
-        editor.commit();
-
-        ServerNode.setThereAreNewUserCredentials(true);
-    }
-
-    public static Collection<UserCredentials> getRemoteCredentialsList() {
-        String credListStr = preferences.getString(REMOTE_CREDENTIALS_LIST_KEY, null);
-
-        if (credListStr == null) return null;
-
-        Collection<UserCredentials> credsList = null;
-        Type collectionType = new TypeToken<Collection<UserCredentials>>()
-        {
-        }.getType();
-
-        try {
-            credsList = gson.fromJson(credListStr, collectionType);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return credsList;
-    }
-
-    private static void setRemoteCredentialsList(String credsListStr) {
-        editor.putString(REMOTE_CREDENTIALS_LIST_KEY, credsListStr);
-        editor.commit();
-
-        ServerNode.setThereAreNewRemoteCredentials(true);
-    }
-
-    public static InvokedServiceReport getInvokedServiceReport() {
+    static InvokedServiceReport getInvokedServiceReport() {
         String reportStr = preferences.getString(INVOKED_SERVICE_REPORT_KEY, null);
 
         InvokedServiceReport report = null;
@@ -369,56 +347,30 @@ public class ServerNode
     }
 
     private static void setInvokedServiceReport(String reportStr) {
+        SharedPreferences.Editor editor = preferences.edit();
         editor.putString(INVOKED_SERVICE_REPORT_KEY, reportStr);
         editor.commit();
 
         ServerNode.setThereIsNewInvokedServiceReport(true);
     }
 
-    public static Boolean thereIsNewCertificateData() {
-        return preferences.getBoolean(NEW_CERTIFICATE_DATA_KEY, false);
+    static Boolean thereIsNewUserData() {
+        return preferences.getBoolean(NEW_USER_DATA_KEY, false);
     }
 
-    public static void setThereIsNewCertificateData(Boolean isNewActivity) {
-        editor.putBoolean(NEW_CERTIFICATE_DATA_KEY, isNewActivity);
+    static void setThereIsNewUserData(Boolean thereIsNewUserData) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(NEW_USER_DATA_KEY, thereIsNewUserData);
         editor.commit();
     }
 
-    public static Boolean thereAreNewUserCredentials() {
-        return preferences.getBoolean(NEW_USER_CREDENTIALS_KEY, false);
-    }
-
-    public static void setThereAreNewUserCredentials(Boolean areNewCredentials) {
-        editor.putBoolean(NEW_USER_CREDENTIALS_KEY, areNewCredentials);
-        editor.commit();
-    }
-
-    public static Boolean thereAreNewRemoteCredentials() {
-        return preferences.getBoolean(NEW_REMOTE_CREDENTIALS_LIST_KEY, false);
-    }
-
-    public static void setThereAreNewRemoteCredentials(Boolean areNewCredentials) {
-        editor.putBoolean(NEW_REMOTE_CREDENTIALS_LIST_KEY, areNewCredentials);
-        editor.commit();
-    }
-
-    public static Boolean thereIsNewInvokedServiceReport() {
+    static Boolean thereIsNewInvokedServiceReport() {
         return preferences.getBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, false);
     }
 
-    public static void setThereIsNewInvokedServiceReport(Boolean isNewReport) {
+    static void setThereIsNewInvokedServiceReport(Boolean isNewReport) {
+        SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, isNewReport);
         editor.commit();
-    }
-
-    public static String[] parseAndValidateJWT(String encToken) {
-        String[] result = new String[3];
-
-        String [] jwtParts = encToken.split("\\.");
-        if (jwtParts[0] != null) result[0] = new String(Base64.decode(jwtParts[0], Base64.URL_SAFE));
-        if (jwtParts[1] != null) result[1] = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
-        if (jwtParts[2] != null) result[2] = new String(Base64.decode(jwtParts[2], Base64.URL_SAFE));
-
-        return result;
     }
 }

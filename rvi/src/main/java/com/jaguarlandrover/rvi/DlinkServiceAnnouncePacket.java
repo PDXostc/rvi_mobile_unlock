@@ -25,7 +25,7 @@ import java.util.HashMap;
  */
 class DlinkServiceAnnouncePacket extends DlinkPacket
 {
-    private final static String TAG = "RVI:DlinkServi...Packet";
+    private final static String TAG = "RVI/DlinkSrvcAnncPacket";
 
     /**
      * The status.
@@ -38,19 +38,6 @@ class DlinkServiceAnnouncePacket extends DlinkPacket
      */
     @SerializedName("svcs")
     private ArrayList<String> mServices;
-
-//    /**
-//     * Helper method that takes a list of @VehicleServices, and returns a list of fully-qualified local service names
-//     * @param services a list of @VehicleServices
-//     * @return a list of fully-qualified local service names
-//     */
-//    private ArrayList<String> getServiceFQNames(ArrayList<Service> services) {
-//        ArrayList<String> newList = new ArrayList<>(services.size());
-//        for (Service service : services)
-//            newList.add(service.getFullyQualifiedLocalServiceName());
-//
-//        return newList;
-//    }
 
     /**
      * Instantiates a new Dlink service announce packet.
@@ -79,11 +66,5 @@ class DlinkServiceAnnouncePacket extends DlinkPacket
         return mServices;
     }
 
-//    public DlinkServiceAnnouncePacket(HashMap jsonHash) {
-//        super(Command.SERVICE_ANNOUNCE, jsonHash);
-//
-//        mStatus   = (String) jsonHash.get("stat");
-//        mServices = (ArrayList<String>) jsonHash.get("svcs");
-//    }
-
+    String getType() { return "SA"; }
 }

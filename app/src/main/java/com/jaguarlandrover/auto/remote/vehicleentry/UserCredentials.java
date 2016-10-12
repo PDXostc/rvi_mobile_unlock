@@ -18,7 +18,7 @@ import java.util.TimeZone;
  */
 public class UserCredentials
 {
-    private final static String TAG = "UnlockDemo:UserCrede...";
+    private final static String TAG = "UnlockDemo/UserCredntls";
 
     private final static String SERVER_DATE_TIME_FORMATTER = "yyyy-MM-dd'T'HH:mm:ss";
     private final static String PRETTY_DATE_TIME_FORMATTER = "MM/dd/yyyy h:mm a z";
@@ -33,7 +33,7 @@ public class UserCredentials
     private String mValidFrom = "1971-09-09T22:00:00.000Z";
 
     @SerializedName("validTo")
-    private String mValidTo   = "1971-09-09T23:00:00.000Z";
+    private String mValidTo = "1971-09-09T23:00:00.000Z";
 
     @SerializedName("userType")
     private String mUserType = "guest";

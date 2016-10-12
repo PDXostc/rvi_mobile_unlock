@@ -24,7 +24,7 @@ import java.util.HashMap;
  */
 class DlinkPacket
 {
-    private final static String TAG = "RVI:DlinkPacket";
+    private final static String TAG = "RVI/DlinkPacket________";
 
     /**
      * The Command enumeration, used to enumerate the different commands, or dlink packet types
@@ -73,12 +73,6 @@ class DlinkPacket
      */
     @SerializedName("cmd")
     protected Command mCmd = null;
-
-//    /**
-//     * The signature.
-//     */
-//    @SerializedName("sign")
-//    protected String mSig = null;
 
     @SerializedName("rvi_log_id") /* Note: try to keep less than 20 characters */
     protected String mLogId = null;
@@ -136,4 +130,6 @@ class DlinkPacket
 //            mSig = (String) jsonHash.get("sign"); // TODO: Push for sign->sig
 
     }
+
+    String getType() { return "PK"; }
 }

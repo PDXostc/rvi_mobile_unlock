@@ -21,20 +21,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
-public class LockActivityFragment extends Fragment {
-
+public class LockActivityFragment extends Fragment implements AdapterView.OnItemSelectedListener
+{
     public static final String STOPPED_LBL = "StartStop";
     public static final String LOCKED_LBL  = "OpenClose";
 
-    private static final String TAG = "RVI";
+    private static final String TAG = "UnlockDemo/LckActvtyFrg";
 
     private boolean revokeCheckStarted = false;
 
+    private Spinner                    vehicleSpinner;
     private ImageButton                lock;
     private ImageButton                unlock;
     private ImageButton                trunk;
@@ -51,10 +51,11 @@ public class LockActivityFragment extends Fragment {
     private TextView                   vehicleHeader;
     private LinearLayout               keyManagementLayout;
     private LockFragmentButtonListener buttonListener;
-    private Handler                    buttonSet;
+    //private Handler                    buttonSet;
 
     //Temp button press storage
     private SharedPreferences          sharedPref;
+    private ArrayList<Vehicle> mPreviousVehicles;
 
     //    private Button panicOn;
 
@@ -62,14 +63,14 @@ public class LockActivityFragment extends Fragment {
     public LockActivityFragment() {
     }
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_lock, container, false);
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         Typeface fontawesome = Typeface.createFromAsset(getActivity().getAssets(), "fonts/fontawesome-webfont.ttf");
 
+        vehicleSpinner = (Spinner) view.findViewById(R.id.vehicle_spinner);
         lock = (ImageButton) view.findViewById(R.id.lock);
         unlock = (ImageButton) view.findViewById(R.id.unlock);
         trunk = (ImageButton) view.findViewById(R.id.trunk);
@@ -85,18 +86,11 @@ public class LockActivityFragment extends Fragment {
         userHeader = (TextView)view.findViewById(R.id.user_header);
         vehicleHeader = (TextView) view.findViewById(R.id.vehicle_header);
         keyManagementLayout = (LinearLayout) view.findViewById(R.id.key_management_layout);
-//        panicOn = (Button) view.findViewById(R.id.panicOn);
 
-        UserCredentials userCredentials = ServerNode.getUserCredentials();
+        //buttonSet = new Handler();
+        //startRepeatingTask();
 
-        if (userCredentials == null) {
-            setButtons(new UserCredentials());
-        } else {
-            setButtons(userCredentials);
-        }
-
-        buttonSet = new Handler();
-        startRepeatingTask();
+        vehicleSpinner.setOnItemSelectedListener(this);
 
         lock.setOnClickListener(l);
         unlock.setOnClickListener(l);
@@ -107,43 +101,54 @@ public class LockActivityFragment extends Fragment {
         panic.setOnClickListener(l);
         share.setOnClickListener(l);
         change.setOnClickListener(l);
-//        panicOn.setOnClickListener(l);
 
         buttonListener = (LockFragmentButtonListener) getActivity();
+
+        User user = ServerNode.getUserData();
+        user.setSelectedVehicleIndex(-1);
+
+        updateUserInterface();
+
         return view;
     }
 
-    Runnable StatusCheck = new Runnable()
-    {
-        @Override
-        public void run() {
-
-            UserCredentials userCredentials = ServerNode.getUserCredentials();
-            if (userCredentials != null && userCredentials.getUserType().equals("guest") && !userCredentials.isKeyValid()) {
-                setButtons(userCredentials);
-            }
-
-            // Revoke check at the beginning of every minute
-            if (!revokeCheckStarted) {
-                revokeCheckStarted = true;
-                Calendar calendar = Calendar.getInstance();
-                int seconds = calendar.get(Calendar.SECOND);
-                int sleepSecs = 60 - seconds;
-                buttonSet.postDelayed(StatusCheck, sleepSecs * 1000);
-            } else {
-                buttonSet.postDelayed(StatusCheck, 60000);
-            }
-            //buttonSet.postDelayed(StatusCheck, 15000);
-        }
-    };
-
-    void startRepeatingTask() {
-        StatusCheck.run();
-    }
-
-    void stopRepeatingTask() {
-        buttonSet.removeCallbacks(StatusCheck);
-    }
+//    Runnable StatusCheck = new Runnable()
+//    {
+//        @Override
+//        public void run() { // TODO: Still probably need to fix the logic here
+//
+//            User user = ServerNode.getUserData();
+//
+//            Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
+//            Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle();
+//
+//            if (vehicle.getUserType().equals("guest") && !vehicle.isKeyValid()) { // TODO: Check logic now that changed
+//                updateUserInterface();
+//            }
+//
+//            // Revoke check at the beginning of every minute
+//            if (!revokeCheckStarted) {
+//                revokeCheckStarted = true;
+//                Calendar calendar = Calendar.getInstance();
+//                int seconds = calendar.get(Calendar.SECOND);
+//                int sleepSecs = 60 - seconds;
+//                buttonSet.postDelayed(StatusCheck, sleepSecs * 1000);
+//            } else {
+//                buttonSet.postDelayed(StatusCheck, 60000);
+//            }
+//
+////            updateUserInterface();
+////            buttonSet.postDelayed(userDataCheckerRunnable, 15000);
+//        }
+//    };
+//
+//    void startRepeatingTask() {
+//        StatusCheck.run();
+//    }
+//
+//    void stopRepeatingTask() {
+//        buttonSet.removeCallbacks(StatusCheck);
+//    }
 
     public void sendPoptrunk(View view) {
     }
@@ -202,29 +207,14 @@ public class LockActivityFragment extends Fragment {
                     break;
                 case R.id.share:
                     Log.i(TAG, "ShareBtn");
-                    buttonListener.keyShareCommand("keyshare");
+                    buttonListener.keyShareCommand("key_share");
                     break;
                 case R.id.change:
                     Log.i(TAG, "ChangeBtn");
-                    buttonListener.keyShareCommand("keychange");
+                    buttonListener.keyShareCommand("key_revoke");
                     break;
                 case R.id.panic:
                     Log.i(TAG, "PanicBtn");
-
-//                    if (isPanic) {
-//                        panic.setSelected(false);
-//                        isPanic = false;
-//
-//                    }
-//                    buttonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_PANIC);
-//                    Log.i(TAG, "PanicBtn swap 1 ");
-//                    Handler handler = new Handler(Looper.getMainLooper());
-//                    handler.postDelayed(new Runnable()
-//                    {
-//                        public void run() {
-//                            panic.setSelected(!panic.isSelected());
-//                        }
-//                    }, 5000);
                     break;
             }
 
@@ -242,7 +232,6 @@ public class LockActivityFragment extends Fragment {
 
         boolean locked = sharedPref.getBoolean(LOCKED_LBL, true);
         boolean stopped = sharedPref.getBoolean(STOPPED_LBL, true);
-
 
 //        unlock.setSelected(!locked);
 //        lock.setSelected(locked);
@@ -263,6 +252,22 @@ public class LockActivityFragment extends Fragment {
             Log.e(TAG, "Service = " + s);
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        User user = ServerNode.getUserData();
+        user.setSelectedVehicleIndex(position);
+
+        updateUserInterface();
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        User user = ServerNode.getUserData();
+        user.setSelectedVehicleIndex(-1);
+
+        updateUserInterface();
+    }
+
     public interface LockFragmentButtonListener
     {
         public void onButtonCommand(String cmd);
@@ -270,26 +275,50 @@ public class LockActivityFragment extends Fragment {
         public void keyShareCommand(String key);
     }
 
-    public void setButtons(UserCredentials userCredentials) {
-        if (userCredentials == null) userCredentials = new UserCredentials();
+    void updateVehicleSpinnerAdapter(ArrayList<Vehicle> vehicles) {
+        if (vehicles.equals(mPreviousVehicles)) return;
 
-        String username = userCredentials.getUserName() != null ? userCredentials.getUserName() : "unknown";
-        String vehicle  = userCredentials.getVehicleName() != null ? userCredentials.getVehicleName() : "unknown";
+        mPreviousVehicles = vehicles;
 
-        Log.d(TAG, "Saved userdata: " + userCredentials.toString());
+        List<String> vehicleNames = new ArrayList<String>();
+        if (vehicles == null || vehicles.size() == 0) {
+            vehicleNames.add("<no vehicle>");
+        } else {
+            for (Vehicle vehicle : vehicles) {
+                vehicleNames.add(vehicle.getDisplayName());
+            }
+        }
 
-        userHeader.setText("User: " + username);
-        vehicleHeader.setText("Vehicle: " + vehicle);
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, vehicleNames);
+
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        vehicleSpinner.setAdapter(dataAdapter);
+    }
+
+    public void updateUserInterface() {
+        User user = ServerNode.getUserData();
+
+        Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
+        Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle();
+
+        String username = user.getFirstName() != null ? user.getFirstName() : "unknown";
+
+        updateVehicleSpinnerAdapter(user.getVehicles());
+
+        Log.d(TAG, "Saved userdata: " + user.toString());
+
+        userHeader.setText(String.format(getString(R.string.User), username));
+        vehicleHeader.setText("Vehicle: ");
 
         try {
-            //JSONObject json = new JSONObject(authorizedServices);
-            if (userCredentials.getUserType().equals("guest")) {
+            if (vehicle.getUserType().equals("guest")) {
                 keylbl.setText("Key Valid To:");
 
                 keyManagementLayout.setVisibility(View.GONE);
                 validDate.setVisibility(View.VISIBLE);
 
-                if (!userCredentials.hasAnyAuthorizedServices() || !userCredentials.isKeyValid()) {
+                if (!vehicle.hasAnyAuthorizedServices() || !vehicle.isKeyValid()) {
                     lock.setEnabled(false);
                     unlock.setEnabled(false);
                     trunk.setEnabled(false);
@@ -300,20 +329,19 @@ public class LockActivityFragment extends Fragment {
 
                     validDate.setText("Revoked");
                 } else {
-                    lock.setEnabled(userCredentials.getAuthorizedServices().isLock());
-                    unlock.setEnabled(userCredentials.getAuthorizedServices().isLock());
-                    trunk.setEnabled(userCredentials.getAuthorizedServices().isTrunk());
-                    find.setEnabled(userCredentials.getAuthorizedServices().isLights());
-                    start.setEnabled(userCredentials.getAuthorizedServices().isEngine());
-                    stop.setEnabled(userCredentials.getAuthorizedServices().isEngine());
-                    panic.setEnabled(userCredentials.getAuthorizedServices().isHazard());
+                    lock.setEnabled(vehicle.getAuthorizedServices().isLock());
+                    unlock.setEnabled(vehicle.getAuthorizedServices().isLock());
+                    trunk.setEnabled(vehicle.getAuthorizedServices().isTrunk());
+                    find.setEnabled(vehicle.getAuthorizedServices().isLights());
+                    start.setEnabled(vehicle.getAuthorizedServices().isEngine());
+                    stop.setEnabled(vehicle.getAuthorizedServices().isEngine());
+                    panic.setEnabled(vehicle.getAuthorizedServices().isHazard());
 
-                    validDate.setText(userCredentials.getValidTo());
+                    validDate.setText(vehicle.getValidTo());
                 }
 
-            } else if (userCredentials.getUserType().equals("owner")) {
+            } else if (vehicle.getUserType().equals("owner")) {
                 validDate.setVisibility(View.GONE);
-                //validTime.setVisibility(View.GONE);
                 keyManagementLayout.setVisibility(View.VISIBLE);
                 lock.setEnabled(true);
                 unlock.setEnabled(true);
@@ -326,7 +354,6 @@ public class LockActivityFragment extends Fragment {
             }
         } catch (Exception e) {
             validDate.setVisibility(View.VISIBLE);
-            //validTime.setVisibility(View.VISIBLE);
             keyManagementLayout.setVisibility(View.GONE);
             lock.setEnabled(false);
             unlock.setEnabled(false);
@@ -338,20 +365,5 @@ public class LockActivityFragment extends Fragment {
 
             e.printStackTrace();
         }
-    }
-
-    public String JSONParser(String jsonString, String RqstData) {
-        try {
-            JSONObject json = new JSONObject(jsonString);
-            String parameterVal = json.getString(RqstData);
-            return parameterVal;
-        }
-        catch (JSONException e) {
-            Log.d(TAG, "JSON Exception on parsing string -- " + e);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "0";
     }
 }

@@ -23,7 +23,7 @@ import com.google.gson.Gson;
  */
 class DlinkPacketParser
 {
-    private final static String TAG = "RVI:DlinkPacketParser";
+    private final static String TAG = "RVI/DlinkPacketParser__";
 
     private String                    mBuffer;
     private DlinkPacketParserListener mDataParserListener;
@@ -108,7 +108,7 @@ class DlinkPacketParser
     }
 
     private DlinkPacket stringToPacket(String string) {
-        Log.d(TAG, "Received packet: " + string);
+        //Log.d(TAG, "Received packet: " + string);
 
         if (mDataParserListener instanceof DlinkPacketParserTestCaseListener)
             ((DlinkPacketParserTestCaseListener) mDataParserListener).onJsonStringParsed(string);

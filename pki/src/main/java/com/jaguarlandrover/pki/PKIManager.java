@@ -26,8 +26,9 @@ import java.util.Arrays;
 import java.util.Date;
 
 
-public class PKIManager {
-    private final static String TAG = "UnlockDemo:PKIManager";
+public class PKIManager
+{
+    private final static String TAG = "PKI/PKIManager_________";
 
     private static PKIManager ourInstance = new PKIManager();
 

@@ -13,14 +13,21 @@ import java.util.ArrayList;
 /**
  * Created by rdz on 8/13/2015.
  */
-public class RemoteCredentialsAdapter extends ArrayAdapter<UserCredentials>{
-    public RemoteCredentialsAdapter(Context context, ArrayList<UserCredentials> remoteCredentials){
+//public class RemoteCredentialsAdapter extends ArrayAdapter<UserCredentials>{
+public class RemoteCredentialsAdapter extends ArrayAdapter<User>{
+    //public RemoteCredentialsAdapter(Context context, ArrayList<UserCredentials> remoteCredentials){
+    public RemoteCredentialsAdapter(Context context, ArrayList<User> remoteCredentials){
         super(context, 0, remoteCredentials);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent){
-        UserCredentials userCredentials = getItem(position);
+        //UserCredentials userCredentials = getItem(position);
+        User user = ServerNode.getUserData();
+        User guestUser = getItem(position);
+
+        Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
+        Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle();
 
         if(convertView == null){
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.user_layout, parent, false);
@@ -33,12 +40,13 @@ public class RemoteCredentialsAdapter extends ArrayAdapter<UserCredentials>{
         CheckBox lockUnlock = (CheckBox) convertView.findViewById(R.id.lock_unlock);
         CheckBox engineStart = (CheckBox) convertView.findViewById(R.id.engine_start);
 
-        name.setText(userCredentials.getUserName());
-        vehicleName.setText(userCredentials.getVehicleName());
-        validFrom.setText(userCredentials.getValidFrom());
-        validTo.setText(userCredentials.getValidTo());
-        lockUnlock.setChecked(userCredentials.isLockUnlock());
-        engineStart.setChecked(userCredentials.isEngineStart());
+        name.setText(guestUser != null ? guestUser.getUserName() : "");
+
+        vehicleName.setText(vehicle.getDisplayName());
+        validFrom.setText(vehicle.getValidFrom());
+        validTo.setText(vehicle.getValidTo());
+        lockUnlock.setChecked(vehicle.isLockUnlock());
+        engineStart.setChecked(vehicle.isEngineStart());
 
         return convertView;
     }

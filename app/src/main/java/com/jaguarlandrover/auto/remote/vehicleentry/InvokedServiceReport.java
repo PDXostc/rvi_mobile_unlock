@@ -18,7 +18,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class InvokedServiceReport
 {
-    private final static String TAG = "UnlockDemo:InvokedServiceReport";
+    private final static String TAG = "UnlockDemo/InvkedSrvRpt";
 
     @SerializedName("username")
     private String mUserName;

@@ -2,6 +2,7 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
 import android.content.*;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -14,8 +15,14 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.jaguarlandrover.pki.PKIManager;
+import com.jaguarlandrover.rvi.RVILocalNode;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -26,32 +33,35 @@ import rx.schedulers.Schedulers;
 
 public class LoginActivity extends ActionBarActivity implements LoginActivityFragment.LoginFragmentButtonListener{
 
-    private static final String TAG = "RVI";
+    private static final String TAG = "UnlockDemo/LoginActvty_";
     private String status = "false";
     private Boolean auth = Boolean.FALSE;
     private RviService rviService = null;
     private LoginActivityFragment mLoginActivityFragment = null;
     private boolean bound = false;
 
-    private final static String X509_PRINCIPAL_PATTERN = "CN=%s, O=Genivi, OU=OrgUnit, EMAILADDRESS=%s";
-    private final static String X509_COMMON_NAME       = "Android Unlock App";
+    private final static String X509_PRINCIPAL_PATTERN = "CN=%s, O=Genivi, OU=%s, EMAILADDRESS=%s";
+    private final static String X509_ORG_UNIT          = "Android Unlock App";
 
-    private final static String DEFAULT_PROVISIONING_SERVER_BASE_URL         = "http://192.168.16.245:5000";
+    private final static String DEFAULT_PROVISIONING_SERVER_BASE_URL         = "http://192.168.16.245:8000";
     private final static String DEFAULT_PROVISIONING_SERVER_CSR_URL          = "/csr";
     private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification"; // TODO: 'Verification' or 'validation'?
 
-    private boolean mRviServerConnected   = false;
-    private boolean mAllValidCertsAquired = false;
-    private boolean mValidatingToken      = false;
+    private boolean mRviServerConnected    = false;
+    private boolean mAllValidCertsAcquired = false;
+    private boolean mValidatingToken       = false;
 
     private KeyStore          mServerCertificateKeyStoreHolder = null;
     private KeyStore          mDeviceCertificateKeyStoreHolder = null;
     private ArrayList<String> mDefaultPrivilegesHolder         = null;
 
+    private final static String RVI_DOMAIN = "genivi.org";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        RVILocalNode.start(this, RVI_DOMAIN);
 
         setContentView(R.layout.activity_login2);
         handleExtra(getIntent());
@@ -60,6 +70,9 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
         mLoginActivityFragment.setVerifyButtonEnabled(true);
 
+        String foo = null;
+        assert foo != null;
+
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             Uri uri = intent.getData();
@@ -67,6 +80,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             String certId = uri.getQueryParameter("certid");
 
             if (token != null && certId != null) {
+                RVILocalNode.removeAllCredentials(this);
+
                 mLoginActivityFragment.setStatusTextText("Validating email...");
                 mLoginActivityFragment.setVerifyButtonEnabled(false);
 
@@ -98,8 +113,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                         mDeviceCertificateKeyStoreHolder = deviceCertificateKeyStore;
                         mDefaultPrivilegesHolder         = defaultPrivileges;
 
-                        mValidatingToken      = false;
-                        mAllValidCertsAquired = true;
+                        mValidatingToken       = false;
+                        mAllValidCertsAcquired = true;
 
                         doTheRviThingIfEverythingElseIsComplete();
                     }
@@ -112,7 +127,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 mLoginActivityFragment.hideControls(true);
                 mLoginActivityFragment.setStatusTextText("Binding service...");
 
-                mAllValidCertsAquired = true;
+                mAllValidCertsAcquired = true;
 
                 mServerCertificateKeyStoreHolder = PKIManager.getServerKeyStore(this);
                 mDeviceCertificateKeyStoreHolder = PKIManager.getDeviceKeyStore(this);
@@ -189,11 +204,13 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
 
     private void doTheRviThingIfEverythingElseIsComplete() {
-        if (mRviServerConnected && mAllValidCertsAquired) {
+        if (mRviServerConnected && mAllValidCertsAcquired) {
             rviService.setServerKeyStore(mServerCertificateKeyStoreHolder);
             rviService.setDeviceKeyStore(mDeviceCertificateKeyStoreHolder);
             rviService.setDeviceKeyStorePassword(null);
-            rviService.setPrivileges(mDefaultPrivilegesHolder);
+
+            if (mDefaultPrivilegesHolder != null)
+                rviService.setPrivileges(mDefaultPrivilegesHolder);
 
             rviService.tryConnectingServerNode();
 
@@ -241,6 +258,11 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         PKIManager.generateKeyPairAndCertificateSigningRequest(this, new PKIManager.CertificateSigningRequestGeneratorListener() {
             @Override
             public void generateCertificateSigningRequestSucceeded(String certificateSigningRequest) {
+
+                mLoginActivityFragment.setVerifyButtonEnabled(true);
+                mLoginActivityFragment.setStatusTextText("Resend email");
+                mLoginActivityFragment.setStatusTextText("Please check your email account and click the link.");
+
                 PKIManager.sendCertificateSigningRequest(LoginActivity.this, new PKIManager.ProvisioningServerListener() {
                     @Override
                     public void certificateSigningRequestSuccessfullySent() {
@@ -260,8 +282,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                         mDeviceCertificateKeyStoreHolder = deviceCertificateKeyStore;
                         mDefaultPrivilegesHolder         = defaultPrivileges;
 
-                        mValidatingToken      = false;
-                        mAllValidCertsAquired = true;
+                        mValidatingToken       = false;
+                        mAllValidCertsAcquired = true;
 
                         doTheRviThingIfEverythingElseIsComplete();
                     }
@@ -273,7 +295,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 // TODO: Update ui with failure message
             }
 
-        }, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, X509_COMMON_NAME, email);
+        }, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT, email.replace("+", "\\+"));
 
 //        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 //
@@ -300,9 +322,38 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent intent = new Intent();
+
             intent.setClass(LoginActivity.this, AdvancedPreferenceActivity.class);
             startActivityForResult(intent, 0);
+
             return true;
+
+        } else if (id == R.id.action_reset) {
+            // TODO: Dialog
+
+            PKIManager.deleteKeysAndCerts(this);
+            RVILocalNode.removeAllCredentials(this);
+
+            mValidatingToken       = false;
+            mAllValidCertsAcquired = false;
+
+            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
+            mLoginActivityFragment.hideControls(false);
+            mLoginActivityFragment.setVerifyButtonEnabled(true);
+
+        } else if (id == R.id.action_reset_2) {
+            // TODO: Dialog
+
+            //PKIManager.deleteKeysAndCerts(this);
+            RVILocalNode.removeAllCredentials(this);
+
+            mValidatingToken       = false;
+            mAllValidCertsAcquired = false;
+
+            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
+            mLoginActivityFragment.hideControls(false);
+            mLoginActivityFragment.setVerifyButtonEnabled(true);
+
         }
 
         return super.onOptionsItemSelected(item);

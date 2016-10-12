@@ -16,12 +16,13 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
 
 public class UnlockApplication extends MultiDexApplication
 {
-    private final static String TAG = "UnlockDemo:UnlockApplication";
+    private final static String TAG = "UnlockDemo/UnlockApp___";
 
     private static Application instance;
 

@@ -1,7 +1,5 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
-import android.app.Activity;
-import android.content.ClipData;
 import android.content.Context;
 import android.support.v4.view.PagerAdapter;
 import android.view.LayoutInflater;
@@ -9,25 +7,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
-import java.util.Objects;
+import java.util.List;
 
 /**
  * Created by rdz on 8/18/2015.
  */
-class ScrollPageAdapter extends PagerAdapter {
+class ScrollPageAdapter extends PagerAdapter
+{
     Context mContext;
     LayoutInflater mLayoutInflater;
-    int[] mResources = null;
-    public ScrollPageAdapter(Context context, int[] resources){
-        mContext=context;
-        mResources = resources;
+    List<String> mGuestUsers = null;
+    public ScrollPageAdapter(Context context, List<String> guestUsers){
+        mContext = context;
+        mGuestUsers = guestUsers;
         mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
     public int getCount(){
-        return mResources.length;
+        return mGuestUsers.size();
     }
 
     @Override
@@ -37,18 +37,19 @@ class ScrollPageAdapter extends PagerAdapter {
 
     @Override
     public Object instantiateItem (ViewGroup container, int position){
-        View ItemView = mLayoutInflater.inflate(R.layout.user_scroll, container,false);
-        ImageView imageView = (ImageView) ItemView.findViewById(R.id.imageView);
-        imageView.setImageResource(mResources[position]);
+        View itemView = mLayoutInflater.inflate(R.layout.user_scroll, container,false);
+//        ImageView imageView = (ImageView) itemView.findViewById(R.id.imageView);
+//        imageView.setImageResource(mGuestUsers[position]);
 
-        container.addView(ItemView);
-        return ItemView;
+        TextView textView = (TextView) itemView.findViewById(R.id.textView);
+        textView.setText(mGuestUsers.get(position));
 
+        container.addView(itemView);
+        return itemView;
     }
 
     @Override
     public void destroyItem(ViewGroup container, int position, Object object){
         container.removeView((LinearLayout) object);
     }
-
 }
