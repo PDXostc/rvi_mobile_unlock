@@ -27,7 +27,6 @@ import com.jaguarlandrover.rvi.RVIRemoteNode;
 import com.jaguarlandrover.rvi.RVIRemoteNodeListener;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 class ServerNode
 {
@@ -334,33 +333,6 @@ class ServerNode
             ServerNode.setThereIsNewUserData(true);
     }
 
-//    static Collection<UserCredentials> getRemoteCredentialsList() {
-//        String credListStr = preferences.getString(REMOTE_CREDENTIALS_LIST_KEY, null);
-//
-//        if (credListStr == null) return null;
-//
-//        Collection<UserCredentials> credsList = null;
-//        Type collectionType = new TypeToken<Collection<UserCredentials>>()
-//        {
-//        }.getType();
-//
-//        try {
-//            credsList = gson.fromJson(credListStr, collectionType);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        return credsList;
-//    }
-//
-//    private static void setRemoteCredentialsList(String credsListStr) {
-//        SharedPreferences.Editor editor = preferences.edit();
-//        editor.putString(REMOTE_CREDENTIALS_LIST_KEY, credsListStr);
-//        editor.commit();
-//
-//        ServerNode.setThereAreNewRemoteCredentials(true);
-//    }
-
     static InvokedServiceReport getInvokedServiceReport() {
         String reportStr = preferences.getString(INVOKED_SERVICE_REPORT_KEY, null);
 
@@ -382,16 +354,6 @@ class ServerNode
         ServerNode.setThereIsNewInvokedServiceReport(true);
     }
 
-//    public static Boolean thereIsNewCertificateData() {
-//        return preferences.getBoolean(NEW_CERTIFICATE_DATA_KEY, false);
-//    }
-//
-//    private static void setThereIsNewCertificateData(Boolean isNewActivity) {
-//        SharedPreferences.Editor editor = preferences.edit();
-//        editor.putBoolean(NEW_CERTIFICATE_DATA_KEY, isNewActivity);
-//        editor.commit();
-//    }
-
     static Boolean thereIsNewUserData() {
         return preferences.getBoolean(NEW_USER_DATA_KEY, false);
     }
@@ -402,16 +364,6 @@ class ServerNode
         editor.commit();
     }
 
-//    static Boolean thereAreNewRemoteCredentials() {
-//        return preferences.getBoolean(NEW_REMOTE_CREDENTIALS_LIST_KEY, false);
-//    }
-//
-//    static void setThereAreNewRemoteCredentials(Boolean areNewCredentials) {
-//        SharedPreferences.Editor editor = preferences.edit();
-//        editor.putBoolean(NEW_REMOTE_CREDENTIALS_LIST_KEY, areNewCredentials);
-//        editor.commit();
-//    }
-
     static Boolean thereIsNewInvokedServiceReport() {
         return preferences.getBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, false);
     }
@@ -421,15 +373,4 @@ class ServerNode
         editor.putBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, isNewReport);
         editor.commit();
     }
-
-//    private static String[] parseAndValidateJWT(String encToken) {
-//        String[] result = new String[3];
-//
-//        String [] jwtParts = encToken.split("\\.");
-//        if (jwtParts[0] != null) result[0] = new String(Base64.decode(jwtParts[0], Base64.URL_SAFE));
-//        if (jwtParts[1] != null) result[1] = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
-//        if (jwtParts[2] != null) result[2] = new String(Base64.decode(jwtParts[2], Base64.URL_SAFE));
-//
-//        return result;
-//    }
 }

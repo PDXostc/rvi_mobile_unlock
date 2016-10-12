@@ -41,7 +41,7 @@ public class KeyRevokeActivity extends ActionBarActivity {
             String vehicleString = (String) extras.get("selectedVehicle");
             mSelectedVehicle = gson.fromJson(vehicleString, Vehicle.class);
 
-            String userString = (String) extras.get("snapShotUser");
+            String userString = (String) extras.get("snapshotUser");
             mSnapshotUser = gson.fromJson(userString, User.class);
 
             for (User guestUser : mSnapshotUser.getGuests()) {

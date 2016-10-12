@@ -51,7 +51,7 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
     private TextView                   vehicleHeader;
     private LinearLayout               keyManagementLayout;
     private LockFragmentButtonListener buttonListener;
-    private Handler                    buttonSet;
+    //private Handler                    buttonSet;
 
     //Temp button press storage
     private SharedPreferences          sharedPref;
@@ -87,8 +87,8 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
         vehicleHeader = (TextView) view.findViewById(R.id.vehicle_header);
         keyManagementLayout = (LinearLayout) view.findViewById(R.id.key_management_layout);
 
-        buttonSet = new Handler();
-        startRepeatingTask();
+        //buttonSet = new Handler();
+        //startRepeatingTask();
 
         vehicleSpinner.setOnItemSelectedListener(this);
 
@@ -112,43 +112,43 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
         return view;
     }
 
-    Runnable StatusCheck = new Runnable()
-    {
-        @Override
-        public void run() { // TODO: Still probably need to fix the logic here
-
-            User user = ServerNode.getUserData();
-
-            Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
-            Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle();
-
-            if (vehicle.getUserType().equals("guest") && !vehicle.isKeyValid()) { // TODO: Check logic now that changed
-                updateUserInterface();
-            }
-
-            // Revoke check at the beginning of every minute
-            if (!revokeCheckStarted) {
-                revokeCheckStarted = true;
-                Calendar calendar = Calendar.getInstance();
-                int seconds = calendar.get(Calendar.SECOND);
-                int sleepSecs = 60 - seconds;
-                buttonSet.postDelayed(StatusCheck, sleepSecs * 1000);
-            } else {
-                buttonSet.postDelayed(StatusCheck, 60000);
-            }
-
-//            updateUserInterface();
-//            buttonSet.postDelayed(userDataCheckerRunnable, 15000);
-        }
-    };
-
-    void startRepeatingTask() {
-        StatusCheck.run();
-    }
-
-    void stopRepeatingTask() {
-        buttonSet.removeCallbacks(StatusCheck);
-    }
+//    Runnable StatusCheck = new Runnable()
+//    {
+//        @Override
+//        public void run() { // TODO: Still probably need to fix the logic here
+//
+//            User user = ServerNode.getUserData();
+//
+//            Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
+//            Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle();
+//
+//            if (vehicle.getUserType().equals("guest") && !vehicle.isKeyValid()) { // TODO: Check logic now that changed
+//                updateUserInterface();
+//            }
+//
+//            // Revoke check at the beginning of every minute
+//            if (!revokeCheckStarted) {
+//                revokeCheckStarted = true;
+//                Calendar calendar = Calendar.getInstance();
+//                int seconds = calendar.get(Calendar.SECOND);
+//                int sleepSecs = 60 - seconds;
+//                buttonSet.postDelayed(StatusCheck, sleepSecs * 1000);
+//            } else {
+//                buttonSet.postDelayed(StatusCheck, 60000);
+//            }
+//
+////            updateUserInterface();
+////            buttonSet.postDelayed(userDataCheckerRunnable, 15000);
+//        }
+//    };
+//
+//    void startRepeatingTask() {
+//        StatusCheck.run();
+//    }
+//
+//    void stopRepeatingTask() {
+//        buttonSet.removeCallbacks(StatusCheck);
+//    }
 
     public void sendPoptrunk(View view) {
     }
