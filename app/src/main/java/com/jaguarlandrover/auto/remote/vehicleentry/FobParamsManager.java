@@ -72,17 +72,20 @@ class FobParamsManager
 
     static class FobParams
     {
-        @SerializedName("latitude")
-        private double mLat = 0;
+        //@SerializedName("latitude")
+        private transient double mLat = 0;
 
-        @SerializedName("longitude")
-        private double mLon = 0;
+        //@SerializedName("longitude")
+        private transient double mLon = 0;
 
-        @SerializedName("username")
-        private String mUsername;
+        //@SerializedName("username")
+        private transient String mUsername;
 
-        @SerializedName("vehicleVIN")
-        private String mVehicleVin;
+        //@SerializedName("vehicleVIN")
+        private transient String mVehicleVin;
+
+        @SerializedName("command")
+        private String mCommand = "whatever";
 
         FobParams() {
             //UserCredentials userCredentials = ServerNode.getUserData();

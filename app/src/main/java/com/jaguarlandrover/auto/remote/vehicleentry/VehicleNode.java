@@ -37,7 +37,7 @@ public class VehicleNode
     private static RVIRemoteNode rviNode = new RVIRemoteNode(null);
 
     /* RVI fully-qualified service identifier parts */
-    private final static String FOB_SIGNAL_BUNDLE = "fob";
+    private final static String FOB_SIGNAL_BUNDLE = "control";
 
     /* Remote service identifiers */
     final static String FOB_SIGNAL_UNLOCK      = "unlock";
@@ -50,6 +50,9 @@ public class VehicleNode
     final static String FOB_SIGNAL_TRUNK       = "trunk";
     final static String FOB_SIGNAL_PANIC       = "panic";
     final static String FOB_SIGNAL_LIGHTS      = "lights";
+
+    private static String serverUrl;
+    private static Integer serverPort;
 
     private enum ConnectionStatus
     {
@@ -142,8 +145,8 @@ public class VehicleNode
 
         Log.d(TAG, "Attempting to connect to vehicle.");
 
-        rviNode.setServerUrl("192.168.16.78");//preferences.getString("pref_rvi_vehicle_url", "38.129.64.40"));
-        rviNode.setServerPort(9010);//Integer.parseInt(preferences.getString("pref_rvi_vehicle_port", "8807")));
+        rviNode.setServerUrl(serverUrl);//"192.168.16.78");//preferences.getString("pref_rvi_vehicle_url", "38.129.64.40"));
+        rviNode.setServerPort(serverPort);//9010);//Integer.parseInt(preferences.getString("pref_rvi_vehicle_port", "8807")));
 
         connectionStatus = ConnectionStatus.CONNECTING;
 
@@ -161,10 +164,19 @@ public class VehicleNode
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
+        //String parameters = "{"command":"whatever"}";
+
         rviNode.invokeService(FOB_SIGNAL_BUNDLE + "/" + fobSignal, new FobParamsManager.FobParams(), 5000);
 
         if (fobSignal.equals(FOB_SIGNAL_LOCK)) isUnlocked = false;
         if (fobSignal.equals(FOB_SIGNAL_UNLOCK)) isUnlocked = true;
     }
 
+    public static void setServerUrl(String serverUrl) {
+        VehicleNode.serverUrl = serverUrl;
+    }
+
+    public static void setServerPort(Integer serverPort) {
+        VehicleNode.serverPort = serverPort;
+    }
 }
