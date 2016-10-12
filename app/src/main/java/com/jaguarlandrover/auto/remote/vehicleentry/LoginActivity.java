@@ -295,7 +295,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 // TODO: Update ui with failure message
             }
 
-        }, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT, email);
+        }, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT, email.replace("+", "\\+"));
 
 //        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 //
