@@ -119,9 +119,9 @@ public class KeyRevokeActivity extends ActionBarActivity {
 
             // TODO: If new user data comes in and vehicle list changes, need to get out of here or bugs
 
-            Vehicle sharingVehicle = new Vehicle(vehicle.getVehicleId(), vehicle.getVehicleName());
+            Vehicle revokingVehicle = new Vehicle(vehicle.getVehicleId());
 
-            revokingUser.setVehicles(new ArrayList<>(Arrays.asList(sharingVehicle)));
+            revokingUser.addVehicle(revokingVehicle);
 
 
             Log.d("REVOKE_NEW", revokingUser.toString());

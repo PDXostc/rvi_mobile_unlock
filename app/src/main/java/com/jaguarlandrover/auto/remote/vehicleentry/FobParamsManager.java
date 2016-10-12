@@ -24,7 +24,6 @@ import com.google.gson.annotations.SerializedName;
 
 class FobParamsManager
 {
-    private final static String FOO = "12345678901234567890123";
     private final static String TAG = "UnlockDemo/FobParamsMng";
 
     private static double lat = 0;

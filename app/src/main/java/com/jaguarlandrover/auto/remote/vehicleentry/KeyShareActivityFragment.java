@@ -166,16 +166,14 @@ public class KeyShareActivityFragment extends Fragment {
         //UserCredentials shareCredentials = new UserCredentials();
 
         User user = ServerNode.getUserData();
-        User sharingGuest = new User();
+        User sharingGuest = new User(centerUser);
 
         Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
         Vehicle vehicle = (selectedVehicleIndex != -1) ? user.getVehicles().get(selectedVehicleIndex) : new Vehicle(); // TODO: Will always be valid so long as we always go back to last screen when new user data is available
 
         // TODO: If new user data comes in and vehicle list changes, need to get out of here or bugs
 
-        Vehicle sharingVehicle = new Vehicle(vehicle.getVehicleId(), vehicle.getVehicleName());
-
-        sharingGuest.setUserName(centerUser);
+        Vehicle sharingVehicle = new Vehicle(vehicle.getVehicleId());
 
         try {
             sharingVehicle.setValidFrom(start);//convertTime(starttime.getText().toString()));
@@ -192,7 +190,7 @@ public class KeyShareActivityFragment extends Fragment {
         sharingVehicle.getAuthorizedServices().setLock(lock_unlock.isChecked());
         sharingVehicle.getAuthorizedServices().setTrunk(trunk_lights.isChecked());
 
-        sharingGuest.setVehicles(new ArrayList<>(Arrays.asList(sharingVehicle)));
+        sharingGuest.addVehicle(sharingVehicle);
 
         Log.d("SHARE_NEW", sharingGuest.toString());
 

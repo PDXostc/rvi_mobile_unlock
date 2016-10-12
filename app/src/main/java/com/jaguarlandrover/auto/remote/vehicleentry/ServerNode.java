@@ -355,11 +355,16 @@ class ServerNode
     }
 
     private static void setUserData(String userCredsStr) {
+        //userCredsStr = "  {  \"username\": \"pdxostc.android@gmail.com\",  \"first_name\": \"Pdxostc\",  \"last_name\": \"Android\",  \"guests\": [{   \"username\": \"admin\",   \"first_name\": \"Admin\",   \"last_name\": \"Overlord\"  }, {   \"username\": \"pdxostc.android@gmail.com\",   \"first_name\": \"Pdxostc\",   \"last_name\": \"Android\"  }, {   \"username\": \"android.pdxostc@gmail.com\",   \"first_name\": \"Android\",   \"last_name\": \"Pdxostc\"  }],  \"vehicles\": [{   \"vehicle_id\": \"fake1\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"fake1\",   \"user_type\": \"guest\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"false\",    \"windows\": \"false\",    \"lock\": \"True\",    \"hazard\": \"false\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }, {   \"vehicle_id\": \"fake2\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"fake2\",   \"user_type\": \"guest\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"True\",    \"windows\": \"True\",    \"lock\": \"True\",    \"hazard\": \"True\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }, {   \"vehicle_id\": \"genivi-amm-ftype\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"F-Type\",   \"user_type\": \"owner\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"True\",    \"windows\": \"True\",    \"lock\": \"True\",    \"hazard\": \"True\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }, {   \"vehicle_id\": \"DummyL405\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"L405-Test\",   \"user_type\": \"owner\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"True\",    \"windows\": \"True\",    \"lock\": \"True\",    \"hazard\": \"True\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }] }";
+
+        User previousUserData = getUserData();
+
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(USER_DATA_KEY, userCredsStr);
         editor.commit();
 
-        ServerNode.setThereIsNewUserData(true);
+        if (!previousUserData.equals(getUserData()))
+            ServerNode.setThereIsNewUserData(true);
     }
 
 //    static Collection<UserCredentials> getRemoteCredentialsList() {

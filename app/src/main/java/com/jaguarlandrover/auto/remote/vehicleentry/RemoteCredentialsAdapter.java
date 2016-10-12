@@ -42,7 +42,7 @@ public class RemoteCredentialsAdapter extends ArrayAdapter<User>{
 
         name.setText(guestUser != null ? guestUser.getUserName() : "");
 
-        vehicleName.setText(vehicle.getVehicleName());
+        vehicleName.setText(vehicle.getDisplayName());
         validFrom.setText(vehicle.getValidFrom());
         validTo.setText(vehicle.getValidTo());
         lockUnlock.setChecked(vehicle.isLockUnlock());

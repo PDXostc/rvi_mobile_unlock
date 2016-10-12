@@ -52,7 +52,7 @@
                 android:textSize="20sp"/>
 
         <Spinner
-            android:id="@+id/vehicle_picker"
+            android:id="@+id/vehicle_spinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"

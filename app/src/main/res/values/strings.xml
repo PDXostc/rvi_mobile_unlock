@@ -54,5 +54,6 @@
     <string name="revoked">Revoked</string>
     <string name="verify">Verify</string>
     <string name="action_reset_2">Reset 2</string>
+    <string name="User">"User: %s"</string>
 
 </resources>

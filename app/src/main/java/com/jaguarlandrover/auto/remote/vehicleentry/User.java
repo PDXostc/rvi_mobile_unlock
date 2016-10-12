@@ -17,6 +17,7 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 
@@ -27,17 +28,16 @@ import org.spongycastle.openssl.MiscPEMGenerator;
 import java.util.ArrayList;
 
 public class User {
-    private final static String FOO = "12345678901234567890123";
     private final static String TAG = "UnlockDemo/User________";
 
     @SerializedName("username")
-    private String mUserName;
+    private String mUserName = "";
 
     @SerializedName("first_name")
-    private String mFirstName;
+    private String mFirstName = "";
 
     @SerializedName("last_name")
-    private String mLastName;
+    private String mLastName = "";
 
     @SerializedName("guests")
     private ArrayList<User> mGuests = new ArrayList<>();
@@ -48,58 +48,34 @@ public class User {
     User() {
     }
 
-    public User(String userName, String vehicle, String validFrom, String validTo, boolean lockUnlock, boolean engineStart) {
-        this.setUserName(userName);
+    public User(String userName) {
+        mUserName = userName;
     }
 
-    public User(JSONObject object) {
-        try {
-            this.setUserName(object.getString("username"));
-        } catch (JSONException e){
-            e.printStackTrace();
-        }
-    }
-
-    public String getUserName() {
+    String getUserName() {
         return mUserName;
     }
 
-    public void setUserName(String userName) {
-        this.mUserName = userName;
-    }
-
-    public String getFirstName() {
+    String getFirstName() {
         return mFirstName;
     }
 
-    public void setFirstName(String firstName) {
-        mFirstName = firstName;
-    }
-
-    public String getLastName() {
+    String getLastName() {
         return mLastName;
     }
 
-    public void setLastName(String lastName) {
-        mLastName = lastName;
-    }
-
-    public ArrayList<User> getGuests() {
+    ArrayList<User> getGuests() {
         if (mGuests == null) return new ArrayList<>();
         return mGuests;
     }
 
-    public void setGuests(ArrayList<User> guests) {
-        mGuests = guests;
-    }
-
-    public ArrayList<Vehicle> getVehicles() {
+    ArrayList<Vehicle> getVehicles() {
         if (mVehicles == null) return new ArrayList<>();
         return mVehicles;
     }
 
-    public void setVehicles(ArrayList<Vehicle> vehicles) {
-        mVehicles = vehicles;
+    void addVehicle(Vehicle vehicle) {
+        mVehicles.add(vehicle);
     }
 
     private final static String SELECTED_VEHICLE_INDEX_KEY = "SELECTED_VEHICLE_INDEX_KEY";
@@ -130,5 +106,32 @@ public class User {
     public String toString() {
         Gson gson = new Gson();
         return gson.toJson(this, User.class);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+
+        User user = (User) o;
+
+        if (getUserName()  != null ? !getUserName().equals(user.getUserName())   : user.getUserName()  != null) return false;
+        if (getFirstName() != null ? !getFirstName().equals(user.getFirstName()) : user.getFirstName() != null) return false;
+        if (getLastName()  != null ? !getLastName().equals(user.getLastName())   : user.getLastName()  != null) return false;
+
+        if (!getGuests().equals(user.getGuests())) return false;
+        if (!getVehicles().equals(user.getVehicles())) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getUserName() != null ? getUserName().hashCode() : 0;
+        result = 31 * result + (getFirstName() != null ? getFirstName().hashCode() : 0);
+        result = 31 * result + (getLastName() != null ? getLastName().hashCode() : 0);
+        result = 31 * result + getGuests().hashCode();
+        result = 31 * result + getVehicles().hashCode();
+        return result;
     }
 }

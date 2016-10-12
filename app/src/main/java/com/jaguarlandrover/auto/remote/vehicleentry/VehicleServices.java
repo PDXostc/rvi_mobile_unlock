@@ -97,4 +97,33 @@ public class VehicleServices {
     public void setTrunk(boolean trunk) {
         mTrunk = trunk;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof VehicleServices)) return false;
+
+        VehicleServices that = (VehicleServices) o;
+
+        if (isEngine() != that.isEngine()) return false;
+        if (isWindows() != that.isWindows()) return false;
+        if (isLock() != that.isLock()) return false;
+        if (isHazard() != that.isHazard()) return false;
+        if (isHorn() != that.isHorn()) return false;
+        if (isLights() != that.isLights()) return false;
+        return isTrunk() == that.isTrunk();
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (isEngine() ? 1 : 0);
+        result = 31 * result + (isWindows() ? 1 : 0);
+        result = 31 * result + (isLock() ? 1 : 0);
+        result = 31 * result + (isHazard() ? 1 : 0);
+        result = 31 * result + (isHorn() ? 1 : 0);
+        result = 31 * result + (isLights() ? 1 : 0);
+        result = 31 * result + (isTrunk() ? 1 : 0);
+        return result;
+    }
 }

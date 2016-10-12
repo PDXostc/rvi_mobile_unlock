@@ -34,20 +34,23 @@ public class Vehicle {
     private final static String SERVER_DATE_TIME_FORMATTER = "yyyy-MM-dd'T'HH:mm:ss";
     private final static String PRETTY_DATE_TIME_FORMATTER = "MM/dd/yyyy h:mm a z";
 
+    private final static String DEFAULT_VALID_FROM = "1971-09-09T22:00:00.000Z";
+    private final static String DEFAULT_VALID_TO   = "1971-09-09T23:00:00.000Z";
+
     @SerializedName("vehicle_id")
-    private String mVehicleId;
+    private String mVehicleId = "";
 
     @SerializedName("valid_from")
-    private String mValidFrom = "1971-09-09T22:00:00.000Z";
+    private String mValidFrom = DEFAULT_VALID_FROM;
 
     @SerializedName("valid_to")
-    private String mValidTo = "1971-09-09T23:00:00.000Z";
+    private String mValidTo = DEFAULT_VALID_TO;
 
     @SerializedName("user_type")
     private String mUserType = "guest";
 
-    @SerializedName("vehicle_name")
-    private String mVehicleName;
+    @SerializedName("display_name")
+    private String mDisplayName = "";
 
     @SerializedName("authorized_services")
     private VehicleServices mAuthorizedServices = new VehicleServices();
@@ -55,35 +58,15 @@ public class Vehicle {
     Vehicle() {
     }
 
-    public Vehicle(String vehicleId, String vehicleName) {
-
-        this.setVehicleId(vehicleId);
-        this.setVehicleName(vehicleName);
+    Vehicle(String vehicleId) {
+        setVehicleId(vehicleId);
     }
 
-    public Vehicle(JSONObject object) {
-        try {
+    Vehicle(String vehicleId, String validFrom, String validTo) {
+        setVehicleId(vehicleId);
 
-            JSONObject authservices = object.getJSONObject("authorizedServices");
-            this.setLockUnlock(authservices.getBoolean("lock"));
-            this.setEngineStart(authservices.getBoolean("engine"));
-
-        } catch (JSONException e){
-            e.printStackTrace();
-        }
-    }
-
-    public static ArrayList<UserCredentials> fromJson(JSONArray jsonobjects) {//,LinearLayout layout, keyRevokeActivity activity){
-        ArrayList<UserCredentials> userCredentialses = new ArrayList<UserCredentials>();
-        for(int i=0; i <jsonobjects.length();i++){
-            try{
-                userCredentialses.add(new UserCredentials(jsonobjects.getJSONObject(i)));
-                //Log.i("DATA", jsonobjects.getJSONObject(i).toString());
-            }catch(JSONException e){
-                e.printStackTrace();
-            }
-        }
-        return userCredentialses;
+        setValidFrom(validFrom);
+        setValidTo(validTo);
     }
 
     private String prettyFormat(String serverString) {
@@ -103,7 +86,7 @@ public class Vehicle {
         }
     }
 
-    public boolean isKeyValid() {
+    boolean isKeyValid() {
         try {
             SimpleDateFormat formatter = new SimpleDateFormat(SERVER_DATE_TIME_FORMATTER);
             formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -122,7 +105,7 @@ public class Vehicle {
         }
     }
 
-    public Boolean hasAnyAuthorizedServices() {
+    Boolean hasAnyAuthorizedServices() {
         return mAuthorizedServices.isLock()    ||
                 mAuthorizedServices.isEngine() ||
                 mAuthorizedServices.isHazard() ||
@@ -132,20 +115,20 @@ public class Vehicle {
                 mAuthorizedServices.isWindows();
     }
 
-    public String getVehicleId() {
+    private void setVehicleId(String vehicleId) {
+        mVehicleId = vehicleId == null ? "" : vehicleId;
+    }
+
+    String getVehicleId() {
         return mVehicleId;
     }
 
-    public void setVehicleId(String vehicleId) {
-        this.mVehicleId = vehicleId;
-    }
-
-    public String getValidFrom() {
+    String getValidFrom() {
         return prettyFormat(mValidFrom);
     }
 
-    public void setValidFrom(String validFrom) {
-        this.mValidFrom = validFrom;
+    void setValidFrom(String validFrom) {
+        this.mValidFrom = validFrom == null ? DEFAULT_VALID_FROM : validFrom;
         try {
             SimpleDateFormat formatter = new SimpleDateFormat(SERVER_DATE_TIME_FORMATTER);
             formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -172,12 +155,12 @@ public class Vehicle {
         }
     }
 
-    public String getValidTo() {
+    String getValidTo() {
         return prettyFormat(mValidTo);
     }
 
-    public void setValidTo(String validTo) {
-        this.mValidTo = validTo;
+    void setValidTo(String validTo) {
+        this.mValidTo = validTo == null ? DEFAULT_VALID_TO : validTo;
         try {
             SimpleDateFormat formatter = new SimpleDateFormat(SERVER_DATE_TIME_FORMATTER);
             formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -203,49 +186,58 @@ public class Vehicle {
         }
     }
 
-    public boolean isLockUnlock() {
+    boolean isLockUnlock() {
         return mAuthorizedServices.isLock();
     }
 
-    public void setLockUnlock(boolean lockUnlock) {
-        mAuthorizedServices.setLock(lockUnlock);
-    }
-
-    public boolean isEngineStart() {
+    boolean isEngineStart() {
         return mAuthorizedServices.isEngine();
     }
 
-    public void setEngineStart(boolean engineStart) {
-        mAuthorizedServices.setEngine(engineStart);
-    }
-
-    public String getUserType() {
+    String getUserType() {
         return mUserType;
     }
 
-    public void setUserType(String userType) {
-        mUserType = userType;
+    String getDisplayName() {
+        if (mDisplayName == null) return mVehicleId;
+
+        return mDisplayName;
     }
 
-    public String getVehicleName() {
-        return mVehicleName;
-    }
-
-    public void setVehicleName(String vehicleName) {
-        mVehicleName = vehicleName;
-    }
-
-    public VehicleServices getAuthorizedServices() {
+    VehicleServices getAuthorizedServices() {
         return mAuthorizedServices;
-    }
-
-    public void setAuthorizedServices(VehicleServices authorizedServices) {
-        mAuthorizedServices = authorizedServices;
     }
 
     @Override
     public String toString() {
         Gson gson = new Gson();
         return gson.toJson(this, Vehicle.class);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Vehicle)) return false;
+
+        Vehicle vehicle = (Vehicle) o;
+
+        if (getVehicleId() != null ? !getVehicleId().equals(vehicle.getVehicleId()) : vehicle.getVehicleId() != null) return false;
+        if (getValidFrom() != null ? !getValidFrom().equals(vehicle.getValidFrom()) : vehicle.getValidFrom() != null) return false;
+        if (getValidTo() != null ? !getValidTo().equals(vehicle.getValidTo()) : vehicle.getValidTo() != null) return false;
+        if (getUserType() != null ? !getUserType().equals(vehicle.getUserType()) : vehicle.getUserType() != null) return false;
+        if (getDisplayName() != null ? !getDisplayName().equals(vehicle.getDisplayName()) : vehicle.getDisplayName() != null) return false;
+        return getAuthorizedServices().equals(vehicle.getAuthorizedServices());
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getVehicleId() != null ? getVehicleId().hashCode() : 0;
+        result = 31 * result + (getValidFrom() != null ? getValidFrom().hashCode() : 0);
+        result = 31 * result + (getValidTo() != null ? getValidTo().hashCode() : 0);
+        result = 31 * result + (getUserType() != null ? getUserType().hashCode() : 0);
+        result = 31 * result + (getDisplayName() != null ? getDisplayName().hashCode() : 0);
+        result = 31 * result + getAuthorizedServices().hashCode();
+        return result;
     }
 }

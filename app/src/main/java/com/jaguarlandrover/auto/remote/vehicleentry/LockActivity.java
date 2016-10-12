@@ -47,6 +47,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
         setContentView(R.layout.activity_lock);
         lock_fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlock);
+
         startRepeatingTask();
     }
 
@@ -138,18 +139,14 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
     @Override
     public void onDestroy() {
         Log.i(TAG, "onDestroy() Activity");
-        //doUnbindService();
 
         super.onDestroy();
-        //For testing cleanup
-        //Intent i = new Intent(this, RviService.class);
-        //stopService(i);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_lock, menu);
+
         return true;
     }
 
@@ -161,34 +158,30 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             Intent intent = new Intent();
             intent.setClass(LockActivity.this, AdvancedPreferenceActivity.class);
             startActivityForResult(intent, 0);
+
             return true;
+
         } else if (id == R.id.action_reset) {
-            PreferenceManager.getDefaultSharedPreferences(this).edit().clear().apply(); //reset
+            PreferenceManager.getDefaultSharedPreferences(this).edit().clear().apply();
             PreferenceManager.setDefaultValues(this, R.xml.advanced, true);
+
             return true;
+
         } else if (id == R.id.action_quit) {
             Intent i = new Intent(this, RviService.class);
             stopService(i);
             finish();
+
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-//    public void clickedStart(View v){
-//        SharedPreferences.Editor ed = sharedPref.edit();
-//        ed.putBoolean(LockActivityFragment.STOPPED_LBL, true);
-//        rviService.service("start", LockActivity.this);
-//        ed.commit();
-//    }
-
     @Override
     public void onButtonCommand(String cmd) {
-        //RviService.triggerFobSignal(cmd, LockActivity.this);
         VehicleNode.sendFobSignal(cmd);
     }
 
-    //public void keyUpdate(final UserCredentials userCredentials) {
     public void keyUpdate(final User user) {
         AlertDialog.Builder builder = new AlertDialog.Builder(LockActivity.this);
         builder.setInverseBackgroundForced(true);
@@ -196,7 +189,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        lock_fragment.setButtons(user);
+                        lock_fragment.updateUserInterface();
                     }
                 });
         AlertDialog alert = builder.create();
@@ -259,7 +252,6 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 //    }
 
     public void checkForKeys() {
-        //UserCredentials userCredentials = ServerNode.getUserData();
         User userData = ServerNode.getUserData();
 
         if (userData != null && ServerNode.thereIsNewUserData()) {
