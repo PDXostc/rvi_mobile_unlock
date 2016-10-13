@@ -40,7 +40,7 @@
         </activity>
 
         <service
-            android:name=".RviService"
+            android:name=".BluetoothRangingService"
             android:enabled="true"
             android:exported="true" >
         </service>

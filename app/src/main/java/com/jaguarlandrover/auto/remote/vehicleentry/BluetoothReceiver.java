@@ -12,9 +12,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Parcelable;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class BluetoothReceiver extends BroadcastReceiver
@@ -67,7 +65,7 @@ public class BluetoothReceiver extends BroadcastReceiver
             switch (state) {
                 case BluetoothAdapter.STATE_OFF:
                     Log.d(TAG, "Bluetooth off");
-                    Intent i = new Intent(context, RviService.class);
+                    Intent i = new Intent(context, BluetoothRangingService.class);
                     i.putExtra("bluetooth", state);
                     context.startService(i);
                     break;
@@ -76,7 +74,7 @@ public class BluetoothReceiver extends BroadcastReceiver
                     break;
                 case BluetoothAdapter.STATE_ON:
                     Log.d(TAG, "Bluetooth on");
-                    Intent j = new Intent(context, RviService.class);
+                    Intent j = new Intent(context, BluetoothRangingService.class);
                     j.putExtra("bluetooth", state);
                     context.startService(j);
                     break;

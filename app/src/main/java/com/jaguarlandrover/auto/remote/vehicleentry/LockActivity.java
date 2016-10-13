@@ -170,7 +170,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                             PreferenceManager.setDefaultValues(LockActivity.this, R.xml.advanced, true);
 
                         } else if (id == R.id.action_quit) {
-                            Intent i = new Intent(LockActivity.this, RviService.class);
+                            Intent i = new Intent(LockActivity.this, BluetoothRangingService.class);
                             stopService(i);
                             finish();
 

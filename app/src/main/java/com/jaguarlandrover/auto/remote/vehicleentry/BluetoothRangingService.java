@@ -22,81 +22,19 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import com.jaguarlandrover.rvi.RVILocalNode;
-
 import org.json.JSONObject;
-
-import java.security.KeyStore;
-import java.util.ArrayList;
 
 import rx.Observable;
 import rx.Subscriber;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
-public class RviService extends Service {
+public class BluetoothRangingService extends Service {
     private static final String TAG = "UnlockDemo/RviService__";
 
     private SharedPreferences prefs;
 
-    //private KeyStore          mServerKeyStore         = null;
-    //private KeyStore          mDeviceKeyStore         = null;
-    //private String            mDeviceKeyStorePassword = null;
-    //private ArrayList<String> mPrivileges             = null;
-
-    public RviService() {
-    }
-
-    //public KeyStore getServerKeyStore() {
-    //    return mServerKeyStore;
-    //}
-
-    public void setServerKeyStore(KeyStore serverKeyStore) {
-        try {
-            RVILocalNode.setServerKeyStore(serverKeyStore);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        //mServerKeyStore = serverKeyStore;
-    }
-
-    //public KeyStore getDeviceKeyStore() {
-    //    return mDeviceKeyStore;
-    //}
-
-    public void setDeviceKeyStore(KeyStore deviceKeyStore) {
-        try {
-            RVILocalNode.setDeviceKeyStore(deviceKeyStore);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        //mDeviceKeyStore = deviceKeyStore;
-    }
-
-    //public String getDeviceKeyStorePassword() {
-    //    return mDeviceKeyStorePassword;
-    //}
-
-    public void setDeviceKeyStorePassword(String deviceKeyStorePassword) {
-        try {
-            RVILocalNode.setDeviceKeyStorePassword(deviceKeyStorePassword);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        //mDeviceKeyStorePassword = deviceKeyStorePassword;
-    }
-
-    //public ArrayList<String> getPrivileges() {
-    //    return mPrivileges;
-    //}
-
-    public void setPrivileges(ArrayList<String> privileges) {
-        RVILocalNode.setCredentials(this, privileges);
-
-        //mPrivileges = privileges;
+    public BluetoothRangingService() {
     }
 
     /**
@@ -104,10 +42,10 @@ public class RviService extends Service {
      * runs in the same process as its clients, we don't need to deal with
      * IPC.
      */
-    public class RviBinder extends Binder
+    public class BluetoothRangingServiceBinder extends Binder
     {
-        RviService getService() {
-            return RviService.this;
+        BluetoothRangingService getService() {
+            return BluetoothRangingService.this;
         }
     }
 
@@ -132,12 +70,10 @@ public class RviService extends Service {
         br.start();
         Observable<RangeObject> obs =  br.getRangeStream();
         obs.observeOn(Schedulers.newThread()).subscribeOn(Schedulers.newThread()).subscribe(beaconSubscriber);
-
-        //RVILocalNode.start(this);
     }
 
     @Override
-    public void onDestroy()     {
+    public void onDestroy() {
         Log.i(TAG, "onDestroy() Service");
 
         br.stop();
@@ -153,37 +89,17 @@ public class RviService extends Service {
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind");
 
-        //connectServerNode();
-
         return mBinder;
-    }
-
-    public void tryConnectingServerNode() {
-        Log.d(TAG, "Trying to connect to RVI server");
-        connectServerNode();
-    }
-
-    private void connectServerNode() {
-        //ServerNode.setKeyStoresAndPrivileges(mServerKeyStore, mDeviceKeyStore, mDeviceKeyStorePassword, mPrivileges);
-
-        ServerNode.connect();
-    }
-
-    public void connectVehicleNode(String deviceAddress) {
-        //VehicleNode.setKeyStoresAndPrivileges(mServerKeyStore, mDeviceKeyStore, mDeviceKeyStorePassword, mPrivileges);
-
-        //VehicleNode.setDeviceAddress(deviceAddress);
-        VehicleNode.connect();
     }
 
     // This is the object that receives interactions from clients.  See
     // RemoteService for a more complete example.
-    private final IBinder mBinder = new RviBinder();
+    private final IBinder mBinder = new BluetoothRangingServiceBinder();
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
-        connectServerNode();
+
         starting(intent);
         return START_STICKY;
     }
@@ -271,13 +187,13 @@ public class RviService extends Service {
 
                         if (connected && (!unlocked) && ro.weightedDistance <= weightedCutoff) {
                             VehicleNode.sendFobSignal(VehicleNode.FOB_SIGNAL_UNLOCK);
-                            sendNotification(RviService.this, getResources().getString(R.string.not_auto_unlock));
+                            sendNotification(BluetoothRangingService.this, getResources().getString(R.string.not_auto_unlock));
                             return;
                         }
 
                         if (connected && unlocked && ro.weightedDistance >= (1.0 - weightedCutoff)) {
                             VehicleNode.sendFobSignal(VehicleNode.FOB_SIGNAL_LOCK);
-                            sendNotification(RviService.this, getResources().getString(R.string.not_auto_lock));
+                            sendNotification(BluetoothRangingService.this, getResources().getString(R.string.not_auto_lock));
                             return;
                         }
 
@@ -297,8 +213,6 @@ public class RviService extends Service {
 
                     return;
                 }
-
-                connectVehicleNode(ro.addr);
             }
         }
     };

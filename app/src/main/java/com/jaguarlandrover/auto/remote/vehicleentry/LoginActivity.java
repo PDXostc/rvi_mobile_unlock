@@ -29,28 +29,23 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
     private static final String TAG = "UnlockDemo/LoginActvty_";
 
-    private RviService rviService = null;
-    private LoginActivityFragment mLoginActivityFragment = null;
-    private boolean bound = false;
+    private BluetoothRangingService mBluetoothRangingService      = null;
+    private LoginActivityFragment   mLoginActivityFragment        = null;
+    private boolean                 mBluetoothRangingServiceBound = false;
 
     private final static String X509_PRINCIPAL_PATTERN = "CN=%s, O=Genivi, OU=%s, EMAILADDRESS=%s";
     private final static String X509_ORG_UNIT          = "Android Unlock App";
 
-    //private final static String DEFAULT_PROVISIONING_SERVER_BASE_URL         = "http://192.168.16.245:8000";
+    private final static String RVI_DOMAIN             = "genivi.org";
+
     private final static String DEFAULT_PROVISIONING_SERVER_CSR_URL          = "/csr";
     private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification";
 
     private String mProvisioningServerBaseUrl = null;
 
-    private boolean mRviServerConnected    = false;
-    private boolean mAllValidCertsAcquired = false;
-    private boolean mValidatingToken       = false;
-
-    private KeyStore          mServerCertificateKeyStoreHolder = null;
-    private KeyStore          mDeviceCertificateKeyStoreHolder = null;
-    private ArrayList<String> mDefaultPrivilegesHolder         = null;
-
-    private final static String RVI_DOMAIN = "genivi.org";
+    private boolean mBluetoothRangingServiceConnected = false;
+    private boolean mAllValidCertsAcquired            = false;
+    private boolean mValidatingToken                  = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,20 +93,17 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                     }
 
                     @Override
-                    public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges) {
+                    public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultCredentials) {
                         Log.d(TAG, "Got server stuff, trying to connect");
 
                         mLoginActivityFragment.hideControls(true);
                         mLoginActivityFragment.setStatusTextText("Validating email... Processing certificates.");
 
-                        mServerCertificateKeyStoreHolder = serverCertificateKeyStore;
-                        mDeviceCertificateKeyStoreHolder = deviceCertificateKeyStore;
-                        mDefaultPrivilegesHolder         = defaultPrivileges;
-
                         mValidatingToken       = false;
                         mAllValidCertsAcquired = true;
 
-                        doTheRviThingIfEverythingElseIsComplete();
+                        setUpRviAndConnectToServer(serverCertificateKeyStore, deviceCertificateKeyStore, deviceKeyStorePassword, defaultCredentials);
+                        launchLockActivityWhenReady();
                     }
                 }, mProvisioningServerBaseUrl, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, tokenString);
             }
@@ -124,10 +116,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
                 mAllValidCertsAcquired = true;
 
-                mServerCertificateKeyStoreHolder = PKIManager.getServerKeyStore(this);
-                mDeviceCertificateKeyStoreHolder = PKIManager.getDeviceKeyStore(this);
-
-                doTheRviThingIfEverythingElseIsComplete();
+                setUpRviAndConnectToServer(PKIManager.getServerKeyStore(this), PKIManager.getDeviceKeyStore(this), null, null);
+                launchLockActivityWhenReady();
 
             } else if (PKIManager.hasValidSignedDeviceCert(this)) {
                 mLoginActivityFragment.setStatusTextText("Resend email");
@@ -148,20 +138,16 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         doUnbindService();
 
         super.onDestroy();
-        //For testing cleanup
-        //Intent i = new Intent(this, RviService.class);
-        //stopService(i);
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            //mService = new Messenger(service);
 
-            mRviServerConnected = true;
+            mBluetoothRangingServiceConnected = true;
 
-            rviService = ((RviService.RviBinder)service).getService();
+            mBluetoothRangingService = ((BluetoothRangingService.BluetoothRangingServiceBinder)service).getService();
 
-            rviService
+            mBluetoothRangingService
                     .servicesAvailable()
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -183,31 +169,36 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                         }
                     });
 
-            // Tell the user about this for our demo.
-            Toast.makeText(LoginActivity.this, "RVI service connected", Toast.LENGTH_SHORT).show();
+            Toast.makeText(LoginActivity.this, "Bluetooth ranger service connected", Toast.LENGTH_SHORT).show();
 
-            doTheRviThingIfEverythingElseIsComplete();
+            launchLockActivityWhenReady();
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            mRviServerConnected = false;
+            mBluetoothRangingServiceConnected = false;
 
-            rviService = null;
-            Toast.makeText(LoginActivity.this, "RVI service disconnected", Toast.LENGTH_SHORT).show();
+            mBluetoothRangingService = null;
+            Toast.makeText(LoginActivity.this, "Bluetooth ranger service disconnected", Toast.LENGTH_SHORT).show();
         }
     };
 
-    private void doTheRviThingIfEverythingElseIsComplete() {
-        if (mRviServerConnected && mAllValidCertsAcquired) {
-            rviService.setServerKeyStore(mServerCertificateKeyStoreHolder);
-            rviService.setDeviceKeyStore(mDeviceCertificateKeyStoreHolder);
-            rviService.setDeviceKeyStorePassword(null);
+    private void setUpRviAndConnectToServer(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceCertificatePassword, ArrayList<String> newCredentials) {
+        try {
+            RVILocalNode.setServerKeyStore(serverCertificateKeyStore);
+            RVILocalNode.setDeviceKeyStore(deviceCertificateKeyStore);
+            RVILocalNode.setDeviceKeyStorePassword(deviceCertificatePassword);
 
-            if (mDefaultPrivilegesHolder != null)
-                rviService.setPrivileges(mDefaultPrivilegesHolder);
+            if (newCredentials != null)
+                RVILocalNode.setCredentials(this, newCredentials);
 
-            rviService.tryConnectingServerNode();
+            ServerNode.connect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    private void launchLockActivityWhenReady() {
+        if (mBluetoothRangingServiceConnected && mAllValidCertsAcquired) {
             Intent intent = new Intent();
 
             intent.setClass(LoginActivity.this, LockActivity.class);
@@ -221,19 +212,14 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     }
 
     void doBindService() {
-        // Establish a connection with the service.  We use an explicit
-        // class name because we want a specific service implementation that
-        // we know will be running in our own process (and thus won't be
-        // supporting component replacement by other applications).
-        bindService(new Intent(LoginActivity.this, RviService.class), mConnection, Context.BIND_AUTO_CREATE);
-        bound = true;
+        bindService(new Intent(LoginActivity.this, BluetoothRangingService.class), mConnection, Context.BIND_AUTO_CREATE);
+        mBluetoothRangingServiceBound = true;
     }
 
     void doUnbindService() {
-        if (bound) {
-            // Detach our existing connection.
+        if (mBluetoothRangingServiceBound) {
             unbindService(mConnection);
-            bound = false;
+            mBluetoothRangingServiceBound = false;
         }
     }
 
@@ -269,17 +255,14 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                     }
 
                     @Override
-                    public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges) {
+                    public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultCredentials) {
                         Log.d(TAG, "Got server stuff, trying to connect");
-
-                        mServerCertificateKeyStoreHolder = serverCertificateKeyStore;
-                        mDeviceCertificateKeyStoreHolder = deviceCertificateKeyStore;
-                        mDefaultPrivilegesHolder         = defaultPrivileges;
 
                         mValidatingToken       = false;
                         mAllValidCertsAcquired = true;
 
-                        doTheRviThingIfEverythingElseIsComplete();
+                        setUpRviAndConnectToServer(serverCertificateKeyStore, deviceCertificateKeyStore, deviceKeyStorePassword, defaultCredentials);
+                        launchLockActivityWhenReady();
                     }
                 }, mProvisioningServerBaseUrl, DEFAULT_PROVISIONING_SERVER_CSR_URL, certificateSigningRequest, true);
             }
@@ -290,18 +273,10 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             }
 
         }, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT, email.replace("+", "\\+"));
-
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//
-//        BKTask task = new BKTask(this);
-//        task.setUser(mLoginActivityFragment.mEmail.getEditableText().toString());
-//        task.setpWd(mLoginActivityFragment.password.getEditableText().toString());
-//        task.execute(new String[]{prefs.getString("pref_login_url", "http://rvi-test2.nginfotpdx.net:8000/token/new.json")});
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_login, menu);
         return true;
     }
@@ -361,12 +336,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent intent = new Intent();
 
@@ -387,42 +358,6 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-//    public void setStatus(String msg) {
-//        try {
-//            JSONObject obj = new JSONObject(msg);
-//            status = obj.get("success").toString();
-//
-//        } catch(Exception e) {
-//            e.printStackTrace();
-//
-//        }
-//
-//        if (status.equals("true")) {
-//            Intent intent = new Intent();
-//
-//            intent.setClass(LoginActivity.this, LockActivity.class);
-//            startActivity(intent);
-//
-//        } else {
-//
-//            //mLoginActivityFragment.mEmail.setText("");
-//            //mLoginActivityFragment.password.setText("");
-//
-//            ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-//            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-//            if (networkInfo == null || networkInfo.getDetailedState() == NetworkInfo.DetailedState.DISCONNECTED) {
-//               Toast.makeText(LoginActivity.this, "Network unavailable", Toast.LENGTH_LONG).show();
-//            } else {
-//                Toast.makeText(LoginActivity.this, "username and password don't match", Toast.LENGTH_LONG).show();
-//            }
-//        }
-//    }
-
-    public void onNewServiceDiscovered(String... service) {
-        for (String s : service)
-            Log.e(TAG, "Service = " + s);
     }
 
     private void handleExtra(Intent intent) {
