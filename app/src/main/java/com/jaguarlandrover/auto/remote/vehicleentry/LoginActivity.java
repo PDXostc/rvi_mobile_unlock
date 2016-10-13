@@ -28,8 +28,7 @@ import rx.schedulers.Schedulers;
 public class LoginActivity extends ActionBarActivity implements LoginActivityFragment.LoginFragmentButtonListener{
 
     private static final String TAG = "UnlockDemo/LoginActvty_";
-    private String status = "false";
-    private Boolean auth = Boolean.FALSE;
+
     private RviService rviService = null;
     private LoginActivityFragment mLoginActivityFragment = null;
     private boolean bound = false;
@@ -37,9 +36,11 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     private final static String X509_PRINCIPAL_PATTERN = "CN=%s, O=Genivi, OU=%s, EMAILADDRESS=%s";
     private final static String X509_ORG_UNIT          = "Android Unlock App";
 
-    private final static String DEFAULT_PROVISIONING_SERVER_BASE_URL         = "http://192.168.16.245:8000";
+    //private final static String DEFAULT_PROVISIONING_SERVER_BASE_URL         = "http://192.168.16.245:8000";
     private final static String DEFAULT_PROVISIONING_SERVER_CSR_URL          = "/csr";
-    private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification"; // TODO: 'Verification' or 'validation'? #amm
+    private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification";
+
+    private String mProvisioningServerBaseUrl = null;
 
     private boolean mRviServerConnected    = false;
     private boolean mAllValidCertsAcquired = false;
@@ -64,8 +65,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
         mLoginActivityFragment.setVerifyButtonEnabled(true);
 
-        String foo = null;
-        assert foo != null;
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mProvisioningServerBaseUrl = "http://" + preferences.getString("pref_provisioning_server_url", "192.168.16.245") + ":" + preferences.getString("pref_provisioning_server_url", "8000");
 
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
@@ -112,7 +113,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
                         doTheRviThingIfEverythingElseIsComplete();
                     }
-                }, DEFAULT_PROVISIONING_SERVER_BASE_URL, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, tokenString);
+                }, mProvisioningServerBaseUrl, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, tokenString);
             }
         }
 
@@ -280,7 +281,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
                         doTheRviThingIfEverythingElseIsComplete();
                     }
-                }, DEFAULT_PROVISIONING_SERVER_BASE_URL, DEFAULT_PROVISIONING_SERVER_CSR_URL, certificateSigningRequest, true);
+                }, mProvisioningServerBaseUrl, DEFAULT_PROVISIONING_SERVER_CSR_URL, certificateSigningRequest, true);
             }
 
             @Override
