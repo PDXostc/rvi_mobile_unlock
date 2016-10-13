@@ -28,7 +28,6 @@ import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 
 class ManagerHelper
@@ -137,7 +136,7 @@ class ManagerHelper
             // TODO: Validate parameters!
 
             try {
-                String serverResponse = ServerInterface.sendStringToProvisioningServer(baseUrl, requestUrl, requestData);
+                String serverResponse = ProvisioningServerInterface.sendStringToProvisioningServer(baseUrl, requestUrl, requestData);
 
                 publishProgress(serverResponse);
 

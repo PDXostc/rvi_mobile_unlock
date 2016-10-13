@@ -13,7 +13,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.jaguarlandrover.pki.PKICertificateResponse;
+import com.jaguarlandrover.pki.PKICertificateSigningRequestRequest;
 import com.jaguarlandrover.pki.PKIManager;
+import com.jaguarlandrover.pki.PKIServerResponse;
+import com.jaguarlandrover.pki.PKITokenVerificationRequest;
 import com.jaguarlandrover.rvi.RVILocalNode;
 
 import java.security.KeyStore;
@@ -70,8 +74,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             Uri uri = intent.getData();
-            String token  = uri.getQueryParameter("tokencode");
-            String certId = uri.getQueryParameter("certid");
+            String token  = uri.getQueryParameter("token");
+            String certId = uri.getQueryParameter("certificate_id");
 
             if (token != null && certId != null) {
                 RVILocalNode.removeAllCredentials(this);
@@ -84,6 +88,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 Log.d(TAG, "valueOne: " + token + ", valueTwo: " + certId);
 
                 String tokenString = "{ \"token\":\"" + token + "\", \"certId\":\"" + certId + "\"}";
+
+                PKITokenVerificationRequest request = new PKITokenVerificationRequest(token, certId);
 
                 PKIManager.sendTokenVerificationRequest(this, new PKIManager.ProvisioningServerListener() {
                     @Override
@@ -109,7 +115,22 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                         setUpRviAndConnectToServer(serverCertificateKeyStore, deviceCertificateKeyStore, deviceKeyStorePassword, defaultCredentials);
                         launchLockActivityWhenReady();
                     }
-                }, provisioningServerUrl, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, tokenString);
+
+                    @Override
+                    public void managerDidReceiveResponseFromServer(PKIServerResponse response) {
+                        if (response.getStatus() == PKIServerResponse.Status.CERTIFICATE_RESPONSE) {
+                            Log.d(TAG, "Got server stuff, trying to connect");
+
+                            mValidatingToken = false;
+                            mAllValidCertsAcquired = true;
+
+                            PKICertificateResponse certificateResponse = (PKICertificateResponse) response;
+
+                            setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtCredentials());
+                            launchLockActivityWhenReady();
+                        }
+                    }
+                }, provisioningServerUrl, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, request);//tokenString);
             }
         }
 
@@ -243,6 +264,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         PKIManager.generateKeyPairAndCertificateSigningRequest(this, new PKIManager.CertificateSigningRequestGeneratorListener() {
             @Override
             public void generateCertificateSigningRequestSucceeded(String certificateSigningRequest) {
+                Log.d(TAG, "Sending certificate signing request to server.");
 
                 mLoginActivityFragment.setVerifyButtonEnabled(true);
                 mLoginActivityFragment.setStatusTextText("Resend email");
@@ -250,6 +272,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
                 String provisioningServerUrl = "http://" + preferences.getString("pref_provisioning_server_url", "38.129.64.40") + ":" + preferences.getString("pref_provisioning_server_port", "8000");
+
+                PKICertificateSigningRequestRequest request = new PKICertificateSigningRequestRequest(certificateSigningRequest);
 
                 PKIManager.sendCertificateSigningRequest(LoginActivity.this, new PKIManager.ProvisioningServerListener() {
                     @Override
@@ -272,7 +296,22 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                         setUpRviAndConnectToServer(serverCertificateKeyStore, deviceCertificateKeyStore, deviceKeyStorePassword, defaultCredentials);
                         launchLockActivityWhenReady();
                     }
-                }, provisioningServerUrl, DEFAULT_PROVISIONING_SERVER_CSR_URL, certificateSigningRequest, true);
+
+                    @Override
+                    public void managerDidReceiveResponseFromServer(PKIServerResponse response) {
+                        if (response.getStatus() == PKIServerResponse.Status.CERTIFICATE_RESPONSE) {
+                            Log.d(TAG, "Got server stuff, trying to connect");
+
+                            mValidatingToken = false;
+                            mAllValidCertsAcquired = true;
+
+                            PKICertificateResponse certificateResponse = (PKICertificateResponse) response;
+
+                            setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtCredentials());
+                            launchLockActivityWhenReady();
+                        }
+                    }
+                }, provisioningServerUrl, DEFAULT_PROVISIONING_SERVER_CSR_URL, request);//certificateSigningRequest, true);
             }
 
             @Override
@@ -308,6 +347,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                             mLoginActivityFragment.hideControls(false);
                             mLoginActivityFragment.setVerifyButtonEnabled(true);
 
+                            ServerNode.disconnect();
+
                         } else if (id == R.id.action_delete_server_certs) {
 
                             PKIManager.deleteServerCerts(LoginActivity.this);
@@ -319,6 +360,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                             mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
                             mLoginActivityFragment.hideControls(false);
                             mLoginActivityFragment.setVerifyButtonEnabled(true);
+
+                            ServerNode.disconnect();
 
                         } else if (id == R.id.action_restore_defaults) {
 

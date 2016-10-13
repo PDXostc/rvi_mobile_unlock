@@ -101,6 +101,7 @@ class ServerNode
     }
 
     private static ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
+    private static boolean shouldTryAndReconnect = false;
     private static boolean needsToRequestNewCredentials = false;
 
     private static ServerNode ourInstance = new ServerNode();
@@ -133,7 +134,8 @@ class ServerNode
                 connectionStatus = ConnectionStatus.DISCONNECTED;
 
                 /* Try and reconnect */
-                startRepeatingTask();
+                if (shouldTryAndReconnect)
+                    startRepeatingTask();
             }
 
             @Override
@@ -253,8 +255,18 @@ class ServerNode
         rviNode.setServerPort(Integer.parseInt(preferences.getString("pref_rvi_server_port", "9010")));
 
         connectionStatus = ConnectionStatus.CONNECTING;
+        shouldTryAndReconnect = true;
 
         rviNode.connect();
+    }
+
+    static void disconnect() {
+        Log.d(TAG, "Disconnecting from the RVI provisioning server.");
+
+        connectionStatus = ConnectionStatus.DISCONNECTED;
+        shouldTryAndReconnect = false;
+
+        rviNode.disconnect();
     }
 
     static void requestCredentials() {

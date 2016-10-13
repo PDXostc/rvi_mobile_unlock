@@ -149,6 +149,8 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                             RVILocalNode.removeAllCredentials(LockActivity.this);
                             ServerNode.deleteUserData();
 
+                            ServerNode.disconnect();
+
                             Intent intent = new Intent();
                             intent.setClass(LockActivity.this, LoginActivity.class);
                             startActivity(intent);
@@ -159,6 +161,8 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                             PKIManager.deleteServerCerts(LockActivity.this);
                             RVILocalNode.removeAllCredentials(LockActivity.this);
 
+                            ServerNode.disconnect();
+
                             Intent intent = new Intent();
                             intent.setClass(LockActivity.this, LoginActivity.class);
                             startActivity(intent);
@@ -168,6 +172,9 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
                             PreferenceManager.getDefaultSharedPreferences(LockActivity.this).edit().clear().apply();
                             PreferenceManager.setDefaultValues(LockActivity.this, R.xml.advanced, true);
+
+                            ServerNode.disconnect();
+                            ServerNode.connect();
 
                         } else if (id == R.id.action_quit) {
                             Intent i = new Intent(LockActivity.this, BluetoothRangingService.class);

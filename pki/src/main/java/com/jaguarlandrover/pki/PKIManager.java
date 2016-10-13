@@ -26,52 +26,8 @@ public class PKIManager
 {
     private final static String TAG = "PKI/PKIManager_________";
 
-    private static PKIManager ourInstance = new PKIManager();
-
-    //private static Context applicationContext = null;
-
-    private static PKIManagerState pkiManagerState = PKIManagerState.UNKNOWN;
-
-    private static String pkiServerBaseUrl                      = null;
-    private static String pkiServerCertificateSigningRequestUrl = null;
-    private static String pkiServerTokenValidationUrl           = null;
-
     private PKIManager() {
 
-    }
-
-    //public static void load(Context context) { applicationContext = context; }
-
-    public static PKIManagerState getState() { return pkiManagerState; }
-
-    public static String getPkiServerBaseUrl() {
-        return pkiServerBaseUrl;
-    }
-
-    public static Class<PKIManager> setPkiServerBaseUrl(String pkiServerBaseUrl) {
-        PKIManager.pkiServerBaseUrl = pkiServerBaseUrl;
-
-        return PKIManager.class;
-    }
-
-    public static String getPkiServerCertificateSigningRequestUrl() {
-        return pkiServerCertificateSigningRequestUrl;
-    }
-
-    public static Class<PKIManager> setPkiServerCertificateSigningRequestUrl(String pkiServerCertificateSigningRequestUrl) {
-        PKIManager.pkiServerCertificateSigningRequestUrl = pkiServerCertificateSigningRequestUrl;
-
-        return PKIManager.class;
-    }
-
-    public static String getPkiServerTokenValidationUrl() {
-        return pkiServerTokenValidationUrl;
-    }
-
-    public static Class<PKIManager> setPkiServerTokenValidationUrl(String pkiServerTokenValidationUrl) {
-        PKIManager.pkiServerTokenValidationUrl = pkiServerTokenValidationUrl;
-
-        return PKIManager.class;
     }
 
     /**
@@ -88,6 +44,9 @@ public class PKIManager
          * privileges from the provisioning server (containing the server's public key).
          */
         void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges);
+
+
+        void managerDidReceiveResponseFromServer(PKIServerResponse response);
     }
 
     public interface CertificateSigningRequestGeneratorListener
@@ -109,6 +68,15 @@ public class PKIManager
         ManagerHelper.sendTokenVerificationRequest(context, listener, baseUrl, requestUrl, tokenVerificationString);
     }
 
+    public static void sendCertificateSigningRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, PKICertificateSigningRequestRequest certificateSigningRequest) {
+        ProvisioningServerInterface.sendProvisioningServerRequest(context, listener, baseUrl, requestUrl, certificateSigningRequest);
+    }
+
+    public static void sendTokenVerificationRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, PKITokenVerificationRequest tokenVerificationRequest) {
+        tokenVerificationRequest.setJwt(KeyStoreManager.createJwt(context, tokenVerificationRequest.getJwtBody()));
+        ProvisioningServerInterface.sendProvisioningServerRequest(context, listener, baseUrl, requestUrl, tokenVerificationRequest);
+    }
+
     public static void deleteAllKeysAndCerts(Context context) {
         KeyStoreManager.deleteAllKeysAndCerts(context);
     }
@@ -116,10 +84,6 @@ public class PKIManager
     public static void deleteServerCerts(Context context) {
         KeyStoreManager.deleteServerCerts(context);
     }
-
-//    public static Boolean hasValidCerts(Context context) {
-//        return KeyStoreManager.hasValidCerts(context);
-//    }
 
     public static Boolean hasValidSignedDeviceCert(Context context) {
         return KeyStoreManager.hasValidSignedDeviceCert(context);
