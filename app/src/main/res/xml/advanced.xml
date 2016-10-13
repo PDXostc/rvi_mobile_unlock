@@ -21,12 +21,12 @@
         <EditTextPreference android:title="RVI Server URL"
             android:key="pref_rvi_server"
             android:summary="RVI server URL"
-            android:defaultValue="rvi-test1.nginfotpdx.net"
+            android:defaultValue="38.129.64.40"
             />
         <EditTextPreference android:title="RVI Server Port"
             android:key="pref_rvi_server_port"
             android:summary="RVI server port"
-            android:defaultValue="8807"
+            android:defaultValue="9010"
             android:inputType="numberDecimal"
             />
 
@@ -37,7 +37,7 @@
         <EditTextPreference android:title="Provisioning Server URL"
             android:key="pref_provisioning_server_url"
             android:summary="Provisioning server URL"
-            android:defaultValue="192.168.16.245"
+            android:defaultValue="38.129.64.40"
             />
         <EditTextPreference android:title="Provisioning Server Port"
             android:key="pref_provisioning_server_port"

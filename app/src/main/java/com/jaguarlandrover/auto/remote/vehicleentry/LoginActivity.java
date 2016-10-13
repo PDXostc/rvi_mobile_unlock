@@ -41,7 +41,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     private final static String DEFAULT_PROVISIONING_SERVER_CSR_URL          = "/csr";
     private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification";
 
-    private String mProvisioningServerBaseUrl = null;
+//    private String mProvisioningServerBaseUrl = null;
 
     private boolean mBluetoothRangingServiceConnected = false;
     private boolean mAllValidCertsAcquired            = false;
@@ -63,7 +63,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         mLoginActivityFragment.setVerifyButtonEnabled(true);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mProvisioningServerBaseUrl = "http://" + preferences.getString("pref_provisioning_server_url", "192.168.16.245") + ":" + preferences.getString("pref_provisioning_server_url", "8000");
+        String provisioningServerUrl = "http://" + preferences.getString("pref_provisioning_server_url", "38.129.64.40") + ":" + preferences.getString("pref_provisioning_server_port", "8000");
 
         mBluetoothRangingServiceConnected = !BLUETOOTH_RANGING_SERVICE_ENABLED;
 
@@ -109,7 +109,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                         setUpRviAndConnectToServer(serverCertificateKeyStore, deviceCertificateKeyStore, deviceKeyStorePassword, defaultCredentials);
                         launchLockActivityWhenReady();
                     }
-                }, mProvisioningServerBaseUrl, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, tokenString);
+                }, provisioningServerUrl, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, tokenString);
             }
         }
 
@@ -248,6 +248,9 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 mLoginActivityFragment.setStatusTextText("Resend email");
                 mLoginActivityFragment.setStatusTextText("Please check your email account and click the link.");
 
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+                String provisioningServerUrl = "http://" + preferences.getString("pref_provisioning_server_url", "38.129.64.40") + ":" + preferences.getString("pref_provisioning_server_port", "8000");
+
                 PKIManager.sendCertificateSigningRequest(LoginActivity.this, new PKIManager.ProvisioningServerListener() {
                     @Override
                     public void certificateSigningRequestSuccessfullySent() {
@@ -269,7 +272,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                         setUpRviAndConnectToServer(serverCertificateKeyStore, deviceCertificateKeyStore, deviceKeyStorePassword, defaultCredentials);
                         launchLockActivityWhenReady();
                     }
-                }, mProvisioningServerBaseUrl, DEFAULT_PROVISIONING_SERVER_CSR_URL, certificateSigningRequest, true);
+                }, provisioningServerUrl, DEFAULT_PROVISIONING_SERVER_CSR_URL, certificateSigningRequest, true);
             }
 
             @Override

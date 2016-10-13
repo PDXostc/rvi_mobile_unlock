@@ -250,7 +250,7 @@ class ServerNode
         Log.d(TAG, "Attempting to connect to RVI provisioning server.");
 
         rviNode.setServerUrl(preferences.getString("pref_rvi_server", "38.129.64.40"));
-        rviNode.setServerPort(Integer.parseInt(preferences.getString("pref_rvi_server_port", "8807")));
+        rviNode.setServerPort(Integer.parseInt(preferences.getString("pref_rvi_server_port", "9010")));
 
         connectionStatus = ConnectionStatus.CONNECTING;
 
