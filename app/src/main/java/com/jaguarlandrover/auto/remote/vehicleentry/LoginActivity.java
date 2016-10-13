@@ -47,6 +47,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     private boolean mAllValidCertsAcquired            = false;
     private boolean mValidatingToken                  = false;
 
+    private final static boolean BLUETOOTH_RANGING_SERVICE_ENABLED = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +64,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         mProvisioningServerBaseUrl = "http://" + preferences.getString("pref_provisioning_server_url", "192.168.16.245") + ":" + preferences.getString("pref_provisioning_server_url", "8000");
+
+        mBluetoothRangingServiceConnected = !BLUETOOTH_RANGING_SERVICE_ENABLED;
 
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
@@ -129,7 +133,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             }
         }
 
-        doBindService();
+        if (BLUETOOTH_RANGING_SERVICE_ENABLED)
+            doBindService();
     }
 
     @Override
