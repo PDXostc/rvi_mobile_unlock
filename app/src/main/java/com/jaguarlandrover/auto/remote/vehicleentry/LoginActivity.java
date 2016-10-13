@@ -39,13 +39,11 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
     private final static String X509_PRINCIPAL_PATTERN = "CN=%s, O=Genivi, OU=%s, EMAILADDRESS=%s";
     private final static String X509_ORG_UNIT          = "Android Unlock App";
-
     private final static String RVI_DOMAIN             = "genivi.org";
 
     private final static String DEFAULT_PROVISIONING_SERVER_CSR_URL          = "/csr";
     private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification";
 
-//    private String mProvisioningServerBaseUrl = null;
 
     private boolean mBluetoothRangingServiceConnected = false;
     private boolean mAllValidCertsAcquired            = false;
@@ -85,59 +83,18 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
                 mValidatingToken = true;
 
-                Log.d(TAG, "valueOne: " + token + ", valueTwo: " + certId);
-
-                String tokenString = "{ \"token\":\"" + token + "\", \"certId\":\"" + certId + "\"}";
-
                 PKITokenVerificationRequest request = new PKITokenVerificationRequest(token, certId);
 
-                PKIManager.sendTokenVerificationRequest(this, new PKIManager.ProvisioningServerListener() {
-                    @Override
-                    public void certificateSigningRequestSuccessfullySent() {
+                Log.d(TAG, "Sending token verification request: " + request.toString());
 
-                    }
-
-                    @Override
-                    public void certificateSigningRequestSuccessfullyReceived() {
-
-                    }
-
-                    @Override
-                    public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultCredentials) {
-                        Log.d(TAG, "Got server stuff, trying to connect");
-
-                        mLoginActivityFragment.hideControls(true);
-                        mLoginActivityFragment.setStatusTextText("Validating email... Processing certificates.");
-
-                        mValidatingToken       = false;
-                        mAllValidCertsAcquired = true;
-
-                        setUpRviAndConnectToServer(serverCertificateKeyStore, deviceCertificateKeyStore, deviceKeyStorePassword, defaultCredentials);
-                        launchLockActivityWhenReady();
-                    }
-
-                    @Override
-                    public void managerDidReceiveResponseFromServer(PKIServerResponse response) {
-                        if (response.getStatus() == PKIServerResponse.Status.CERTIFICATE_RESPONSE) {
-                            Log.d(TAG, "Got server stuff, trying to connect");
-
-                            mValidatingToken = false;
-                            mAllValidCertsAcquired = true;
-
-                            PKICertificateResponse certificateResponse = (PKICertificateResponse) response;
-
-                            setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtCredentials());
-                            launchLockActivityWhenReady();
-                        }
-                    }
-                }, provisioningServerUrl, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, request);//tokenString);
+                PKIManager.sendTokenVerificationRequest(this, mProvisioningServerListener, provisioningServerUrl, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, request);
             }
         }
 
         if (!mValidatingToken) {
             if (PKIManager.hasValidSignedDeviceCert(this) && PKIManager.hasValidSignedServerCert(this)) {
                 mLoginActivityFragment.hideControls(true);
-                mLoginActivityFragment.setStatusTextText("Binding service...");
+                mLoginActivityFragment.setStatusTextText("Loading...");
 
                 mAllValidCertsAcquired = true;
 
@@ -146,7 +103,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
             } else if (PKIManager.hasValidSignedDeviceCert(this)) {
                 mLoginActivityFragment.setStatusTextText("Resend email");
-                mLoginActivityFragment.setStatusTextText("Please check your email account and click the link.");
+                mLoginActivityFragment.setStatusTextText("Please check your email account and click the 'Verify' link.");
 
             } else {
                 mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
@@ -158,12 +115,91 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             doBindService();
     }
 
-    @Override
-    public void onDestroy() {
-        Log.i(TAG, "onDestroy() Activity");
-        doUnbindService();
+    private PKIManager.ProvisioningServerListener mProvisioningServerListener = new PKIManager.ProvisioningServerListener() {
+        @Override
+        public void managerDidReceiveResponseFromServer(PKIServerResponse response) {
+            if (response.getStatus() == PKIServerResponse.Status.VERIFICATION_NEEDED) {
+                mValidatingToken = true;
+                mAllValidCertsAcquired = false;
 
-        super.onDestroy();
+                mLoginActivityFragment.setStatusTextText("Resend email");
+                mLoginActivityFragment.setStatusTextText("Please check your email account and click the 'Verify' link.");
+
+            } else if (response.getStatus() == PKIServerResponse.Status.CERTIFICATE_RESPONSE) {
+                Log.d(TAG, "Got server stuff, trying to connect");
+
+                mValidatingToken = false;
+                mAllValidCertsAcquired = true;
+
+                PKICertificateResponse certificateResponse = (PKICertificateResponse) response;
+
+                setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtCredentials());
+                launchLockActivityWhenReady();
+            } else if (response.getStatus() == PKIServerResponse.Status.ERROR) {
+
+                if (!mValidatingToken) {
+                    mLoginActivityFragment.setVerifyButtonEnabled(true);
+
+                    mLoginActivityFragment.setStatusTextText("Resend");
+                    mLoginActivityFragment.setStatusTextText("An error occurred when sending your certificate signing request to the server.");
+                } else {
+                    mLoginActivityFragment.setVerifyButtonEnabled(true);
+
+                    mLoginActivityFragment.setStatusTextText("Resend email");
+                    mLoginActivityFragment.setStatusTextText("An error occurred when verifying your email. Please click the email link again or the button to send a new email.");
+                }
+            }
+        }
+    };
+
+    private PKIManager.CertificateSigningRequestGeneratorListener mCertificateSigningRequestGeneratorListener = new PKIManager.CertificateSigningRequestGeneratorListener() {
+        @Override
+        public void generateCertificateSigningRequestSucceeded(String certificateSigningRequest) {
+            Log.d(TAG, "Sending certificate signing request to server.");
+
+            mLoginActivityFragment.setVerifyButtonEnabled(true);
+            mLoginActivityFragment.setStatusTextText("Resend email");
+            mLoginActivityFragment.setStatusTextText("Please check your email account and click the link.");
+
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+            String provisioningServerUrl = "http://" + preferences.getString("pref_provisioning_server_url", "38.129.64.40") + ":" + preferences.getString("pref_provisioning_server_port", "8000");
+
+            PKICertificateSigningRequestRequest request = new PKICertificateSigningRequestRequest(certificateSigningRequest);
+
+            PKIManager.sendCertificateSigningRequest(LoginActivity.this, mProvisioningServerListener, provisioningServerUrl, DEFAULT_PROVISIONING_SERVER_CSR_URL, request);
+        }
+
+        @Override
+        public void generateCertificateSigningRequestFailed(Throwable reason) {
+            mLoginActivityFragment.setVerifyButtonEnabled(true);
+
+            mLoginActivityFragment.setStatusTextText("Try again");
+            mLoginActivityFragment.setStatusTextText("An error occurred when generating your keys and certificates.");
+        }
+    };
+
+    private void setUpRviAndConnectToServer(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceCertificatePassword, ArrayList<String> newCredentials) {
+        try {
+            RVILocalNode.setServerKeyStore(serverCertificateKeyStore);
+            RVILocalNode.setDeviceKeyStore(deviceCertificateKeyStore);
+            RVILocalNode.setDeviceKeyStorePassword(deviceCertificatePassword);
+
+            if (newCredentials != null)
+                RVILocalNode.setCredentials(this, newCredentials);
+
+            ServerNode.connect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void launchLockActivityWhenReady() {
+        if (mBluetoothRangingServiceConnected && mAllValidCertsAcquired) {
+            Intent intent = new Intent();
+
+            intent.setClass(LoginActivity.this, LockActivity.class);
+            startActivity(intent);
+        }
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -208,35 +244,6 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         }
     };
 
-    private void setUpRviAndConnectToServer(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceCertificatePassword, ArrayList<String> newCredentials) {
-        try {
-            RVILocalNode.setServerKeyStore(serverCertificateKeyStore);
-            RVILocalNode.setDeviceKeyStore(deviceCertificateKeyStore);
-            RVILocalNode.setDeviceKeyStorePassword(deviceCertificatePassword);
-
-            if (newCredentials != null)
-                RVILocalNode.setCredentials(this, newCredentials);
-
-            ServerNode.connect();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void launchLockActivityWhenReady() {
-        if (mBluetoothRangingServiceConnected && mAllValidCertsAcquired) {
-            Intent intent = new Intent();
-
-            intent.setClass(LoginActivity.this, LockActivity.class);
-            startActivity(intent);
-        }
-    }
-
-    @Override
-    public void onButtonCommand(View v) {
-        submit(v);
-    }
-
     void doBindService() {
         bindService(new Intent(LoginActivity.this, BluetoothRangingService.class), mConnection, Context.BIND_AUTO_CREATE);
         mBluetoothRangingServiceBound = true;
@@ -247,6 +254,11 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             unbindService(mConnection);
             mBluetoothRangingServiceBound = false;
         }
+    }
+
+    @Override
+    public void onButtonCommand(View v) {
+        submit(v);
     }
 
     public void submit(View v) {
@@ -261,65 +273,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         mLoginActivityFragment.setVerifyButtonEnabled(false);
         mLoginActivityFragment.setStatusTextText("Connecting to server. Please check your email in a few minutes.");
 
-        PKIManager.generateKeyPairAndCertificateSigningRequest(this, new PKIManager.CertificateSigningRequestGeneratorListener() {
-            @Override
-            public void generateCertificateSigningRequestSucceeded(String certificateSigningRequest) {
-                Log.d(TAG, "Sending certificate signing request to server.");
-
-                mLoginActivityFragment.setVerifyButtonEnabled(true);
-                mLoginActivityFragment.setStatusTextText("Resend email");
-                mLoginActivityFragment.setStatusTextText("Please check your email account and click the link.");
-
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
-                String provisioningServerUrl = "http://" + preferences.getString("pref_provisioning_server_url", "38.129.64.40") + ":" + preferences.getString("pref_provisioning_server_port", "8000");
-
-                PKICertificateSigningRequestRequest request = new PKICertificateSigningRequestRequest(certificateSigningRequest);
-
-                PKIManager.sendCertificateSigningRequest(LoginActivity.this, new PKIManager.ProvisioningServerListener() {
-                    @Override
-                    public void certificateSigningRequestSuccessfullySent() {
-
-                    }
-
-                    @Override
-                    public void certificateSigningRequestSuccessfullyReceived() {
-
-                    }
-
-                    @Override
-                    public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultCredentials) {
-                        Log.d(TAG, "Got server stuff, trying to connect");
-
-                        mValidatingToken       = false;
-                        mAllValidCertsAcquired = true;
-
-                        setUpRviAndConnectToServer(serverCertificateKeyStore, deviceCertificateKeyStore, deviceKeyStorePassword, defaultCredentials);
-                        launchLockActivityWhenReady();
-                    }
-
-                    @Override
-                    public void managerDidReceiveResponseFromServer(PKIServerResponse response) {
-                        if (response.getStatus() == PKIServerResponse.Status.CERTIFICATE_RESPONSE) {
-                            Log.d(TAG, "Got server stuff, trying to connect");
-
-                            mValidatingToken = false;
-                            mAllValidCertsAcquired = true;
-
-                            PKICertificateResponse certificateResponse = (PKICertificateResponse) response;
-
-                            setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtCredentials());
-                            launchLockActivityWhenReady();
-                        }
-                    }
-                }, provisioningServerUrl, DEFAULT_PROVISIONING_SERVER_CSR_URL, request);//certificateSigningRequest, true);
-            }
-
-            @Override
-            public void generateCertificateSigningRequestFailed(Throwable reason) {
-                // TODO: Update ui with failure message #amm
-            }
-
-        }, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT, email.replace("+", "\\+"));
+        PKIManager.generateKeyPairAndCertificateSigningRequest(this, mCertificateSigningRequestGeneratorListener,
+                start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT, email.replace("+", "\\+"));
     }
 
     @Override
@@ -409,6 +364,14 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i(TAG, "onDestroy() Activity");
+        doUnbindService();
+
+        super.onDestroy();
     }
 
     private void handleExtra(Intent intent) {

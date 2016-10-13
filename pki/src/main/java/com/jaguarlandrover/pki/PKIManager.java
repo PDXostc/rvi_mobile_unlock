@@ -16,7 +16,6 @@ package com.jaguarlandrover.pki;
 
 import android.content.Context;
 
-//import java.net.URL;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,17 +34,16 @@ public class PKIManager
      */
     public interface ProvisioningServerListener
     {
-        void certificateSigningRequestSuccessfullySent();
-
-        void certificateSigningRequestSuccessfullyReceived();
-
-        /**
-         * Called when the manager receives server-signed server certificate, server-signed device certificate, and list of server-signed jwt
-         * privileges from the provisioning server (containing the server's public key).
-         */
-        void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges);
-
-
+//        void certificateSigningRequestSuccessfullySent();
+//
+//        void certificateSigningRequestSuccessfullyReceived();
+//
+//        /**
+//         * Called when the manager receives server-signed server certificate, server-signed device certificate, and list of server-signed jwt
+//         * privileges from the provisioning server (containing the server's public key).
+//         */
+//        void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges);
+//
         void managerDidReceiveResponseFromServer(PKIServerResponse response);
     }
 
@@ -57,51 +55,42 @@ public class PKIManager
     }
 
     public static void generateKeyPairAndCertificateSigningRequest(Context context, CertificateSigningRequestGeneratorListener listener, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
-        ManagerHelper.generateKeyPairAndCertificateSigningRequest(context, listener, startDate, endDate, principalFormatterPattern, principalFormatterArgs);
+        KeyStoreInterface.generateKeyPairAndCertificateSigningRequest(context, listener, startDate, endDate, principalFormatterPattern, principalFormatterArgs);
     }
 
-    public static void sendCertificateSigningRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, String certificateSigningRequest, Boolean extraValidationExpected) {
-        ManagerHelper.sendCertificateSigningRequest(context, listener, baseUrl, requestUrl, certificateSigningRequest, extraValidationExpected);
+    public static void sendCertificateSigningRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, PKIServerRequest certificateSigningRequest) {
+        BackendServerInterface.sendProvisioningServerRequest(context, listener, baseUrl, requestUrl, certificateSigningRequest);
     }
 
-    public static void sendTokenVerificationRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, String tokenVerificationString) {
-        ManagerHelper.sendTokenVerificationRequest(context, listener, baseUrl, requestUrl, tokenVerificationString);
-    }
-
-    public static void sendCertificateSigningRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, PKICertificateSigningRequestRequest certificateSigningRequest) {
-        ProvisioningServerInterface.sendProvisioningServerRequest(context, listener, baseUrl, requestUrl, certificateSigningRequest);
-    }
-
-    public static void sendTokenVerificationRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, PKITokenVerificationRequest tokenVerificationRequest) {
-        tokenVerificationRequest.setJwt(KeyStoreManager.createJwt(context, tokenVerificationRequest.getJwtBody()));
-        ProvisioningServerInterface.sendProvisioningServerRequest(context, listener, baseUrl, requestUrl, tokenVerificationRequest);
+    public static void sendTokenVerificationRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, PKIServerRequest tokenVerificationRequest) {
+        BackendServerInterface.sendProvisioningServerRequest(context, listener, baseUrl, requestUrl, tokenVerificationRequest);
     }
 
     public static void deleteAllKeysAndCerts(Context context) {
-        KeyStoreManager.deleteAllKeysAndCerts(context);
+        KeyStoreInterface.deleteAllKeysAndCerts(context);
     }
 
     public static void deleteServerCerts(Context context) {
-        KeyStoreManager.deleteServerCerts(context);
+        KeyStoreInterface.deleteServerCerts(context);
     }
 
     public static Boolean hasValidSignedDeviceCert(Context context) {
-        return KeyStoreManager.hasValidSignedDeviceCert(context);
+        return KeyStoreInterface.hasValidSignedDeviceCert(context);
     }
 
     public static Boolean hasValidSignedServerCert(Context context) {
-        return KeyStoreManager.hasValidSignedServerCert(context);
+        return KeyStoreInterface.hasValidSignedServerCert(context);
     }
 
     public static KeyStore getDeviceKeyStore(Context context) {
-        return KeyStoreManager.getDeviceKeyStore(context);
+        return KeyStoreInterface.getDeviceKeyStore(context);
     }
 
     public static KeyStore getServerKeyStore(Context context) {
-        return KeyStoreManager.getServerKeyStore(context);
+        return KeyStoreInterface.getServerKeyStore(context);
     }
 
     public static String getPublicKey(Context context) {
-        return KeyStoreManager.getPublicKey(context);
+        return KeyStoreInterface.getPublicKey(context);
     }
 }

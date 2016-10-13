@@ -7,7 +7,7 @@ package com.jaguarlandrover.pki;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    ProvisioningServerInterface.java
+ * File:    BackendServerInterface.java
  * Project: UnlockDemo
  *
  * Created by Lilli Szafranski on 9/27/16.
@@ -37,13 +37,17 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.HttpsURLConnection;
 
-class ProvisioningServerInterface
+class BackendServerInterface
 {
     private final static String TAG = "PKI/ServerInterface____";
 
     private static Gson gson = new Gson();
 
     static void sendProvisioningServerRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, PKIServerRequest request) {
+        if (request.getType() == PKIServerRequest.Type.TOKEN_VERIFICATION) {
+            ((PKITokenVerificationRequest)request).setJwt(KeyStoreInterface.createJwt(context, ((PKITokenVerificationRequest)request).getJwtBody()));
+        }
+
         String requestString = "";
 
         try {
@@ -132,8 +136,8 @@ class ProvisioningServerInterface
         byte [] decodedDeviceCert  = Base64.decode(serverCertificateResponse.getDeviceCertificate().replaceAll("-----BEGIN CERTIFICATE-----", "").replaceAll("-----END CERTIFICATE-----", ""));
         X509Certificate deviceCert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(decodedDeviceCert));
 
-        KeyStore serverKeyStore = KeyStoreManager.addServerCertToKeyStore(context, serverCert);
-        KeyStore deviceKeyStore = KeyStoreManager.addDeviceCertToKeyStore(context, deviceCert);
+        KeyStore serverKeyStore = KeyStoreInterface.addServerCertToKeyStore(context, serverCert);
+        KeyStore deviceKeyStore = KeyStoreInterface.addDeviceCertToKeyStore(context, deviceCert);
 
         serverCertificateResponse.setServerKeyStore(serverKeyStore);
         serverCertificateResponse.setDeviceKeyStore(deviceKeyStore);

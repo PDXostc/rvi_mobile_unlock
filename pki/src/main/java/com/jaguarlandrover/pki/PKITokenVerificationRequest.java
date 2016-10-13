@@ -17,10 +17,8 @@ package com.jaguarlandrover.pki;
 import com.google.gson.annotations.SerializedName;
 
 public class PKITokenVerificationRequest extends PKIServerRequest {
-    //@SerializedName("token")
     private transient String mToken = "";
 
-    //@SerializedName("certificate_id")
     private transient String mCertificateId = "";
 
     @SerializedName("jwt")
