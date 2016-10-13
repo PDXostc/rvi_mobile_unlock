@@ -1,5 +1,6 @@
 package com.jaguarlandrover.auto.remote.vehicleentry;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,6 +29,8 @@ public class LoginActivityFragment extends Fragment {
     private MaterialEditText mEmail;
     private Button           mVerifyButton;
     private TextView         mStatusText;
+    private ImageView        mHasKeysImageView;
+    private ImageView        mHasSignedCertsImageView;
 
     private LoginFragmentButtonListener mLoginFragmentButtonListener;
     private SharedPreferences sharedPref;
@@ -47,9 +51,11 @@ public class LoginActivityFragment extends Fragment {
         View     view        = inflater.inflate(R.layout.fragment_login_activity, container, false);
         Typeface fontawesome = Typeface.createFromAsset(getActivity().getAssets(), "fonts/fontawesome-webfont.ttf");
 
-        mEmail        = (MaterialEditText) view.findViewById(R.id.email);
-        mVerifyButton = (Button) view.findViewById(R.id.verifyButton);
-        mStatusText   = (TextView) view.findViewById(R.id.statusText);
+        mEmail                   = (MaterialEditText) view.findViewById(R.id.email);
+        mVerifyButton            = (Button) view.findViewById(R.id.verifyButton);
+        mStatusText              = (TextView) view.findViewById(R.id.statusText);
+        mHasKeysImageView        = (ImageView) view.findViewById(R.id.has_keys_icon);
+        mHasSignedCertsImageView = (ImageView) view.findViewById(R.id.has_signed_certs_icon);
 
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
@@ -67,10 +73,12 @@ public class LoginActivityFragment extends Fragment {
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+
+            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(mEmail.getWindowToken(), 0);
+
             SharedPreferences.Editor ed = sharedPref.edit();
-
             ed.putString("savedEmail", mEmail.getText().toString());
-
             ed.commit();
 
             switch (view.getId()) {
@@ -112,5 +120,19 @@ public class LoginActivityFragment extends Fragment {
             mVerifyButton.setVisibility(View.VISIBLE);
             mEmail.setVisibility(View.VISIBLE);
         }
+    }
+
+    void setHasKeys(boolean hasKeys) {
+        if (hasKeys)
+            mHasKeysImageView.setImageResource(R.drawable.key_on);//getResources().getIdentifier("@drawable/key_on", null, null));
+        else
+            mHasKeysImageView.setImageResource(R.drawable.key_off);//getResources().getIdentifier("@drawable/key_off", null, null));
+    }
+
+    void setHasSignedCerts(boolean hasSignedCerts) {
+        if (hasSignedCerts)
+            mHasSignedCertsImageView.setImageResource(R.drawable.key_off);//getResources().getIdentifier("@drawable/key_on", null, null));
+        else
+            mHasSignedCertsImageView.setImageResource(R.drawable.key_off);//getResources().getIdentifier("@drawable/key_off", null, null));
     }
 }

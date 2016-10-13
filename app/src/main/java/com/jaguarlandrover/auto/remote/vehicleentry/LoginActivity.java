@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.jaguarlandrover.pki.PKICertificateResponse;
@@ -81,6 +82,9 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 mLoginActivityFragment.setStatusTextText("Validating email...");
                 mLoginActivityFragment.setVerifyButtonEnabled(false);
 
+                mLoginActivityFragment.setHasKeys(true);
+                mLoginActivityFragment.setHasSignedCerts(false);
+
                 mValidatingToken = true;
 
                 PKITokenVerificationRequest request = new PKITokenVerificationRequest(token, certId);
@@ -98,16 +102,24 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
                 mAllValidCertsAcquired = true;
 
+                mLoginActivityFragment.setHasKeys(true);
+                mLoginActivityFragment.setHasSignedCerts(true);
+
                 setUpRviAndConnectToServer(PKIManager.getServerKeyStore(this), PKIManager.getDeviceKeyStore(this), null, null);
                 launchLockActivityWhenReady();
 
             } else if (PKIManager.hasValidSignedDeviceCert(this)) {
-                mLoginActivityFragment.setStatusTextText("Resend email");
+                mLoginActivityFragment.setVerifyButtonText("Resend email");
                 mLoginActivityFragment.setStatusTextText("Please check your email account and click the 'Verify' link.");
+
+                mLoginActivityFragment.setHasKeys(true);
+                mLoginActivityFragment.setHasSignedCerts(false);
 
             } else {
                 mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
 
+                mLoginActivityFragment.setHasKeys(false);
+                mLoginActivityFragment.setHasSignedCerts(false);
             }
         }
 
@@ -122,8 +134,12 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 mValidatingToken = true;
                 mAllValidCertsAcquired = false;
 
+                mLoginActivityFragment.setVerifyButtonEnabled(true);
                 mLoginActivityFragment.setStatusTextText("Resend email");
                 mLoginActivityFragment.setStatusTextText("Please check your email account and click the 'Verify' link.");
+
+                mLoginActivityFragment.setHasKeys(true);
+                mLoginActivityFragment.setHasSignedCerts(false);
 
             } else if (response.getStatus() == PKIServerResponse.Status.CERTIFICATE_RESPONSE) {
                 Log.d(TAG, "Got server stuff, trying to connect");
@@ -131,11 +147,17 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 mValidatingToken = false;
                 mAllValidCertsAcquired = true;
 
+                mLoginActivityFragment.setHasKeys(true);
+                mLoginActivityFragment.setHasSignedCerts(true);
+
                 PKICertificateResponse certificateResponse = (PKICertificateResponse) response;
 
                 setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtCredentials());
                 launchLockActivityWhenReady();
             } else if (response.getStatus() == PKIServerResponse.Status.ERROR) {
+
+                mLoginActivityFragment.setHasKeys(true);
+                mLoginActivityFragment.setHasSignedCerts(false);
 
                 if (!mValidatingToken) {
                     mLoginActivityFragment.setVerifyButtonEnabled(true);
@@ -157,9 +179,10 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         public void generateCertificateSigningRequestSucceeded(String certificateSigningRequest) {
             Log.d(TAG, "Sending certificate signing request to server.");
 
-            mLoginActivityFragment.setVerifyButtonEnabled(true);
-            mLoginActivityFragment.setStatusTextText("Resend email");
-            mLoginActivityFragment.setStatusTextText("Please check your email account and click the link.");
+            mLoginActivityFragment.setStatusTextText("Connecting to server. Please check your email in a few minutes and click the 'Verify' link.");
+
+            mLoginActivityFragment.setHasKeys(true);
+            mLoginActivityFragment.setHasSignedCerts(false);
 
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
             String provisioningServerUrl = "http://" + preferences.getString("pref_provisioning_server_url", "38.129.64.40") + ":" + preferences.getString("pref_provisioning_server_port", "8000");
@@ -175,6 +198,9 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
             mLoginActivityFragment.setStatusTextText("Try again");
             mLoginActivityFragment.setStatusTextText("An error occurred when generating your keys and certificates.");
+
+            mLoginActivityFragment.setHasKeys(false);
+            mLoginActivityFragment.setHasSignedCerts(false);
         }
     };
 
@@ -198,7 +224,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             Intent intent = new Intent();
 
             intent.setClass(LoginActivity.this, LockActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, 0);
         }
     }
 
@@ -271,7 +297,10 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         end.add(Calendar.YEAR, 1);
 
         mLoginActivityFragment.setVerifyButtonEnabled(false);
-        mLoginActivityFragment.setStatusTextText("Connecting to server. Please check your email in a few minutes.");
+        mLoginActivityFragment.setStatusTextText("Generating keys and certificates.");
+
+        mLoginActivityFragment.setHasKeys(false);
+        mLoginActivityFragment.setHasSignedCerts(false);
 
         PKIManager.generateKeyPairAndCertificateSigningRequest(this, mCertificateSigningRequestGeneratorListener,
                 start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT, email.replace("+", "\\+"));
