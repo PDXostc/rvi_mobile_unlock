@@ -145,11 +145,11 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                     case DialogInterface.BUTTON_POSITIVE:
                         if (id == R.id.action_delete_all_keys_certs) {
 
+                            ServerNode.disconnect();
+
                             PKIManager.deleteAllKeysAndCerts(LockActivity.this);
                             RVILocalNode.removeAllCredentials(LockActivity.this);
                             ServerNode.deleteUserData();
-
-                            ServerNode.disconnect();
 
                             Intent intent = new Intent();
                             intent.setClass(LockActivity.this, LoginActivity.class);
@@ -158,10 +158,10 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
                         } else if (id == R.id.action_delete_server_certs) {
 
+                            ServerNode.disconnect();
+
                             PKIManager.deleteServerCerts(LockActivity.this);
                             RVILocalNode.removeAllCredentials(LockActivity.this);
-
-                            ServerNode.disconnect();
 
                             Intent intent = new Intent();
                             intent.setClass(LockActivity.this, LoginActivity.class);
@@ -170,10 +170,11 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
                         } else if (id == R.id.action_restore_defaults) {
 
+                            ServerNode.disconnect();
+
                             PreferenceManager.getDefaultSharedPreferences(LockActivity.this).edit().clear().apply();
                             PreferenceManager.setDefaultValues(LockActivity.this, R.xml.advanced, true);
 
-                            ServerNode.disconnect();
                             ServerNode.connect();
 
                         } else if (id == R.id.action_quit) {

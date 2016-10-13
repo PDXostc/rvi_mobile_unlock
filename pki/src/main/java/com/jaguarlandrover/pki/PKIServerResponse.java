@@ -16,9 +16,6 @@ package com.jaguarlandrover.pki;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.security.KeyStore;
-import java.util.ArrayList;
-
 public class PKIServerResponse {
     private final static String TAG = "UnlockDemo/ProvSrvrResp";
 

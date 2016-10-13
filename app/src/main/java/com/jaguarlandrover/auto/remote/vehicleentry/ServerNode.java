@@ -263,7 +263,6 @@ class ServerNode
     static void disconnect() {
         Log.d(TAG, "Disconnecting from the RVI provisioning server.");
 
-        connectionStatus = ConnectionStatus.DISCONNECTED;
         shouldTryAndReconnect = false;
 
         rviNode.disconnect();

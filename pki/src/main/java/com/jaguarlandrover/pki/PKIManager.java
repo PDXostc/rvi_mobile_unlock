@@ -26,7 +26,6 @@ public class PKIManager
     private final static String TAG = "PKI/PKIManager_________";
 
     private PKIManager() {
-
     }
 
     /**
@@ -34,16 +33,6 @@ public class PKIManager
      */
     public interface ProvisioningServerListener
     {
-//        void certificateSigningRequestSuccessfullySent();
-//
-//        void certificateSigningRequestSuccessfullyReceived();
-//
-//        /**
-//         * Called when the manager receives server-signed server certificate, server-signed device certificate, and list of server-signed jwt
-//         * privileges from the provisioning server (containing the server's public key).
-//         */
-//        void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges);
-//
         void managerDidReceiveResponseFromServer(PKIServerResponse response);
     }
 

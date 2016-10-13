@@ -291,6 +291,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                     case DialogInterface.BUTTON_POSITIVE:
                         if (id == R.id.action_delete_all_keys_certs) {
 
+                            ServerNode.disconnect();
+
                             PKIManager.deleteAllKeysAndCerts(LoginActivity.this);
                             RVILocalNode.removeAllCredentials(LoginActivity.this);
                             ServerNode.deleteUserData();
@@ -302,9 +304,10 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                             mLoginActivityFragment.hideControls(false);
                             mLoginActivityFragment.setVerifyButtonEnabled(true);
 
-                            ServerNode.disconnect();
 
                         } else if (id == R.id.action_delete_server_certs) {
+
+                            ServerNode.disconnect();
 
                             PKIManager.deleteServerCerts(LoginActivity.this);
                             RVILocalNode.removeAllCredentials(LoginActivity.this);
@@ -315,8 +318,6 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                             mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
                             mLoginActivityFragment.hideControls(false);
                             mLoginActivityFragment.setVerifyButtonEnabled(true);
-
-                            ServerNode.disconnect();
 
                         } else if (id == R.id.action_restore_defaults) {
 

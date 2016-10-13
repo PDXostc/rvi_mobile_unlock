@@ -17,14 +17,14 @@ package com.jaguarlandrover.pki;
 import com.google.gson.annotations.SerializedName;
 
 public class PKIVerificationNeededResponse extends PKIServerResponse
-    {
-        @SerializedName("message")
-        private String mMessage = "";
+{
+    @SerializedName("message")
+    private String mMessage = "";
 
-        public PKIVerificationNeededResponse() {
-        }
-
-        public String getMessage() {
-            return mMessage;
-        }
+    public PKIVerificationNeededResponse() {
     }
+
+    public String getMessage() {
+        return mMessage;
+    }
+}
