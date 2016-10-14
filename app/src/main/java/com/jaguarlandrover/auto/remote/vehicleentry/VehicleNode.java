@@ -27,6 +27,11 @@ public class VehicleNode
 {
     private final static String TAG = "UnlockDemo/VehicleNode_";
 
+    interface Listener {
+        void vehicleNodeDidConnect();
+        void vehicleNodeDidDisconnect();
+    }
+
     /* Static variables */
     private static Context applicationContext = UnlockApplication.getContext();
 
@@ -35,6 +40,8 @@ public class VehicleNode
     private static SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
 
     private static RVIRemoteNode rviNode = new RVIRemoteNode(null);
+
+    private static ArrayList<Listener> listeners = new ArrayList<>();
 
     /* RVI fully-qualified service identifier parts */
     private final static String FOB_SIGNAL_BUNDLE = "control";
@@ -77,6 +84,9 @@ public class VehicleNode
                 connectionStatus = ConnectionStatus.CONNECTED;
 
                 //stopRepeatingTask();
+
+                for (Listener listener : listeners)
+                    listener.vehicleNodeDidConnect();
             }
 
             @Override
@@ -92,6 +102,9 @@ public class VehicleNode
 
                 ///* Try and reconnect */
                 //startRepeatingTasks();
+
+                for (Listener listener : listeners)
+                    listener.vehicleNodeDidDisconnect();
             }
 
             @Override
@@ -178,5 +191,13 @@ public class VehicleNode
 
     public static void setServerPort(Integer serverPort) {
         VehicleNode.serverPort = serverPort;
+    }
+
+    static void addListener(Listener listener) {
+        listeners.add(listener);
+    }
+
+    static void removeListener(Listener listener) {
+        listeners.remove(listener);
     }
 }

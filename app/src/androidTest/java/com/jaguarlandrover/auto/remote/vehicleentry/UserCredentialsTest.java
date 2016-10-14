@@ -171,8 +171,7 @@ public class UserCredentialsTest extends TestCase
 
         assertFalse(userCredentials.isKeyValid());
     }
-
-
+    
     public void testIsKeyValid_Timezones() {
         // TODO: Write this test
     }

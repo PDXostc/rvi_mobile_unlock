@@ -18,7 +18,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.security.KeyPairGeneratorSpec;
 import android.util.Log;
-import android.webkit.JavascriptInterface;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -26,7 +25,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.security.Key;
 
 import org.spongycastle.asn1.ASN1ObjectIdentifier;
@@ -35,7 +33,6 @@ import org.spongycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.spongycastle.asn1.x500.X500Name;
 import org.spongycastle.asn1.x509.AlgorithmIdentifier;
 import org.spongycastle.asn1.x509.BasicConstraints;
-import org.spongycastle.asn1.x509.Certificate;
 import org.spongycastle.asn1.x509.Extension;
 import org.spongycastle.asn1.x509.ExtensionsGenerator;
 import org.spongycastle.operator.ContentSigner;
@@ -59,16 +56,14 @@ import java.security.Signature;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import javax.security.auth.x500.X500Principal;
 
 /* Code from here: http://stackoverflow.com/a/37898553 */
-class KeyStoreManager
+class KeyStoreInterface
 {
     private final static String TAG = "PKI/KeyStoreManager____";
 
@@ -82,9 +77,61 @@ class KeyStoreManager
     private final static String PEM_CERTIFICATE_SIGNING_REQUEST_HEADER_FOOTER_STRING = "CERTIFICATE REQUEST";
     private final static String PEM_PUBLIC_KEY_HEADER_FOOTER_STRING                  = "PUBLIC KEY";
 
-    private final static Integer KEY_SIZE = 4096;
+    private final static Integer KEY_SIZE = 2048;//4096;
 
-    static String generateCertificateSigningRequest(Context context, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
+    static void generateKeyPairAndCertificateSigningRequest(Context context, PKIManager.CertificateSigningRequestGeneratorListener listener, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
+        new CertificateSigningRequestGeneratorTask(listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, context, startDate, endDate, principalFormatterPattern, principalFormatterArgs);
+    }
+
+    private static class CertificateSigningRequestGeneratorTask extends AsyncTask<Object, String, Throwable>
+    {
+        PKIManager.CertificateSigningRequestGeneratorListener mListener = null;
+
+        CertificateSigningRequestGeneratorTask(PKIManager.CertificateSigningRequestGeneratorListener listener) {
+            mListener = listener;
+        }
+
+        @Override
+        protected Throwable doInBackground(Object... params) {
+            Context  context                   = (Context)  params[0];
+            Date     startDate                 = (Date)     params[1];
+            Date     endDate                   = (Date)     params[2];
+            String   principalFormatterPattern = (String)   params[3];
+            Object[] principalFormatterArgs    = (Object[]) params[4];//Arrays.copyOfRange(params, 4, params.length - 4); // TODO: Test all possibilities thoroughly!
+
+            // TODO: Validate parameters!
+
+            try {
+                String certificateSigningRequest =
+                        KeyStoreInterface.generateCertificateSigningRequest(context, startDate, endDate, principalFormatterPattern, principalFormatterArgs);
+
+                publishProgress(certificateSigningRequest);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                return e;
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... params) {
+            super.onProgressUpdate(params);
+
+            if (mListener != null) mListener.generateCertificateSigningRequestSucceeded(params[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Throwable result) {
+            super.onPostExecute(result);
+
+            if (result != null) mListener.generateCertificateSigningRequestFailed(result);
+        }
+    }
+
+    private static String generateCertificateSigningRequest(Context context, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
 
         String   principal = String.format(principalFormatterPattern, principalFormatterArgs);
         KeyStore keyStore  = null;
@@ -237,7 +284,7 @@ class KeyStoreManager
         return null;
     }
 
-    static void deleteKeysAndCerts(Context context) {
+    static void deleteAllKeysAndCerts(Context context) {
         KeyStore deviceKeyStore = null;
 
         try {
@@ -252,6 +299,16 @@ class KeyStoreManager
             context.deleteFile(KEYSTORE_SERVER_ALIAS);
 
         } catch (FileNotFoundException ignored) {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void deleteServerCerts(Context context) {
+        try {
+
+            context.deleteFile(KEYSTORE_SERVER_ALIAS);
 
         } catch (Exception e) {
             e.printStackTrace();

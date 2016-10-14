@@ -55,5 +55,8 @@
     <string name="verify">Verify</string>
     <string name="action_reset_2">Reset 2</string>
     <string name="User">"User: %s"</string>
+    <string name="delete_all_keys_certs">Delete All Keys/Certs</string>
+    <string name="delete_server_certs">Delete Server Certs</string>
+    <string name="restore_defaults">Restore Defaults</string>
 
 </resources>

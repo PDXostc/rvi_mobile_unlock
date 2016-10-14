@@ -95,7 +95,7 @@ class FobParamsManager
             mLon = lon;
             mUsername = userData.getUserName();
 
-            //mVehicleVin = userData.getVehicleVin(); // TODO: Make sure this isn't needed
+            //mVehicleVin = userData.getVehicleVin(); // TODO: Make sure this isn't needed. It isn't. Get rid of all this #amm
         }
     }
 

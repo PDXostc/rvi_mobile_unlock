@@ -2,7 +2,6 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 
 import android.app.AlertDialog;
 import android.content.*;
-import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -12,17 +11,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import com.jaguarlandrover.pki.PKICertificateResponse;
+import com.jaguarlandrover.pki.PKICertificateSigningRequestRequest;
 import com.jaguarlandrover.pki.PKIManager;
+import com.jaguarlandrover.pki.PKIServerResponse;
+import com.jaguarlandrover.pki.PKITokenVerificationRequest;
 import com.jaguarlandrover.rvi.RVILocalNode;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -34,28 +33,24 @@ import rx.schedulers.Schedulers;
 public class LoginActivity extends ActionBarActivity implements LoginActivityFragment.LoginFragmentButtonListener{
 
     private static final String TAG = "UnlockDemo/LoginActvty_";
-    private String status = "false";
-    private Boolean auth = Boolean.FALSE;
-    private RviService rviService = null;
-    private LoginActivityFragment mLoginActivityFragment = null;
-    private boolean bound = false;
+
+    private BluetoothRangingService mBluetoothRangingService      = null;
+    private LoginActivityFragment   mLoginActivityFragment        = null;
+    private boolean                 mBluetoothRangingServiceBound = false;
 
     private final static String X509_PRINCIPAL_PATTERN = "CN=%s, O=Genivi, OU=%s, EMAILADDRESS=%s";
     private final static String X509_ORG_UNIT          = "Android Unlock App";
+    private final static String RVI_DOMAIN             = "genivi.org";
 
-    private final static String DEFAULT_PROVISIONING_SERVER_BASE_URL         = "http://192.168.16.245:8000";
     private final static String DEFAULT_PROVISIONING_SERVER_CSR_URL          = "/csr";
-    private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification"; // TODO: 'Verification' or 'validation'?
+    private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification";
 
-    private boolean mRviServerConnected    = false;
-    private boolean mAllValidCertsAcquired = false;
-    private boolean mValidatingToken       = false;
 
-    private KeyStore          mServerCertificateKeyStoreHolder = null;
-    private KeyStore          mDeviceCertificateKeyStoreHolder = null;
-    private ArrayList<String> mDefaultPrivilegesHolder         = null;
+    private boolean mBluetoothRangingServiceConnected = false;
+    private boolean mAllValidCertsAcquired            = false;
+    private boolean mValidatingToken                  = false;
 
-    private final static String RVI_DOMAIN = "genivi.org";
+    private final static boolean BLUETOOTH_RANGING_SERVICE_ENABLED = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,14 +65,16 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
         mLoginActivityFragment.setVerifyButtonEnabled(true);
 
-        String foo = null;
-        assert foo != null;
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String provisioningServerUrl = "http://" + preferences.getString("pref_provisioning_server_url", "38.129.64.40") + ":" + preferences.getString("pref_provisioning_server_port", "8000");
+
+        mBluetoothRangingServiceConnected = !BLUETOOTH_RANGING_SERVICE_ENABLED;
 
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             Uri uri = intent.getData();
-            String token  = uri.getQueryParameter("tokencode");
-            String certId = uri.getQueryParameter("certid");
+            String token  = uri.getQueryParameter("token");
+            String certId = uri.getQueryParameter("certificate_id");
 
             if (token != null && certId != null) {
                 RVILocalNode.removeAllCredentials(this);
@@ -85,88 +82,161 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 mLoginActivityFragment.setStatusTextText("Validating email...");
                 mLoginActivityFragment.setVerifyButtonEnabled(false);
 
+                mLoginActivityFragment.setHasKeys(true);
+                mLoginActivityFragment.setHasSignedCerts(false);
+
                 mValidatingToken = true;
 
-                Log.d(TAG, "valueOne: " + token + ", valueTwo: " + certId);
+                PKITokenVerificationRequest request = new PKITokenVerificationRequest(token, certId);
 
-                String tokenString = "{ \"token\":\"" + token + "\", \"certId\":\"" + certId + "\"}";
+                Log.d(TAG, "Sending token verification request: " + request.toString());
 
-                PKIManager.sendTokenVerificationRequest(this, new PKIManager.ProvisioningServerListener() {
-                    @Override
-                    public void certificateSigningRequestSuccessfullySent() {
-
-                    }
-
-                    @Override
-                    public void certificateSigningRequestSuccessfullyReceived() {
-
-                    }
-
-                    @Override
-                    public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges) {
-                        Log.d(TAG, "Got server stuff, trying to connect");
-
-                        mLoginActivityFragment.hideControls(true);
-                        mLoginActivityFragment.setStatusTextText("Validating email... Processing certificates.");
-
-                        mServerCertificateKeyStoreHolder = serverCertificateKeyStore;
-                        mDeviceCertificateKeyStoreHolder = deviceCertificateKeyStore;
-                        mDefaultPrivilegesHolder         = defaultPrivileges;
-
-                        mValidatingToken       = false;
-                        mAllValidCertsAcquired = true;
-
-                        doTheRviThingIfEverythingElseIsComplete();
-                    }
-                }, DEFAULT_PROVISIONING_SERVER_BASE_URL, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, tokenString);
+                PKIManager.sendTokenVerificationRequest(this, mProvisioningServerListener, provisioningServerUrl, DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL, request);
             }
         }
 
         if (!mValidatingToken) {
             if (PKIManager.hasValidSignedDeviceCert(this) && PKIManager.hasValidSignedServerCert(this)) {
                 mLoginActivityFragment.hideControls(true);
-                mLoginActivityFragment.setStatusTextText("Binding service...");
+                mLoginActivityFragment.setStatusTextText("Loading...");
 
                 mAllValidCertsAcquired = true;
 
-                mServerCertificateKeyStoreHolder = PKIManager.getServerKeyStore(this);
-                mDeviceCertificateKeyStoreHolder = PKIManager.getDeviceKeyStore(this);
+                mLoginActivityFragment.setHasKeys(true);
+                mLoginActivityFragment.setHasSignedCerts(true);
 
-                doTheRviThingIfEverythingElseIsComplete();
+                setUpRviAndConnectToServer(PKIManager.getServerKeyStore(this), PKIManager.getDeviceKeyStore(this), null, null);
+                launchLockActivityWhenReady();
 
             } else if (PKIManager.hasValidSignedDeviceCert(this)) {
-                mLoginActivityFragment.setStatusTextText("Resend email");
-                mLoginActivityFragment.setStatusTextText("Please check your email account and click the link.");
+                mLoginActivityFragment.setVerifyButtonText("Resend email");
+                mLoginActivityFragment.setStatusTextText("Please check your email account and click the 'Verify' link.");
+
+                mLoginActivityFragment.setHasKeys(true);
+                mLoginActivityFragment.setHasSignedCerts(false);
 
             } else {
                 mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
 
+                mLoginActivityFragment.setHasKeys(false);
+                mLoginActivityFragment.setHasSignedCerts(false);
             }
         }
 
-        doBindService();
+        if (BLUETOOTH_RANGING_SERVICE_ENABLED)
+            doBindService();
     }
 
-    @Override
-    public void onDestroy() {
-        Log.i(TAG, "onDestroy() Activity");
-        doUnbindService();
+    private PKIManager.ProvisioningServerListener mProvisioningServerListener = new PKIManager.ProvisioningServerListener() {
+        @Override
+        public void managerDidReceiveResponseFromServer(PKIServerResponse response) {
+            if (response.getStatus() == PKIServerResponse.Status.VERIFICATION_NEEDED) {
+                mValidatingToken = true;
+                mAllValidCertsAcquired = false;
 
-        super.onDestroy();
-        //For testing cleanup
-        //Intent i = new Intent(this, RviService.class);
-        //stopService(i);
+                mLoginActivityFragment.setVerifyButtonEnabled(true);
+                mLoginActivityFragment.setStatusTextText("Resend email");
+                mLoginActivityFragment.setStatusTextText("Please check your email account and click the 'Verify' link.");
+
+                mLoginActivityFragment.setHasKeys(true);
+                mLoginActivityFragment.setHasSignedCerts(false);
+
+            } else if (response.getStatus() == PKIServerResponse.Status.CERTIFICATE_RESPONSE) {
+                Log.d(TAG, "Got server stuff, trying to connect");
+
+                mValidatingToken = false;
+                mAllValidCertsAcquired = true;
+
+                mLoginActivityFragment.setHasKeys(true);
+                mLoginActivityFragment.setHasSignedCerts(true);
+
+                PKICertificateResponse certificateResponse = (PKICertificateResponse) response;
+
+                setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtCredentials());
+                launchLockActivityWhenReady();
+            } else if (response.getStatus() == PKIServerResponse.Status.ERROR) {
+
+                mLoginActivityFragment.setHasKeys(true);
+                mLoginActivityFragment.setHasSignedCerts(false);
+
+                if (!mValidatingToken) {
+                    mLoginActivityFragment.setVerifyButtonEnabled(true);
+
+                    mLoginActivityFragment.setStatusTextText("Resend");
+                    mLoginActivityFragment.setStatusTextText("An error occurred when sending your certificate signing request to the server.");
+                } else {
+                    mLoginActivityFragment.setVerifyButtonEnabled(true);
+
+                    mLoginActivityFragment.setStatusTextText("Resend email");
+                    mLoginActivityFragment.setStatusTextText("An error occurred when verifying your email. Please click the email link again or the button to send a new email.");
+                }
+            }
+        }
+    };
+
+    private PKIManager.CertificateSigningRequestGeneratorListener mCertificateSigningRequestGeneratorListener = new PKIManager.CertificateSigningRequestGeneratorListener() {
+        @Override
+        public void generateCertificateSigningRequestSucceeded(String certificateSigningRequest) {
+            Log.d(TAG, "Sending certificate signing request to server.");
+
+            mLoginActivityFragment.setVerifyButtonText("Resend email");
+            mLoginActivityFragment.setStatusTextText("Connecting to server. Please check your email in a few minutes and click the 'Verify' link.");
+
+            mLoginActivityFragment.setHasKeys(true);
+            mLoginActivityFragment.setHasSignedCerts(false);
+
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+            String provisioningServerUrl = "http://" + preferences.getString("pref_provisioning_server_url", "38.129.64.40") + ":" + preferences.getString("pref_provisioning_server_port", "8000");
+
+            PKICertificateSigningRequestRequest request = new PKICertificateSigningRequestRequest(certificateSigningRequest);
+
+            PKIManager.sendCertificateSigningRequest(LoginActivity.this, mProvisioningServerListener, provisioningServerUrl, DEFAULT_PROVISIONING_SERVER_CSR_URL, request);
+        }
+
+        @Override
+        public void generateCertificateSigningRequestFailed(Throwable reason) {
+            mLoginActivityFragment.setVerifyButtonEnabled(true);
+
+            mLoginActivityFragment.setStatusTextText("Try again");
+            mLoginActivityFragment.setStatusTextText("An error occurred when generating your keys and certificates.");
+
+            mLoginActivityFragment.setHasKeys(false);
+            mLoginActivityFragment.setHasSignedCerts(false);
+        }
+    };
+
+    private void setUpRviAndConnectToServer(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceCertificatePassword, ArrayList<String> newCredentials) {
+        try {
+            RVILocalNode.setServerKeyStore(serverCertificateKeyStore);
+            RVILocalNode.setDeviceKeyStore(deviceCertificateKeyStore);
+            RVILocalNode.setDeviceKeyStorePassword(deviceCertificatePassword);
+
+            if (newCredentials != null)
+                RVILocalNode.setCredentials(this, newCredentials);
+
+            ServerNode.connect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void launchLockActivityWhenReady() {
+        if (mBluetoothRangingServiceConnected && mAllValidCertsAcquired) {
+            Intent intent = new Intent();
+
+            intent.setClass(LoginActivity.this, LockActivity.class);
+            startActivityForResult(intent, 0);
+        }
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            //mService = new Messenger(service);
 
-            mRviServerConnected = true;
+            mBluetoothRangingServiceConnected = true;
 
-            rviService = ((RviService.RviBinder)service).getService();
+            mBluetoothRangingService = ((BluetoothRangingService.BluetoothRangingServiceBinder)service).getService();
 
-            rviService
+            mBluetoothRangingService
                     .servicesAvailable()
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -188,59 +258,34 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                         }
                     });
 
-            // Tell the user about this for our demo.
-            Toast.makeText(LoginActivity.this, "RVI service connected", Toast.LENGTH_SHORT).show();
+            Toast.makeText(LoginActivity.this, "Bluetooth ranger service connected", Toast.LENGTH_SHORT).show();
 
-            doTheRviThingIfEverythingElseIsComplete();
+            launchLockActivityWhenReady();
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            mRviServerConnected = false;
+            mBluetoothRangingServiceConnected = false;
 
-            rviService = null;
-            Toast.makeText(LoginActivity.this, "RVI service disconnected", Toast.LENGTH_SHORT).show();
+            mBluetoothRangingService = null;
+            Toast.makeText(LoginActivity.this, "Bluetooth ranger service disconnected", Toast.LENGTH_SHORT).show();
         }
     };
 
+    void doBindService() {
+        bindService(new Intent(LoginActivity.this, BluetoothRangingService.class), mConnection, Context.BIND_AUTO_CREATE);
+        mBluetoothRangingServiceBound = true;
+    }
 
-    private void doTheRviThingIfEverythingElseIsComplete() {
-        if (mRviServerConnected && mAllValidCertsAcquired) {
-            rviService.setServerKeyStore(mServerCertificateKeyStoreHolder);
-            rviService.setDeviceKeyStore(mDeviceCertificateKeyStoreHolder);
-            rviService.setDeviceKeyStorePassword(null);
-
-            if (mDefaultPrivilegesHolder != null)
-                rviService.setPrivileges(mDefaultPrivilegesHolder);
-
-            rviService.tryConnectingServerNode();
-
-            Intent intent = new Intent();
-
-            intent.setClass(LoginActivity.this, LockActivity.class);
-            startActivity(intent);
+    void doUnbindService() {
+        if (mBluetoothRangingServiceBound) {
+            unbindService(mConnection);
+            mBluetoothRangingServiceBound = false;
         }
     }
 
     @Override
     public void onButtonCommand(View v) {
         submit(v);
-    }
-
-    void doBindService() {
-        // Establish a connection with the service.  We use an explicit
-        // class name because we want a specific service implementation that
-        // we know will be running in our own process (and thus won't be
-        // supporting component replacement by other applications).
-        bindService(new Intent(LoginActivity.this, RviService.class), mConnection, Context.BIND_AUTO_CREATE);
-        bound = true;
-    }
-
-    void doUnbindService() {
-        if (bound) {
-            // Detach our existing connection.
-            unbindService(mConnection);
-            bound = false;
-        }
     }
 
     public void submit(View v) {
@@ -253,73 +298,83 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         end.add(Calendar.YEAR, 1);
 
         mLoginActivityFragment.setVerifyButtonEnabled(false);
-        mLoginActivityFragment.setStatusTextText("Connecting to server. Please check your email in a few minutes.");
+        mLoginActivityFragment.setStatusTextText("Generating keys and certificates. Please wait.");
 
-        PKIManager.generateKeyPairAndCertificateSigningRequest(this, new PKIManager.CertificateSigningRequestGeneratorListener() {
-            @Override
-            public void generateCertificateSigningRequestSucceeded(String certificateSigningRequest) {
+        mLoginActivityFragment.setHasKeys(false);
+        mLoginActivityFragment.setHasSignedCerts(false);
 
-                mLoginActivityFragment.setVerifyButtonEnabled(true);
-                mLoginActivityFragment.setStatusTextText("Resend email");
-                mLoginActivityFragment.setStatusTextText("Please check your email account and click the link.");
-
-                PKIManager.sendCertificateSigningRequest(LoginActivity.this, new PKIManager.ProvisioningServerListener() {
-                    @Override
-                    public void certificateSigningRequestSuccessfullySent() {
-
-                    }
-
-                    @Override
-                    public void certificateSigningRequestSuccessfullyReceived() {
-
-                    }
-
-                    @Override
-                    public void managerDidReceiveServerSignedStuff(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceKeyStorePassword, ArrayList<String> defaultPrivileges) {
-                        Log.d(TAG, "Got server stuff, trying to connect");
-
-                        mServerCertificateKeyStoreHolder = serverCertificateKeyStore;
-                        mDeviceCertificateKeyStoreHolder = deviceCertificateKeyStore;
-                        mDefaultPrivilegesHolder         = defaultPrivileges;
-
-                        mValidatingToken       = false;
-                        mAllValidCertsAcquired = true;
-
-                        doTheRviThingIfEverythingElseIsComplete();
-                    }
-                }, DEFAULT_PROVISIONING_SERVER_BASE_URL, DEFAULT_PROVISIONING_SERVER_CSR_URL, certificateSigningRequest, true);
-            }
-
-            @Override
-            public void generateCertificateSigningRequestFailed(Throwable reason) {
-                // TODO: Update ui with failure message
-            }
-
-        }, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT, email.replace("+", "\\+"));
-
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//
-//        BKTask task = new BKTask(this);
-//        task.setUser(mLoginActivityFragment.mEmail.getEditableText().toString());
-//        task.setpWd(mLoginActivityFragment.password.getEditableText().toString());
-//        task.execute(new String[]{prefs.getString("pref_login_url", "http://rvi-test2.nginfotpdx.net:8000/token/new.json")});
+        PKIManager.generateKeyPairAndCertificateSigningRequest(this, mCertificateSigningRequestGeneratorListener,
+                start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT, email.replace("+", "\\+"));
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_login, menu);
         return true;
     }
 
+    void confirmationAlert(final int id, String actionMessage) {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        if (id == R.id.action_delete_all_keys_certs) {
+
+                            ServerNode.disconnect();
+
+                            PKIManager.deleteAllKeysAndCerts(LoginActivity.this);
+                            RVILocalNode.removeAllCredentials(LoginActivity.this);
+                            ServerNode.deleteUserData();
+
+                            mValidatingToken       = false;
+                            mAllValidCertsAcquired = false;
+
+                            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
+                            mLoginActivityFragment.hideControls(false);
+                            mLoginActivityFragment.setVerifyButtonEnabled(true);
+
+
+                        } else if (id == R.id.action_delete_server_certs) {
+
+                            ServerNode.disconnect();
+
+                            PKIManager.deleteServerCerts(LoginActivity.this);
+                            RVILocalNode.removeAllCredentials(LoginActivity.this);
+
+                            mValidatingToken       = false;
+                            mAllValidCertsAcquired = false;
+
+                            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
+                            mLoginActivityFragment.hideControls(false);
+                            mLoginActivityFragment.setVerifyButtonEnabled(true);
+
+                        } else if (id == R.id.action_restore_defaults) {
+
+                            PreferenceManager.getDefaultSharedPreferences(LoginActivity.this).edit().clear().apply();
+                            PreferenceManager.setDefaultValues(LoginActivity.this, R.xml.advanced, true);
+
+                        }
+
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure you want to " + actionMessage + "?")
+                .setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("Cancel", dialogClickListener).show();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent intent = new Intent();
 
@@ -328,71 +383,26 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
             return true;
 
-        } else if (id == R.id.action_reset) {
-            // TODO: Dialog
+        } else if (id == R.id.action_delete_all_keys_certs) {
+            confirmationAlert(id, "delete all your keys and certificates");
 
-            PKIManager.deleteKeysAndCerts(this);
-            RVILocalNode.removeAllCredentials(this);
+        } else if (id == R.id.action_delete_server_certs) {
+            confirmationAlert(id, "delete the server certificates");
 
-            mValidatingToken       = false;
-            mAllValidCertsAcquired = false;
-
-            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
-            mLoginActivityFragment.hideControls(false);
-            mLoginActivityFragment.setVerifyButtonEnabled(true);
-
-        } else if (id == R.id.action_reset_2) {
-            // TODO: Dialog
-
-            //PKIManager.deleteKeysAndCerts(this);
-            RVILocalNode.removeAllCredentials(this);
-
-            mValidatingToken       = false;
-            mAllValidCertsAcquired = false;
-
-            mLoginActivityFragment.setStatusTextText("The RVI Unlock Demo needs to verify your email address.");
-            mLoginActivityFragment.hideControls(false);
-            mLoginActivityFragment.setVerifyButtonEnabled(true);
+        } else if (id == R.id.action_restore_defaults) {
+            confirmationAlert(id, "reset all the settings");
 
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-//    public void setStatus(String msg) {
-//        try {
-//            JSONObject obj = new JSONObject(msg);
-//            status = obj.get("success").toString();
-//
-//        } catch(Exception e) {
-//            e.printStackTrace();
-//
-//        }
-//
-//        if (status.equals("true")) {
-//            Intent intent = new Intent();
-//
-//            intent.setClass(LoginActivity.this, LockActivity.class);
-//            startActivity(intent);
-//
-//        } else {
-//
-//            //mLoginActivityFragment.mEmail.setText("");
-//            //mLoginActivityFragment.password.setText("");
-//
-//            ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-//            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-//            if (networkInfo == null || networkInfo.getDetailedState() == NetworkInfo.DetailedState.DISCONNECTED) {
-//               Toast.makeText(LoginActivity.this, "Network unavailable", Toast.LENGTH_LONG).show();
-//            } else {
-//                Toast.makeText(LoginActivity.this, "username and password don't match", Toast.LENGTH_LONG).show();
-//            }
-//        }
-//    }
+    @Override
+    public void onDestroy() {
+        Log.i(TAG, "onDestroy() Activity");
+        doUnbindService();
 
-    public void onNewServiceDiscovered(String... service) {
-        for (String s : service)
-            Log.e(TAG, "Service = " + s);
+        super.onDestroy();
     }
 
     private void handleExtra(Intent intent) {

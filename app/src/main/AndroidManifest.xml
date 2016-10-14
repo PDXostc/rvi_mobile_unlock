@@ -40,7 +40,7 @@
         </activity>
 
         <service
-            android:name=".RviService"
+            android:name=".BluetoothRangingService"
             android:enabled="true"
             android:exported="true" >
         </service>
@@ -66,7 +66,8 @@
         <activity
             android:name=".LoginActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

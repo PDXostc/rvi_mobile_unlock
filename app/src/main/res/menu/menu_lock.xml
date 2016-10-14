@@ -11,10 +11,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".LockActivity">
+
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
-    <item android:id="@+id/action_reset" android:title="@string/action_reset"
+
+    <item android:id="@+id/action_delete_all_keys_certs" android:title="@string/delete_all_keys_certs"
         android:orderInCategory="101" app:showAsAction="never" />
-    <item android:id="@+id/action_quit" android:title="@string/action_quit"
+
+    <item android:id="@+id/action_delete_server_certs" android:title="@string/delete_server_certs"
         android:orderInCategory="102" app:showAsAction="never" />
+
+    <item android:id="@+id/action_restore_defaults" android:title="@string/restore_defaults"
+        android:orderInCategory="103" app:showAsAction="never" />
+
+    <item android:id="@+id/action_quit" android:title="@string/action_quit"
+        android:orderInCategory="104" app:showAsAction="never" />
 </menu>

@@ -20,13 +20,14 @@
         android:layout_height="wrap_content"
         android:hint="Please enter a valid email address"
         android:inputType="textEmailAddress"
-        android:textCursorDrawable="@color/white"
         android:textSize="20sp"
+        android:layout_marginTop="140dp"
         app:met_baseColor="@android:color/white"
         app:met_floatingLabel="highlight"
         app:met_primaryColor="?colorAccent"
-        app:met_singleLineEllipsis="true" />
+        app:met_singleLineEllipsis="true"/>
 
+    <!--android:textCursorDrawable="@color/white"-->
 
     <!--<com.rengwuxian.materialedittext.MaterialEditText-->
         <!--android:id="@+id/password"-->
@@ -53,9 +54,34 @@
 
     <TextView
         android:id="@+id/statusText"
-        android:text=""
+        android:text="fdsfds"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAlignment="center"/>
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textAlignment="center"
+        android:textColor="#cccccc"
+        android:textSize="14sp"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/has_keys_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/key_off"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"/>
+
+        <ImageView
+            android:id="@+id/has_signed_certs_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/cert_off"
+            android:layout_alignParentBottom="true"
+            android:layout_toLeftOf="@+id/has_keys_icon"/>
+    </RelativeLayout>
 
 </LinearLayout>
