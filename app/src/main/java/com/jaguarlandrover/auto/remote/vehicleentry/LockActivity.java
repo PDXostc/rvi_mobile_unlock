@@ -24,12 +24,12 @@ import com.jaguarlandrover.pki.PKIManager;
 import com.jaguarlandrover.rvi.RVILocalNode;
 
 
-public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener {
+public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener, ServerNode.Listener, VehicleNode.Listener {
     private static final String TAG = "UnlockDemo/LockActivity";
 
     private Handler userDataCheckerHandler;
     private Handler guestActivityCheckerHandler;
-    LockActivityFragment lock_fragment = null;
+    LockActivityFragment mLockActivityFragment = null;
 
 
     @Override
@@ -43,9 +43,12 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         guestActivityCheckerHandler = new Handler();
 
         setContentView(R.layout.activity_lock);
-        lock_fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlock);
+        mLockActivityFragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlock);
 
         startRepeatingTasks();
+
+        ServerNode.addListener(this);
+        VehicleNode.addListener(this);
     }
 
     Runnable userDataCheckerRunnable = new Runnable()
@@ -126,6 +129,9 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         Log.i(TAG, "onDestroy() Activity");
 
         stopRepeatingTasks();
+
+        ServerNode.removeListener(this);
+        VehicleNode.removeListener(this);
 
         super.onDestroy();
     }
@@ -239,7 +245,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        lock_fragment.updateUserInterface();
+                        mLockActivityFragment.updateUserInterface();
                     }
                 });
         AlertDialog alert = builder.create();
@@ -309,5 +315,27 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             notifyGuestUsedKey(report.getUserName(), report.getServiceIdentifier());
             ServerNode.setThereIsNewInvokedServiceReport(false);
         }
+    }
+
+    @Override
+    public void serverNodeDidConnect() {
+        mLockActivityFragment.setServerConnected(true);
+    }
+
+    @Override
+    public void serverNodeDidDisconnect() {
+        mLockActivityFragment.setServerConnected(false);
+    }
+
+    @Override
+    public void vehicleNodeDidConnect() {
+        mLockActivityFragment.setVehicleConnected(true);
+
+    }
+
+    @Override
+    public void vehicleNodeDidDisconnect() {
+        mLockActivityFragment.setVehicleConnected(false);
+
     }
 }

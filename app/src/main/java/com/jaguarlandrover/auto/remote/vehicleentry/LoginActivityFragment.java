@@ -124,15 +124,15 @@ public class LoginActivityFragment extends Fragment {
 
     void setHasKeys(boolean hasKeys) {
         if (hasKeys)
-            mHasKeysImageView.setImageResource(R.drawable.key_on);//getResources().getIdentifier("@drawable/key_on", null, null));
+            mHasKeysImageView.setImageResource(R.drawable.key_on);
         else
-            mHasKeysImageView.setImageResource(R.drawable.key_off);//getResources().getIdentifier("@drawable/key_off", null, null));
+            mHasKeysImageView.setImageResource(R.drawable.key_off);
     }
 
     void setHasSignedCerts(boolean hasSignedCerts) {
         if (hasSignedCerts)
-            mHasSignedCertsImageView.setImageResource(R.drawable.key_off);//getResources().getIdentifier("@drawable/key_on", null, null));
+            mHasSignedCertsImageView.setImageResource(R.drawable.cert_off);
         else
-            mHasSignedCertsImageView.setImageResource(R.drawable.key_off);//getResources().getIdentifier("@drawable/key_off", null, null));
+            mHasSignedCertsImageView.setImageResource(R.drawable.cert_on);
     }
 }

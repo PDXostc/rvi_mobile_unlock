@@ -32,6 +32,11 @@ class ServerNode
 {
     private final static String TAG = "UnlockDemo/ServerNode__";
 
+    interface Listener {
+        void serverNodeDidConnect();
+        void serverNodeDidDisconnect();
+    }
+
     /* * * * * * * * * * * * * * * * * * * * Static variables * * * * * * * * * * * * * * * * * * **/
     private static Context applicationContext = UnlockApplication.getContext();
 
@@ -40,6 +45,7 @@ class ServerNode
 
     private static RVIRemoteNode rviNode = new RVIRemoteNode(null);
 
+    private static ArrayList<Listener> listeners = new ArrayList<>();
 
     /* * * * * * * * * * * * * * * * * * SharedPreferences keys * * * * * * * * * * * * * * * * * **/
     private final static String NEW_USER_DATA_KEY               = "NEW_USER_DATA_KEY";
@@ -118,6 +124,9 @@ class ServerNode
                 needsToRequestNewCredentials = true;
 
                 stopRepeatingTask();
+
+                for (Listener listener : listeners)
+                    listener.serverNodeDidConnect();
             }
 
             @Override
@@ -136,6 +145,9 @@ class ServerNode
                 /* Try and reconnect */
                 if (shouldTryAndReconnect)
                     startRepeatingTask();
+
+                for (Listener listener : listeners)
+                    listener.serverNodeDidDisconnect();
             }
 
             @Override
@@ -268,6 +280,10 @@ class ServerNode
         rviNode.disconnect();
     }
 
+    static boolean isConnected() {
+        return connectionStatus == ConnectionStatus.CONNECTED;
+    }
+
     static void requestCredentials() {
         Log.d(TAG, "Requesting credentials from RVI provisioning server.");
 
@@ -387,5 +403,13 @@ class ServerNode
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, isNewReport);
         editor.commit();
+    }
+
+    static void addListener(Listener listener) {
+        listeners.add(listener);
+    }
+
+    static void removeListener(Listener listener) {
+        listeners.remove(listener);
     }
 }

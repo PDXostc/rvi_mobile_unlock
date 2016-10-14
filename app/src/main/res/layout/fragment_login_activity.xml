@@ -79,7 +79,7 @@
             android:id="@+id/has_signed_certs_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/key_off"
+            android:src="@drawable/cert_off"
             android:layout_alignParentBottom="true"
             android:layout_toLeftOf="@+id/has_keys_icon"/>
     </RelativeLayout>

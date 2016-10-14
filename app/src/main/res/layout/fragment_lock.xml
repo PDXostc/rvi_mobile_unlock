@@ -8,6 +8,7 @@
 
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
               xmlns:tools="http://schemas.android.com/tools"
               style="@style/AppTheme"
               android:orientation="vertical"
@@ -22,21 +23,6 @@
             android:layout_height="0dp"
             android:background="@drawable/background"
             android:layout_weight="40">
-
-        <TextView
-                android:id="@+id/user_header"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="bottom"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="25dp"
-                android:paddingBottom="5dp"
-                android:paddingTop="10dp"
-                android:text="@string/user_header"
-                android:textColor="@color/white"
-                android:textSize="20sp"/>
-
 
         <TextView
                 android:id="@+id/vehicle_header"
@@ -308,6 +294,50 @@
         </RelativeLayout>
     </FrameLayout>
 
+    <RelativeLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@drawable/background"
+            android:layout_weight="40">
+
+        <TextView
+            android:id="@+id/user_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:text="Disconnected from server"
+            android:textColor="@color/white"
+            android:textSize="20sp"/>
+
+
+        <ImageView
+            android:id="@+id/server_connected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/disconnected"
+            android:layout_alignParentRight="true"/>
+
+        <ImageView
+            android:id="@+id/vehicle_connected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/disconnected"
+            android:layout_toLeftOf="@+id/server_connected"/>
+
+    </RelativeLayout>
+
+    <View
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@android:color/white"/>
+
     <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
@@ -328,12 +358,6 @@
                 android:textSize="20sp"/>
 
     </LinearLayout>
-
-    <View
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:background="@android:color/white"/>
 
     <LinearLayout
             android:id="@+id/key_management_layout"
