@@ -179,6 +179,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         public void generateCertificateSigningRequestSucceeded(String certificateSigningRequest) {
             Log.d(TAG, "Sending certificate signing request to server.");
 
+            mLoginActivityFragment.setVerifyButtonText("Resend email");
             mLoginActivityFragment.setStatusTextText("Connecting to server. Please check your email in a few minutes and click the 'Verify' link.");
 
             mLoginActivityFragment.setHasKeys(true);
@@ -297,7 +298,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         end.add(Calendar.YEAR, 1);
 
         mLoginActivityFragment.setVerifyButtonEnabled(false);
-        mLoginActivityFragment.setStatusTextText("Generating keys and certificates.");
+        mLoginActivityFragment.setStatusTextText("Generating keys and certificates. Please wait.");
 
         mLoginActivityFragment.setHasKeys(false);
         mLoginActivityFragment.setHasSignedCerts(false);

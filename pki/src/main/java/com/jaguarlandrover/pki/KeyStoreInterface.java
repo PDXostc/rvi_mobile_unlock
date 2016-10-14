@@ -77,7 +77,7 @@ class KeyStoreInterface
     private final static String PEM_CERTIFICATE_SIGNING_REQUEST_HEADER_FOOTER_STRING = "CERTIFICATE REQUEST";
     private final static String PEM_PUBLIC_KEY_HEADER_FOOTER_STRING                  = "PUBLIC KEY";
 
-    private final static Integer KEY_SIZE = 4096;
+    private final static Integer KEY_SIZE = 2048;//4096;
 
     static void generateKeyPairAndCertificateSigningRequest(Context context, PKIManager.CertificateSigningRequestGeneratorListener listener, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
         new CertificateSigningRequestGeneratorTask(listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, context, startDate, endDate, principalFormatterPattern, principalFormatterArgs);

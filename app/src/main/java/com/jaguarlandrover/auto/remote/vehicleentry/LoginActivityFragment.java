@@ -131,8 +131,8 @@ public class LoginActivityFragment extends Fragment {
 
     void setHasSignedCerts(boolean hasSignedCerts) {
         if (hasSignedCerts)
-            mHasSignedCertsImageView.setImageResource(R.drawable.cert_off);
-        else
             mHasSignedCertsImageView.setImageResource(R.drawable.cert_on);
+        else
+            mHasSignedCertsImageView.setImageResource(R.drawable.cert_off);
     }
 }
