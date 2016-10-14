@@ -92,9 +92,9 @@ public class KeyRevokeActivity extends ActionBarActivity
 
     public User selectKey() {
 
-        ArrayList<User> guestUsers = ServerNode.getUserData().getGuests();
+        //ArrayList<User> guestUsers = ServerNode.getUserData().getGuests();
 
-        return guestUsers.get(mPosition);
+        return mFilteredRemotes.get(mPosition);
     }
 
     @Override
