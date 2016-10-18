@@ -20,13 +20,16 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.jaguarlandrover.pki.PKIManager;
+import com.jaguarlandrover.rvi.RVILocalNode;
 
-public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener {
+
+public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener, ServerNode.Listener, VehicleNode.Listener {
     private static final String TAG = "UnlockDemo/LockActivity";
 
     private Handler userDataCheckerHandler;
     private Handler guestActivityCheckerHandler;
-    LockActivityFragment lock_fragment = null;
+    LockActivityFragment mLockActivityFragment = null;
 
 
     @Override
@@ -40,9 +43,12 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         guestActivityCheckerHandler = new Handler();
 
         setContentView(R.layout.activity_lock);
-        lock_fragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlock);
+        mLockActivityFragment = (LockActivityFragment) getFragmentManager().findFragmentById(R.id.fragmentlock);
 
         startRepeatingTasks();
+
+        ServerNode.addListener(this);
+        VehicleNode.addListener(this);
     }
 
     Runnable userDataCheckerRunnable = new Runnable()
@@ -124,6 +130,9 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
         stopRepeatingTasks();
 
+        ServerNode.removeListener(this);
+        VehicleNode.removeListener(this);
+
         super.onDestroy();
     }
 
@@ -132,6 +141,68 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         getMenuInflater().inflate(R.menu.menu_lock, menu);
 
         return true;
+    }
+
+    void confirmationAlert(final int id, String actionMessage) {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        if (id == R.id.action_delete_all_keys_certs) {
+
+                            ServerNode.disconnect();
+
+                            PKIManager.deleteAllKeysAndCerts(LockActivity.this);
+                            RVILocalNode.removeAllCredentials(LockActivity.this);
+                            ServerNode.deleteUserData();
+
+                            Intent intent = new Intent();
+                            intent.setClass(LockActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+
+                        } else if (id == R.id.action_delete_server_certs) {
+
+                            ServerNode.disconnect();
+
+                            PKIManager.deleteServerCerts(LockActivity.this);
+                            RVILocalNode.removeAllCredentials(LockActivity.this);
+
+                            Intent intent = new Intent();
+                            intent.setClass(LockActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+
+                        } else if (id == R.id.action_restore_defaults) {
+
+                            ServerNode.disconnect();
+
+                            PreferenceManager.getDefaultSharedPreferences(LockActivity.this).edit().clear().apply();
+                            PreferenceManager.setDefaultValues(LockActivity.this, R.xml.advanced, true);
+
+                            ServerNode.connect();
+
+                        } else if (id == R.id.action_quit) {
+                            Intent i = new Intent(LockActivity.this, BluetoothRangingService.class);
+                            stopService(i);
+                            finish();
+
+                        }
+
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure you want to " + actionMessage + "?")
+                .setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("Cancel", dialogClickListener).show();
     }
 
     @Override
@@ -145,16 +216,17 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
 
             return true;
 
-        } else if (id == R.id.action_reset) {
-            PreferenceManager.getDefaultSharedPreferences(this).edit().clear().apply();
-            PreferenceManager.setDefaultValues(this, R.xml.advanced, true);
+        } else if (id == R.id.action_delete_all_keys_certs) {
+            confirmationAlert(id, "delete all your keys and certificates");
 
-            return true;
+        } else if (id == R.id.action_delete_server_certs) {
+            confirmationAlert(id, "delete the server certificates");
+
+        } else if (id == R.id.action_restore_defaults) {
+            confirmationAlert(id, "reset all the settings");
 
         } else if (id == R.id.action_quit) {
-            Intent i = new Intent(this, RviService.class);
-            stopService(i);
-            finish();
+            confirmationAlert(id, "quit");
 
         }
 
@@ -173,7 +245,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        lock_fragment.updateUserInterface();
+                        mLockActivityFragment.updateUserInterface();
                     }
                 });
         AlertDialog alert = builder.create();
@@ -203,7 +275,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
         Integer selectedVehicleIndex = user.getSelectedVehicleIndex();
 
         if (selectedVehicleIndex == -1) {
-            return; // TODO: error
+            return; // TODO: error #amm
         }
 
         String vehicleString = user.getVehicles().get(selectedVehicleIndex).toString();
@@ -243,5 +315,27 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
             notifyGuestUsedKey(report.getUserName(), report.getServiceIdentifier());
             ServerNode.setThereIsNewInvokedServiceReport(false);
         }
+    }
+
+    @Override
+    public void serverNodeDidConnect() {
+        mLockActivityFragment.setServerConnected(true);
+    }
+
+    @Override
+    public void serverNodeDidDisconnect() {
+        mLockActivityFragment.setServerConnected(false);
+    }
+
+    @Override
+    public void vehicleNodeDidConnect() {
+        mLockActivityFragment.setVehicleConnected(true);
+
+    }
+
+    @Override
+    public void vehicleNodeDidDisconnect() {
+        mLockActivityFragment.setVehicleConnected(false);
+
     }
 }

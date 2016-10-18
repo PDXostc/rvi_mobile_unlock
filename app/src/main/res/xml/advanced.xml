@@ -18,33 +18,33 @@
     <PreferenceCategory
         android:title="RVI Server"
         android:key="pref_key_rvi_server">
-        <EditTextPreference android:title="RVI Server"
+        <EditTextPreference android:title="RVI Server URL"
             android:key="pref_rvi_server"
-            android:summary="RVI cloud server"
-            android:defaultValue="rvi-test1.nginfotpdx.net"
+            android:summary="RVI server URL"
+            android:defaultValue="38.129.64.40"
             />
         <EditTextPreference android:title="RVI Server Port"
             android:key="pref_rvi_server_port"
-            android:summary="RVI cloud server port"
-            android:defaultValue="8807"
+            android:summary="RVI server port"
+            android:defaultValue="9010"
             android:inputType="numberDecimal"
             />
 
     </PreferenceCategory>
     <PreferenceCategory
-        android:title="Login URL"
-        android:key="pref_key_login_url">
-        <EditTextPreference android:title="Login URL"
-            android:key="pref_login_url"
-            android:summary="Login URL"
-            android:defaultValue="http://rvi-test2.nginfotpdx.net:8000/token/new.json"
+        android:title="Provisioning Server"
+        android:key="pref_key_provisioning_server">
+        <EditTextPreference android:title="Provisioning Server URL"
+            android:key="pref_provisioning_server_url"
+            android:summary="Provisioning server URL"
+            android:defaultValue="38.129.64.40"
             />
-        <!--<EditTextPreference android:title="Login URL Port"-->
-            <!--android:key="pref_login_url_port"-->
-            <!--android:summary="Login URL port"-->
-            <!--android:defaultValue="8807"-->
-            <!--android:inputType="numberDecimal"-->
-            <!--/>-->
+        <EditTextPreference android:title="Provisioning Server Port"
+            android:key="pref_provisioning_server_port"
+            android:summary="Provisioning server port"
+            android:defaultValue="8000"
+            android:inputType="numberDecimal"
+            />
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Bluetooth"

@@ -32,6 +32,11 @@ class ServerNode
 {
     private final static String TAG = "UnlockDemo/ServerNode__";
 
+    interface Listener {
+        void serverNodeDidConnect();
+        void serverNodeDidDisconnect();
+    }
+
     /* * * * * * * * * * * * * * * * * * * * Static variables * * * * * * * * * * * * * * * * * * **/
     private static Context applicationContext = UnlockApplication.getContext();
 
@@ -40,6 +45,7 @@ class ServerNode
 
     private static RVIRemoteNode rviNode = new RVIRemoteNode(null);
 
+    private static ArrayList<Listener> listeners = new ArrayList<>();
 
     /* * * * * * * * * * * * * * * * * * SharedPreferences keys * * * * * * * * * * * * * * * * * **/
     private final static String NEW_USER_DATA_KEY               = "NEW_USER_DATA_KEY";
@@ -101,6 +107,7 @@ class ServerNode
     }
 
     private static ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
+    private static boolean shouldTryAndReconnect = false;
     private static boolean needsToRequestNewCredentials = false;
 
     private static ServerNode ourInstance = new ServerNode();
@@ -117,6 +124,9 @@ class ServerNode
                 needsToRequestNewCredentials = true;
 
                 stopRepeatingTask();
+
+                for (Listener listener : listeners)
+                    listener.serverNodeDidConnect();
             }
 
             @Override
@@ -133,7 +143,11 @@ class ServerNode
                 connectionStatus = ConnectionStatus.DISCONNECTED;
 
                 /* Try and reconnect */
-                startRepeatingTask();
+                if (shouldTryAndReconnect)
+                    startRepeatingTask();
+
+                for (Listener listener : listeners)
+                    listener.serverNodeDidDisconnect();
             }
 
             @Override
@@ -156,7 +170,7 @@ class ServerNode
                     case CREDENTIAL_MANAGEMENT_BUNDLE:
                         switch (serviceParts[1]) {
                             case UPDATE_CREDENTIALS:
-                                // TODO: Check this
+                                // TODO: Check this #amm
                                 ArrayList<String> credentials = (ArrayList<String>) ((LinkedTreeMap<String, Object>) parameters).get("credentials");
                                 RVILocalNode.setCredentials(applicationContext, credentials);
 
@@ -250,11 +264,24 @@ class ServerNode
         Log.d(TAG, "Attempting to connect to RVI provisioning server.");
 
         rviNode.setServerUrl(preferences.getString("pref_rvi_server", "38.129.64.40"));
-        rviNode.setServerPort(Integer.parseInt(preferences.getString("pref_rvi_server_port", "8807")));
+        rviNode.setServerPort(Integer.parseInt(preferences.getString("pref_rvi_server_port", "9010")));
 
         connectionStatus = ConnectionStatus.CONNECTING;
+        shouldTryAndReconnect = true;
 
         rviNode.connect();
+    }
+
+    static void disconnect() {
+        Log.d(TAG, "Disconnecting from the RVI provisioning server.");
+
+        shouldTryAndReconnect = false;
+
+        rviNode.disconnect();
+    }
+
+    static boolean isConnected() {
+        return connectionStatus == ConnectionStatus.CONNECTED;
     }
 
     static void requestCredentials() {
@@ -333,6 +360,10 @@ class ServerNode
             ServerNode.setThereIsNewUserData(true);
     }
 
+    static void deleteUserData() {
+        setUserData(new User().toString());
+    }
+
     static InvokedServiceReport getInvokedServiceReport() {
         String reportStr = preferences.getString(INVOKED_SERVICE_REPORT_KEY, null);
 
@@ -372,5 +403,13 @@ class ServerNode
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(NEW_INVOKED_SERVICE_REPORT_KEY, isNewReport);
         editor.commit();
+    }
+
+    static void addListener(Listener listener) {
+        listeners.add(listener);
+    }
+
+    static void removeListener(Listener listener) {
+        listeners.remove(listener);
     }
 }
