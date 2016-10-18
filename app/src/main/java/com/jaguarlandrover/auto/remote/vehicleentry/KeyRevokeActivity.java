@@ -51,7 +51,7 @@ public class KeyRevokeActivity extends ActionBarActivity
             }
         }
 
-        RemoteCredentialsAdapter adapter = new RemoteCredentialsAdapter(this, mFilteredRemotes);
+        KeyRevokeGuestKeysArrayAdapter adapter = new KeyRevokeGuestKeysArrayAdapter(this, mFilteredRemotes);
         ListView listView = (ListView) findViewById(R.id.sharedKeys);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {

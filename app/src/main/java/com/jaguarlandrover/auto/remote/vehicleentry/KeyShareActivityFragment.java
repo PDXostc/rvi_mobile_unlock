@@ -182,7 +182,7 @@ public class KeyShareActivityFragment extends Fragment
     }
 
     public void showUserSelect() {
-        ScrollPageAdapter userPageAdapter = new ScrollPageAdapter(getActivity(), mGuestUsers);
+        KeyShareGuestListScrollingPagerAdapter userPageAdapter = new KeyShareGuestListScrollingPagerAdapter(getActivity(), mGuestUsers);
         userPages.setAdapter(userPageAdapter);
         userPages.setOffscreenPageLimit(2);
         Log.d("ScrollPager", "Users");
