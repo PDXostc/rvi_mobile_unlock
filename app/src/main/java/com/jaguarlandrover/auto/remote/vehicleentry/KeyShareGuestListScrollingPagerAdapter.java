@@ -14,12 +14,12 @@ import java.util.List;
 /**
  * Created by rdz on 8/18/2015.
  */
-class ScrollPageAdapter extends PagerAdapter
+class KeyShareGuestListScrollingPagerAdapter extends PagerAdapter
 {
     Context mContext;
     LayoutInflater mLayoutInflater;
     List<String> mGuestUsers = null;
-    public ScrollPageAdapter(Context context, List<String> guestUsers){
+    public KeyShareGuestListScrollingPagerAdapter(Context context, List<String> guestUsers){
         mContext = context;
         mGuestUsers = guestUsers;
         mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);

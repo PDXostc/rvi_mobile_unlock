@@ -57,8 +57,6 @@ public class BluetoothRangingService extends Service {
 
         super.onCreate();
 
-        FobParamsManager.startUpdatingLocation();
-
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         //TODO base on VIN instead

@@ -18,6 +18,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import com.google.gson.annotations.SerializedName;
 import com.jaguarlandrover.rvi.RVIRemoteNode;
 import com.jaguarlandrover.rvi.RVIRemoteNodeListener;
 
@@ -172,14 +174,21 @@ public class VehicleNode
         rviNode.disconnect();
     }
 
+    static class FobParams
+    {
+        @SerializedName("command")
+        private String mCommand = "whatever";
+
+        FobParams() {
+        }
+    }
+
     static void sendFobSignal(String fobSignal) {
         Log.d(TAG, "Sending signal to car: " + fobSignal);
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
-        //String parameters = "{"command":"whatever"}";
-
-        rviNode.invokeService(FOB_SIGNAL_BUNDLE + "/" + fobSignal, new FobParamsManager.FobParams(), 5000);
+        rviNode.invokeService(FOB_SIGNAL_BUNDLE + "/" + fobSignal, new FobParams(), 5000);
 
         if (fobSignal.equals(FOB_SIGNAL_LOCK)) isUnlocked = false;
         if (fobSignal.equals(FOB_SIGNAL_UNLOCK)) isUnlocked = true;

@@ -13,16 +13,13 @@ import java.util.ArrayList;
 /**
  * Created by rdz on 8/13/2015.
  */
-//public class RemoteCredentialsAdapter extends ArrayAdapter<UserCredentials>{
-public class RemoteCredentialsAdapter extends ArrayAdapter<User>{
-    //public RemoteCredentialsAdapter(Context context, ArrayList<UserCredentials> remoteCredentials){
-    public RemoteCredentialsAdapter(Context context, ArrayList<User> remoteCredentials){
+public class KeyRevokeGuestKeysArrayAdapter extends ArrayAdapter<User>{
+    public KeyRevokeGuestKeysArrayAdapter(Context context, ArrayList<User> remoteCredentials){
         super(context, 0, remoteCredentials);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent){
-        //UserCredentials userCredentials = getItem(position);
         User user = ServerNode.getUserData();
         User guestUser = getItem(position);
 
