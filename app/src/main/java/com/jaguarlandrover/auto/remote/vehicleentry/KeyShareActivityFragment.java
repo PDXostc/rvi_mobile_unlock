@@ -43,11 +43,6 @@ public class KeyShareActivityFragment extends Fragment
     Vehicle mSelectedVehicle = new Vehicle();
     User mSnapshotUser = new User();
 
-    int[] users = {R.drawable.lilli,
-            R.drawable.magnus,
-            R.drawable.anson,
-    };
-
     List<String> mGuestUsers = new ArrayList<>();
 
     private ShareFragmentButtonListener buttonListener;

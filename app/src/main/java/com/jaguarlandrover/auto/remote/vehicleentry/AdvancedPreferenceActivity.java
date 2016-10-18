@@ -12,11 +12,7 @@ package com.jaguarlandrover.auto.remote.vehicleentry;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceGroup;
 
 /**
  * Created by stoffe on 6/20/15.
