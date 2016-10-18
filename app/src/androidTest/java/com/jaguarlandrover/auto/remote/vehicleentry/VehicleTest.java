@@ -56,117 +56,117 @@ public class VehicleTest extends TestCase
     }
 
     public void testPrettyFormattedDateTime_FromGoodString() {
-        UserCredentials userCredentials = new UserCredentials();
+        Vehicle vehicle = new Vehicle();
 
-        userCredentials.setValidFrom("2015-10-20T15:20:30.000Z");
-        userCredentials.setValidTo("2016-10-20T10:20:30.000Z");
+        vehicle.setValidFrom("2015-10-20T15:20:30.000Z");
+        vehicle.setValidTo("2016-10-20T10:20:30.000Z");
 
         /* Tests are going to fail when not in daylight savings or if not in Pacific timezone, but, frankly, I don't care */
-        assertEquals("10/20/2015 8:20 AM PDT", userCredentials.getValidFrom());
-        assertEquals("10/20/2016 3:20 AM PDT", userCredentials.getValidTo());
+        assertEquals("10/20/2015 8:20 AM PDT", vehicle.getValidFrom());
+        assertEquals("10/20/2016 3:20 AM PDT", vehicle.getValidTo());
     }
 
     public void testPrettyFormattedDateTime_From_AM_GMT_TO_AM_PDT() {
-        UserCredentials userCredentials = new UserCredentials();
+        Vehicle vehicle = new Vehicle();
 
-        userCredentials.setValidFrom("2015-10-20T09:20:30.000Z");
-        userCredentials.setValidTo("2016-10-20T10:20:30.000Z");
+        vehicle.setValidFrom("2015-10-20T09:20:30.000Z");
+        vehicle.setValidTo("2016-10-20T10:20:30.000Z");
 
         /* Tests are going to fail when not in daylight savings or if not in Pacific timezone, but, frankly, I don't care */
-        assertEquals("10/20/2015 2:20 AM PDT", userCredentials.getValidFrom());
-        assertEquals("10/20/2016 3:20 AM PDT", userCredentials.getValidTo());
+        assertEquals("10/20/2015 2:20 AM PDT", vehicle.getValidFrom());
+        assertEquals("10/20/2016 3:20 AM PDT", vehicle.getValidTo());
     }
 
     public void testPrettyFormattedDateTime_From_PM_GMT_TO_PM_PDT() {
-        UserCredentials userCredentials = new UserCredentials();
+        Vehicle vehicle = new Vehicle();
 
-        userCredentials.setValidFrom("2015-10-20T20:20:30.000Z");
-        userCredentials.setValidTo("2016-10-20T21:20:30.000Z");
+        vehicle.setValidFrom("2015-10-20T20:20:30.000Z");
+        vehicle.setValidTo("2016-10-20T21:20:30.000Z");
 
         /* Tests are going to fail when not in daylight savings or if not in Pacific timezone, but, frankly, I don't care */
-        assertEquals("10/20/2015 1:20 PM PDT", userCredentials.getValidFrom());
-        assertEquals("10/20/2016 2:20 PM PDT", userCredentials.getValidTo());
+        assertEquals("10/20/2015 1:20 PM PDT", vehicle.getValidFrom());
+        assertEquals("10/20/2016 2:20 PM PDT", vehicle.getValidTo());
     }
 
     public void testPrettyFormattedDateTime_From_PM_GMT_TO_AM_PDT() {
-        UserCredentials userCredentials = new UserCredentials();
+        Vehicle vehicle = new Vehicle();
 
-        userCredentials.setValidFrom("2015-10-20T16:20:30.000Z");
-        userCredentials.setValidTo("2016-10-20T17:20:30.000Z");
+        vehicle.setValidFrom("2015-10-20T16:20:30.000Z");
+        vehicle.setValidTo("2016-10-20T17:20:30.000Z");
 
         /* Tests are going to fail when not in daylight savings or if not in Pacific timezone, but, frankly, I don't care */
-        assertEquals("10/20/2015 9:20 AM PDT", userCredentials.getValidFrom());
-        assertEquals("10/20/2016 10:20 AM PDT", userCredentials.getValidTo());
+        assertEquals("10/20/2015 9:20 AM PDT", vehicle.getValidFrom());
+        assertEquals("10/20/2016 10:20 AM PDT", vehicle.getValidTo());
     }
 
     public void testPrettyFormattedDateTime_From_AM_GMT_TO_PM_PDT() {
-        UserCredentials userCredentials = new UserCredentials();
+        Vehicle vehicle = new Vehicle();
 
-        userCredentials.setValidFrom("2015-10-20T04:20:30.000Z");
-        userCredentials.setValidTo("2016-10-20T05:20:30.000Z");
+        vehicle.setValidFrom("2015-10-20T04:20:30.000Z");
+        vehicle.setValidTo("2016-10-20T05:20:30.000Z");
 
         /* Tests are going to fail when not in daylight savings or if not in Pacific timezone, but, frankly, I don't care */
-        assertEquals("10/19/2015 9:20 PM PDT", userCredentials.getValidFrom());
-        assertEquals("10/19/2016 10:20 PM PDT", userCredentials.getValidTo());
+        assertEquals("10/19/2015 9:20 PM PDT", vehicle.getValidFrom());
+        assertEquals("10/19/2016 10:20 PM PDT", vehicle.getValidTo());
     }
 
     public void testPrettyFormattedDateTimeFrom_FromBadString() {
-        UserCredentials userCredentials = new UserCredentials();
+        Vehicle vehicle = new Vehicle();
 
-        userCredentials.setValidFrom("2015/10/20 15:20:30");
-        userCredentials.setValidTo("2016/10/20 10:20:30 xxxxxxxxxx");
+        vehicle.setValidFrom("2015/10/20 15:20:30");
+        vehicle.setValidTo("2016/10/20 10:20:30 xxxxxxxxxx");
 
-        assertEquals("2015/10/20 15:20:30", userCredentials.getValidFrom());
-        assertEquals("2016/10/20 10:20:30 xxxxxxxxxx", userCredentials.getValidTo());
+        assertEquals("2015/10/20 15:20:30", vehicle.getValidFrom());
+        assertEquals("2016/10/20 10:20:30 xxxxxxxxxx", vehicle.getValidTo());
     }
 
     public void testPrettyFormattedDateTime_FromDate() {
-        UserCredentials userCredentials = new UserCredentials();
+        Vehicle vehicle = new Vehicle();
 
         Date from = new Date(1420136430000L);
         Date to = new Date(1420143630000L);
 
-        userCredentials.setValidFromAsDate(from); /* 01/01/2015 10:20:30 */
-        userCredentials.setValidToAsDate(to);     /* 01/01/2015 15:20:30 */
+        vehicle.setValidFromAsDate(from); /* 01/01/2015 10:20:30 */
+        vehicle.setValidToAsDate(to);     /* 01/01/2015 15:20:30 */
 
-        assertEquals("01/01/2015 10:20 AM PDT", userCredentials.getValidFrom());
-        assertEquals("01/01/2015 12:20 PM PDT", userCredentials.getValidTo());
+        assertEquals("01/01/2015 10:20 AM PDT", vehicle.getValidFrom());
+        assertEquals("01/01/2015 12:20 PM PDT", vehicle.getValidTo());
     }
 
     public void testIsKeyValid_Valid() {
-        UserCredentials userCredentials = new UserCredentials();
+        Vehicle vehicle = new Vehicle();
 
-        userCredentials.setValidFrom("2010-01-01T10:20:30.000Z"); /* 01/01/2010 */
-        userCredentials.setValidTo("2020-01-01T10:20:30.000Z");   /* 01/01/2020 */
+        vehicle.setValidFrom("2010-01-01T10:20:30.000Z"); /* 01/01/2010 */
+        vehicle.setValidTo("2020-01-01T10:20:30.000Z");   /* 01/01/2020 */
 
-        assertTrue(userCredentials.isKeyValid());
+        assertTrue(vehicle.isKeyValid());
     }
 
     public void testIsKeyValid_TooEarly() {
-        UserCredentials userCredentials = new UserCredentials();
+        Vehicle vehicle = new Vehicle();
 
-        userCredentials.setValidFrom("2010-01-01T10:20:30.000Z"); /* 01/01/2010 */
-        userCredentials.setValidTo("2011-01-01T10:20:30.000Z");   /* 01/01/2011 */
+        vehicle.setValidFrom("2010-01-01T10:20:30.000Z"); /* 01/01/2010 */
+        vehicle.setValidTo("2011-01-01T10:20:30.000Z");   /* 01/01/2011 */
 
-        assertFalse(userCredentials.isKeyValid());
+        assertFalse(vehicle.isKeyValid());
     }
 
     public void testIsKeyValid_TooLate() {
-        UserCredentials userCredentials = new UserCredentials();
+        Vehicle vehicle = new Vehicle();
 
-        userCredentials.setValidFrom("2020-01-01T10:20:30.000Z"); /* 01/01/2020 */
-        userCredentials.setValidTo("2021-01-01T10:20:30.000Z");   /* 01/01/2021 */
+        vehicle.setValidFrom("2020-01-01T10:20:30.000Z"); /* 01/01/2020 */
+        vehicle.setValidTo("2021-01-01T10:20:30.000Z");   /* 01/01/2021 */
 
-        assertFalse(userCredentials.isKeyValid());
+        assertFalse(vehicle.isKeyValid());
     }
 
     public void testIsKeyValid_TooEarlyAndTooLate() {
-        UserCredentials userCredentials = new UserCredentials();
+        Vehicle vehicle = new Vehicle();
 
-        userCredentials.setValidFrom("2020-01-01T10:20:30.000Z"); /* 01/01/2020 */
-        userCredentials.setValidTo("2010-01-01T10:20:30.000Z");   /* 01/01/2010 */
+        vehicle.setValidFrom("2020-01-01T10:20:30.000Z"); /* 01/01/2020 */
+        vehicle.setValidTo("2010-01-01T10:20:30.000Z");   /* 01/01/2010 */
 
-        assertFalse(userCredentials.isKeyValid());
+        assertFalse(vehicle.isKeyValid());
     }
 
     public void testIsKeyValid_Timezones() {
