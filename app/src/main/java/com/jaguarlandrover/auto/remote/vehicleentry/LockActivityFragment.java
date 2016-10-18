@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.v7.internal.view.menu.MenuView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,7 +40,7 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
     private ImageButton  mStart;
     private ImageButton  mStop;
     private ImageButton  mPanic;
-    private ImageButton  mChange;
+    private ImageButton mRevoke;
     private ImageButton  mShare;
     private TextView     mKeyLabel;
     private TextView     mValidDate;
@@ -80,10 +79,10 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
         mStop = (ImageButton) view.findViewById(R.id.stop);
         mPanic = (ImageButton) view.findViewById(R.id.panic);
         mShare = (ImageButton) view.findViewById(R.id.share);
-        mChange = (ImageButton) view.findViewById(R.id.change);
-        mKeyLabel = (TextView) view.findViewById(R.id.keysharelbl);
-        mValidDate = (TextView) view.findViewById(R.id.guestvalidDate);
-        mValidTime = (TextView) view.findViewById(R.id.guestvalidTime);
+        mRevoke = (ImageButton) view.findViewById(R.id.revoke);
+        mKeyLabel = (TextView) view.findViewById(R.id.key_share_label);
+        mValidDate = (TextView) view.findViewById(R.id.guest_valid_date);
+        mValidTime = (TextView) view.findViewById(R.id.guest_valid_time);
         mUserHeader = (TextView)view.findViewById(R.id.user_header);
         mVehicleHeader = (TextView) view.findViewById(R.id.vehicle_header);
         mKeyManagementLayout = (LinearLayout) view.findViewById(R.id.key_management_layout);
@@ -103,7 +102,7 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
         mStop.setOnClickListener(l);
         mPanic.setOnClickListener(l);
         mShare.setOnClickListener(l);
-        mChange.setOnClickListener(l);
+        mRevoke.setOnClickListener(l);
 
         mButtonListener = (LockFragmentButtonListener) getActivity();
 
@@ -153,45 +152,45 @@ public class LockActivityFragment extends Fragment implements AdapterView.OnItem
             SharedPreferences.Editor ed = sharedPref.edit();
             switch (v.getId()) {
                 case R.id.lock:
-                    Log.i(TAG, "LockBtn");
+                    Log.i(TAG, "LockButton");
                     ed.putBoolean(LOCKED_LBL, true);
                     mButtonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_LOCK);
                     break;
                 case R.id.unlock:
-                    Log.i(TAG, "UnlockBtn");
+                    Log.i(TAG, "UnlockButton");
                     ed.putBoolean(LOCKED_LBL, false);
                     mButtonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_UNLOCK);
                     break;
                 case R.id.trunk:
-                    Log.i(TAG, "TrunkBtn");
+                    Log.i(TAG, "TrunkButton");
                     ed.putBoolean("Gruka", false);
                     mButtonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_TRUNK);
                     break;
                 case R.id.find:
-                    Log.i(TAG, "FindBtn");
+                    Log.i(TAG, "FindButton");
                     ed.putBoolean("77", false);
                     mButtonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_LIGHTS);
                     break;
                 case R.id.start:
-                    Log.i(TAG, "StartBtn");
+                    Log.i(TAG, "StartButton");
                     ed.putBoolean(STOPPED_LBL, true);
                     mButtonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_START);
                     break;
                 case R.id.stop:
-                    Log.i(TAG, "StopBtn");
+                    Log.i(TAG, "StopButton");
                     ed.putBoolean(STOPPED_LBL, false);
                     mButtonListener.onButtonCommand(VehicleNode.FOB_SIGNAL_STOP);
                     break;
                 case R.id.share:
-                    Log.i(TAG, "ShareBtn");
+                    Log.i(TAG, "ShareButton");
                     mButtonListener.keyShareCommand("key_share");
                     break;
-                case R.id.change:
-                    Log.i(TAG, "ChangeBtn");
+                case R.id.revoke:
+                    Log.i(TAG, "RevokeButton");
                     mButtonListener.keyShareCommand("key_revoke");
                     break;
                 case R.id.panic:
-                    Log.i(TAG, "PanicBtn");
+                    Log.i(TAG, "PanicButton");
                     break;
             }
 

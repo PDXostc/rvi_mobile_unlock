@@ -27,7 +27,7 @@ public class KeyRevokeActivity extends ActionBarActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_key_change);
+        setContentView(R.layout.activity_key_revoke);
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -96,7 +96,7 @@ public class KeyRevokeActivity extends ActionBarActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_key_change, menu);
+        getMenuInflater().inflate(R.menu.menu_key_revoke, menu);
         return true;
     }
 
