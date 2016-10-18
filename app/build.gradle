@@ -11,8 +11,6 @@ android {
         versionCode 7
         versionName "1.0.6"
 
-
-
         multiDexEnabled true
     }
     buildTypes {

@@ -17,7 +17,7 @@ import java.util.Date;
 /**
  * <a href="http://d.android.com/tools/testing/testing_android.html">Testing Fundamentals</a>
  */
-public class UserCredentialsTest extends TestCase
+public class VehicleTest extends TestCase
 {
     Gson gson = new Gson();
 
@@ -32,13 +32,12 @@ public class UserCredentialsTest extends TestCase
     public void testPrettyFormattedDateTime_FromJson() {
         String jsonString =
                 "{\n" +
-                "    \"username\": \"marge\",\n" +
-                "    \"validTo\": \"2016-10-20T20:20:30.000Z\",\n" +
-                "    \"userType\": \"guest\",\n" +
-                "    \"guests\": [],\n" +
-                "    \"vehicleName\": \"F-Type\",\n" +
-                "    \"validFrom\": \"2015-10-20T10:20:30.000Z\",\n" +
-                "    \"authorizedServices\": {\n" +
+                "    \"vehicle_id\": \"12345\",\n" +
+                "    \"display_name\": \"12345\",\n" +
+                "    \"user_type\": \"guest\",\n" +
+                "    \"valid_to\": \"2016-10-20T20:20:30.000Z\",\n" +
+                "    \"valid_from\": \"2015-10-20T10:20:30.000Z\",\n" +
+                "    \"authorized_services\": {\n" +
                 "        \"engine\": \"True\",\n" +
                 "        \"windows\": \"True\",\n" +
                 "        \"lock\": \"True\",\n" +
@@ -46,16 +45,14 @@ public class UserCredentialsTest extends TestCase
                 "        \"horn\": \"True\",\n" +
                 "        \"lights\": \"True\",\n" +
                 "        \"trunk\": \"True\"\n" +
-                "    },\n" +
-                "    \"vehicleVIN\": \"stoffe\"\n" +
+                "    }\n" +
                 "}";
 
-        UserCredentials userCredentials = gson.fromJson(jsonString, UserCredentials.class);
-        //ServerNode.setUserCredentials(userCredentials);
+        Vehicle vehicle = gson.fromJson(jsonString, Vehicle.class);
 
         /* Tests are going to fail when not in daylight savings or if not in Pacific timezone, but, frankly, I don't care */
-        assertEquals("10/20/2015 3:20 AM PDT", userCredentials.getValidFrom());
-        assertEquals("10/20/2016 1:20 PM PDT", userCredentials.getValidTo());
+        assertEquals("10/20/2015 3:20 AM PDT", vehicle.getValidFrom());
+        assertEquals("10/20/2016 1:20 PM PDT", vehicle.getValidTo());
     }
 
     public void testPrettyFormattedDateTime_FromGoodString() {
@@ -171,7 +168,7 @@ public class UserCredentialsTest extends TestCase
 
         assertFalse(userCredentials.isKeyValid());
     }
-    
+
     public void testIsKeyValid_Timezones() {
         // TODO: Write this test
     }
