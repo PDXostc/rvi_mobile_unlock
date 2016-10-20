@@ -85,7 +85,7 @@ class ServerConnection implements RemoteConnectionInterface
             e.printStackTrace();
         }
 
-        if (mRemoteConnectionListener != null && trigger != null) mRemoteConnectionListener.onRemoteConnectionDidDisconnect(trigger);
+        if (mRemoteConnectionListener != null /*&& trigger != null*/) mRemoteConnectionListener.onRemoteConnectionDidDisconnect(trigger);
     }
 
     @Override
@@ -150,8 +150,6 @@ class ServerConnection implements RemoteConnectionInterface
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
-
 
                 Log.d(TAG, "Creating socket factory");
 

@@ -34,8 +34,6 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 
     private RemoteConnectionManager mRemoteConnectionManager = new RemoteConnectionManager();
 
-    private boolean mIsConnected = false;
-
     private HashMap<String, Service> mAuthorizedRemoteServices = new HashMap<>();
     private HashMap<String, Service> mAuthorizedLocalServices  = new HashMap<>();
 
@@ -49,6 +47,16 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
     private Integer mRemotePort;
     private String  mRemoteAddr;
 
+    private State mState;
+
+    public enum State
+    {
+        CONNECTING,
+        CONNECTED,
+        DISCONNECTING,
+        DISCONNECTED
+    }
+
     public RVIRemoteNode(Context context) {
         mRemoteConnectionManager.setListener(new RemoteConnectionManagerListener()
         {
@@ -58,8 +66,10 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 
                 openConnection();
 
-                mIsConnected = true;
-                if (mListener != null) mListener.nodeDidConnect(RVIRemoteNode.this);
+                if (mState != State.CONNECTED) {
+                    mState = State.CONNECTED;
+                    if (mListener != null) mListener.nodeDidConnect(RVIRemoteNode.this);
+                }
 
                 validateLocalCredentials();
                 authorizeNode();
@@ -71,8 +81,10 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 
                 closeConnection();
 
-                mIsConnected = false;
-                if (mListener != null) mListener.nodeDidFailToConnect(RVIRemoteNode.this, error);
+                if (mState != State.DISCONNECTED) {
+                    mState = State.DISCONNECTED;
+                    if (mListener != null) mListener.nodeDidFailToConnect(RVIRemoteNode.this, error);
+                }
             }
 
             @Override
@@ -81,15 +93,15 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 
                 closeConnection();
 
-                mIsConnected = false;
-                if (mListener != null) mListener.nodeDidDisconnect(RVIRemoteNode.this, trigger);
+                if (mState != State.DISCONNECTED) {
+                    mState = State.DISCONNECTED;
+                    if (mListener != null) mListener.nodeDidDisconnect(RVIRemoteNode.this, trigger);
+                }
             }
 
             @Override
             public void onRVIDidReceivePacket(DlinkPacket packet) {
                 if (packet == null) return;
-
-                //Log.d(TAG, Util.getMethodName() + ": " + packet.getClass().toString());
 
                 if (packet.getClass().equals(DlinkReceivePacket.class)) {
                     handleReceivePacket((DlinkReceivePacket) packet);
@@ -186,13 +198,15 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
     }
 
     public boolean isConnected() {
-        return mIsConnected;
+        return mState == State.CONNECTED;
     }
 
     /**
      * Tells the local RVI node to connect to the remote RVI node, letting the RVINode choose the best connection.
      */
     public void connect() {
+        mState = State.CONNECTING;
+
         mRemoteConnectionManager.setKeyStores(RVILocalNode.getServerKeyStore(), RVILocalNode.getDeviceKeyStore(), RVILocalNode.getDeviceKeyStorePassword());
         mRemoteConnectionManager.connect();
     }
@@ -201,7 +215,13 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
      * Tells the local RVI node to disconnect all connections to the remote RVI node.
      */
     public void disconnect() {
+        mState = State.DISCONNECTING;
+
         mRemoteConnectionManager.disconnect();
+    }
+
+    public State getState() {
+        return mState;
     }
 
     /**
