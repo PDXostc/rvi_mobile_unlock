@@ -47,7 +47,7 @@ class DlinkPacketParser
          *
          * @param error the error
          */
-        void onPacketFailedToParse(Throwable error);
+        void onPacketFailedToParse(DlinkPacket packet, Throwable error);
     }
 
     /**
@@ -114,7 +114,7 @@ class DlinkPacketParser
             ((DlinkPacketParserTestCaseListener) mDataParserListener).onJsonStringParsed(string);
 
         Gson gson = new Gson();
-        DlinkPacket packet;
+        DlinkPacket packet = null;
 
         try {
             packet = gson.fromJson(string, DlinkPacket.class);
@@ -138,7 +138,7 @@ class DlinkPacketParser
             }
         } catch (Exception e) {
             e.printStackTrace();
-            mDataParserListener.onPacketFailedToParse(e);
+            mDataParserListener.onPacketFailedToParse(packet, e);
 
             return null;
         }

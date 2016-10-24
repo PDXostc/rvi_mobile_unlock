@@ -190,7 +190,7 @@ class Service
      *
      * @return the service identifier
      */
-    String getServiceIdentifier() {
+    String  getServiceIdentifier() {
         if (shouldParseServiceName())
             parseFullyQualifiedServiceName();
 

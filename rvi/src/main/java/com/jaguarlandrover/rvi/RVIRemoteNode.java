@@ -17,9 +17,6 @@ package com.jaguarlandrover.rvi;
 import android.content.Context;
 import android.util.Log;
 
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -116,29 +113,33 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
             }
 
             @Override
-            public void onRVIDidFailToReceivePacket(Throwable error) {
-                Log.d(TAG, Util.getMethodName() + ": " + ((error == null) ? "(null)" : error.getLocalizedMessage()));
+            public void onRVIDidFailToReceivePacket(DlinkPacket packet, Throwable error) {
+                Log.e(TAG, Util.getMethodName() + ": " + ((error == null) ? "(null)" : error.getLocalizedMessage()));
 
-                // TODO: Get extra args and report to listener
+                if (packet.getClass() == DlinkReceivePacket.class) {
+                    if (mListener != null) mListener.nodeReceiveServiceInvocationFailed(RVIRemoteNode.this, ((DlinkReceivePacket) packet).getService().getServiceIdentifier(), error);
+                } else if (packet.getClass() == DlinkPacket.class && packet.mCmd == DlinkPacket.Command.RECEIVE) {
+                    if (mListener != null) mListener.nodeReceiveServiceInvocationFailed(RVIRemoteNode.this, null, error);
+                }
             }
 
             @Override
             public void onRVIDidSendPacket(DlinkPacket packet) {
                 if (packet == null) return;
 
-                //Log.d(TAG, Util.getMethodName() + ": " + packet.getClass().toString());
-
-                //if (packet.getClass().equals(DlinkAuthPacket.class))
-                //    announceServices(); // TODO: Not here....
-
-                // TODO: Get extra args and report to listener
+                if (packet.getClass() == DlinkReceivePacket.class)
+                    if (mListener != null) mListener.nodeSendServiceInvocationSucceeded(RVIRemoteNode.this, ((DlinkReceivePacket) packet).getService().getServiceIdentifier());
             }
 
             @Override
-            public void onRVIDidFailToSendPacket(Throwable error) {
-                Log.d(TAG, Util.getMethodName() + ": " + ((error == null) ? "(null)" : error.getLocalizedMessage()));
+            public void onRVIDidFailToSendPacket(DlinkPacket packet, Throwable error) {
+                Log.e(TAG, Util.getMethodName() + ": " + ((error == null) ? "(null)" : error.getLocalizedMessage()));
 
-                // TODO: Get extra args and report to listener
+                if (packet.getClass() == DlinkReceivePacket.class) {
+                    if (mListener != null) mListener.nodeSendServiceInvocationFailed(RVIRemoteNode.this, ((DlinkReceivePacket) packet).getService().getServiceIdentifier(), error);
+                } else if (packet.getClass() == DlinkPacket.class && packet.mCmd == DlinkPacket.Command.RECEIVE) {
+                    if (mListener != null) mListener.nodeSendServiceInvocationFailed(RVIRemoteNode.this, null, error);
+                }
             }
         });
     }
@@ -345,11 +346,13 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
         Service service = packet.getService();
 
         if (!mAuthorizedLocalServices.containsKey(service.getServiceIdentifier())) {
-            return; // TODO: Throw error
+            if (mListener != null) mListener.nodeReceiveServiceInvocationFailed(this, null, new Throwable("Service invocation packet did not contain a valid service identifier."));
+            return;
         }
 
         if (!mAuthorizedLocalServices.get(service.getServiceIdentifier()).getFullyQualifiedServiceIdentifier().equals(service.getFullyQualifiedServiceIdentifier())) {
-            return; // TODO: Throw error
+            if (mListener != null) mListener.nodeReceiveServiceInvocationFailed(this, service.getServiceIdentifier(), new Throwable("Local node is not authorized to receive this service."));
+            return;
         }
 
         if (mListener != null) mListener.nodeReceiveServiceInvocationSucceeded(this, service.getServiceIdentifier(), service.getParameters());
