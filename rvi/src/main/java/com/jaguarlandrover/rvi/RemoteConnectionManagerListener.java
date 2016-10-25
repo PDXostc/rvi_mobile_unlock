@@ -48,7 +48,7 @@ interface RemoteConnectionManagerListener // TODO: Get rid of this middle man
      *
      * @param error the error
      */
-    void onRVIDidFailToReceivePacket(Throwable error);
+    void onRVIDidFailToReceivePacket(DlinkPacket packet, Throwable error);
 
     /**
      * On RVI did send packet.
@@ -60,5 +60,5 @@ interface RemoteConnectionManagerListener // TODO: Get rid of this middle man
      *
      * @param error the error
      */
-    void onRVIDidFailToSendPacket(Throwable error);
+    void onRVIDidFailToSendPacket(DlinkPacket packet, Throwable error);
 }
