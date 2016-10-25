@@ -45,13 +45,12 @@ class ServerConnection implements RemoteConnectionInterface
 
     @Override
     public void sendRviRequest(DlinkPacket dlinkPacket) {
-        if (!isConnected() || !isConfigured()) { // TODO: Call error on listener
-
-            mRemoteConnectionListener.onDidFailToSendDataToRemoteConnection(new Throwable("RVI node is not connected")); // TODO: Provide better feedback mechanism for when service invocations fail because node isn't connected!
-            return;
-        }
-
-        new SendDataTask(dlinkPacket).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        if (!isConfigured())
+            mRemoteConnectionListener.onDidFailToSendDataToRemoteConnection(new Throwable("RVI node is not configured."));
+        else if (!isConnected())
+            mRemoteConnectionListener.onDidFailToSendDataToRemoteConnection(new Throwable("RVI node is not connected."));
+        else
+            new SendDataTask(dlinkPacket).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     @Override
@@ -66,26 +65,26 @@ class ServerConnection implements RemoteConnectionInterface
 
     @Override
     public void connect() {
-        if (isConnected()) disconnect(null); // TODO: If relaunching, but not rebuilding, this may already be connected, in which case disconnecting may be unnecessary?
-                                             // TODO: Figure out exactly what the right behavior should be in this case
+        if (isConnected()) disconnect(null);
+
         connectSocket();
     }
 
     @Override
-    public void disconnect(Throwable trigger) { // TODO: If we get exceptions on our sending/listening tasks, we disconnect, but maybe we don't need to? E.g., javax.net.ssl.SSLException: Read error: ssl=0x57f2cca0: I/O error during system call, Connection timed out
-                                                // TODO, cont'd: 01-08 09:53:32.740 9743-9761/com.jaguarlandrover.hvacdemo W/System.err:     at com.android.org.conscrypt.NativeCrypto.SSL_read(Native Method)
+    public void disconnect(Throwable trigger) {
+
         try {
             if (mSocket != null)
-                mSocket.close(); // TODO: Put on background thread (and probably do in BluetoothConnection too)
+                mSocket.close();
 
             mRemoteDeviceCertificate = null;
             mSocket                  = null;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.d(TAG, e.getLocalizedMessage());
         }
 
-        if (mRemoteConnectionListener != null /*&& trigger != null*/) mRemoteConnectionListener.onRemoteConnectionDidDisconnect(trigger);
+        if (mRemoteConnectionListener != null) mRemoteConnectionListener.onRemoteConnectionDidDisconnect(trigger);
     }
 
     @Override
@@ -267,8 +266,7 @@ class ServerConnection implements RemoteConnectionInterface
         @Override
         protected Throwable doInBackground(Void... params) {
 
-            String data = mPacket.toJsonString();//params[0];
-            //Log.d(TAG, "Sending packet: " + data);
+            String data = mPacket.toJsonString();
 
             try {
                 DataOutputStream wr = new DataOutputStream(mSocket.getOutputStream());
