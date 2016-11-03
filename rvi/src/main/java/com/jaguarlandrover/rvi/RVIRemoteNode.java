@@ -233,6 +233,22 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
      * @param timeout the timeout, in milliseconds. This is added to the current system time.
      */
     public void invokeService(String serviceIdentifier, Object parameters, Integer timeout) {
+
+        if (CredentialManager.localCredentialsRevalidationNeeded()) {
+            validateLocalCredentials();
+            authorizeNode();
+            sortThroughLocalServices();
+            //sortThroughRemoteServices();
+            announceServices();
+        }
+
+        if (CredentialManager.remoteCredentialsRevalidationNeeded()) {
+            validateRemoteCredentials();
+            sortThroughLocalServices();
+            //sortThroughRemoteServices();
+            announceServices();
+        }
+
         Service service = getRemoteService(serviceIdentifier);
 
         service.setParameters(parameters);
@@ -345,6 +361,21 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
     private void handleReceivePacket(DlinkReceivePacket packet) {
         Service service = packet.getService();
 
+        if (CredentialManager.localCredentialsRevalidationNeeded()) {
+            validateLocalCredentials();
+            authorizeNode();
+            sortThroughLocalServices();
+            //sortThroughRemoteServices();
+            announceServices();
+        }
+
+        if (CredentialManager.remoteCredentialsRevalidationNeeded()) {
+            validateRemoteCredentials();
+            sortThroughLocalServices();
+            //sortThroughRemoteServices();
+            announceServices();
+        }
+
         if (!mAuthorizedLocalServices.containsKey(service.getServiceIdentifier())) {
             if (mListener != null) mListener.nodeReceiveServiceInvocationFailed(this, null, new Throwable("Service invocation packet did not contain a valid service identifier."));
             return;
@@ -413,10 +444,19 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
         ArrayList<Credential> localCredentials = RVILocalNode.getCredentials();
 
         mValidLocalCredentials.clear();
+        CredentialManager.clearLocalCredentialsRevalidationTime();
 
         for (Credential credential : localCredentials) {
-            if (credential.validateAndParse(serverCertificate.getPublicKey()) && credential.deviceCertificateMatches(localCertificate))
-                mValidLocalCredentials.add(credential);
+            if (credential.parse(serverCertificate.getPublicKey()) && credential.deviceCertificateMatches(localCertificate)) {
+                if (credential.getValidity().getStatus() == ValidityStatus.PENDING) {
+                    CredentialManager.updateLocalCredentialsRevalidationTime(credential.getValidity().getStart());
+
+                } else if (credential.getValidity().getStatus() == ValidityStatus.VALID) {
+                    CredentialManager.updateLocalCredentialsRevalidationTime(credential.getValidity().getStop());
+
+                    mValidLocalCredentials.add(credential);
+                }
+            }
         }
     }
 
@@ -431,10 +471,18 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
         ArrayList<Credential> remoteCredentials = mRemoteCredentials;
 
         mValidRemoteCredentials.clear();
+        CredentialManager.clearRemoteCredentialsRevalidationTime();
 
         for (Credential credential : remoteCredentials) {
-            if (credential.validateAndParse(serverCertificate.getPublicKey()) && credential.deviceCertificateMatches(remoteCertificate))
-                mValidRemoteCredentials.add(credential);
+            if (credential.parse(serverCertificate.getPublicKey()) && credential.deviceCertificateMatches(remoteCertificate))
+                if (credential.getValidity().getStatus() == ValidityStatus.PENDING) {
+                    CredentialManager.updateRemoteCredentialsRevalidationTime(credential.getValidity().getStart());
+
+                } else if (credential.getValidity().getStatus() == ValidityStatus.VALID) {
+                    CredentialManager.updateRemoteCredentialsRevalidationTime(credential.getValidity().getStop());
+
+                    mValidRemoteCredentials.add(credential);
+            }
         }
     }
 

@@ -14,25 +14,17 @@ package com.jaguarlandrover.rvi;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-import android.content.Context;
-import android.widget.ArrayAdapter;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.security.Key;
-import java.security.KeyStore;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Calendar;
 
 class CredentialManager {
     private final static String TAG = "RVI/CredentialManager__";
 
     private static CredentialManager ourInstance = new CredentialManager();
+
+    private static Long nextRevalidationRemoteCredentials = 0L;
+
+    private static Long nextRevalidationLocalCredentials = 0L;
 
     private CredentialManager() {
     }
@@ -55,6 +47,50 @@ class CredentialManager {
                 credentialObjects.add(new Credential(credential));
 
         return credentialObjects;
+    }
+
+    static Boolean remoteCredentialsRevalidationNeeded() {
+        if (CredentialManager.nextRevalidationRemoteCredentials == 0L) return true;
+
+        Long currentTime = System.currentTimeMillis() / 1000;
+
+        if (currentTime > CredentialManager.nextRevalidationRemoteCredentials) {
+            CredentialManager.nextRevalidationRemoteCredentials = 0L;
+            return true;
+        }
+
+        return false;
+    }
+
+    static void updateRemoteCredentialsRevalidationTime(Long time) {
+        if (time < CredentialManager.nextRevalidationRemoteCredentials || CredentialManager.nextRevalidationRemoteCredentials == 0L && time != 0L)
+            CredentialManager.nextRevalidationRemoteCredentials = time;
+    }
+
+    static void clearRemoteCredentialsRevalidationTime() {
+        CredentialManager.nextRevalidationRemoteCredentials = 0L;
+    }
+
+    static Boolean localCredentialsRevalidationNeeded() {
+        if (CredentialManager.nextRevalidationLocalCredentials == 0L) return true;
+
+        Long currentTime = System.currentTimeMillis() / 1000;
+
+        if (currentTime > CredentialManager.nextRevalidationLocalCredentials) {
+            CredentialManager.nextRevalidationLocalCredentials = 0L;
+            return true;
+        }
+
+        return false;
+    }
+
+    static void updateLocalCredentialsRevalidationTime(Long time) {
+        if (time < CredentialManager.nextRevalidationLocalCredentials || CredentialManager.nextRevalidationLocalCredentials == 0L && time != 0L)
+            CredentialManager.nextRevalidationLocalCredentials = time;
+    }
+
+    static void clearLocalCredentialsRevalidationTime() {
+        CredentialManager.nextRevalidationLocalCredentials = 0L;
     }
 
 //    static void validateCredentials(KeyStore keyStore, ArrayList<Credential> credentialsList) {
