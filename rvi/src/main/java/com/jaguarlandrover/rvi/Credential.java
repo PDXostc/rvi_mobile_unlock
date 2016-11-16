@@ -26,6 +26,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 
 import io.jsonwebtoken.Jwts;
@@ -72,7 +73,7 @@ class Credential {
         this.mJwt                      = jwt;
     }
 
-    Boolean validateAndParse(Key key) {
+    Boolean parse(Key key) {
         try {
             this.mRightToInvoke            = null;
             this.mRightToReceive           = null;
@@ -83,12 +84,12 @@ class Credential {
 
             DefaultClaims claims = (DefaultClaims) Jwts.parser().setSigningKey(key).parse(getJwt()).getBody();
 
-            Validity validity =
-                    new Validity((Integer) claims.get("validity", HashMap.class).get("start"),
-                            (Integer) claims.get("validity", HashMap.class).get("stop"));
+            //Validity validity =
+            //        new Validity((Integer) claims.get("validity", HashMap.class).get("start"),
+            //                (Integer) claims.get("validity", HashMap.class).get("stop"));
 
-            if (!validity.isValid())
-                throw new Exception("Credential dates not valid");
+            //if (!validity.isValid())
+            //    throw new Exception("Credential dates not valid");
 
             this.mRightToInvoke            = (ArrayList<String>) claims.get("right_to_invoke", ArrayList.class);  //credentials.getRightToInvoke();
             this.mRightToReceive           = (ArrayList<String>) claims.get("right_to_receive", ArrayList.class); //credentials.getRightToReceive();
@@ -96,7 +97,8 @@ class Credential {
             this.mEncodedDeviceCertificate = claims.get("device_cert", String.class);                             //credentials.getEncodedDeviceCertificate();
             this.mId                       = claims.get("id", String.class);                                      //credentials.getId();
 
-            this.mValidity = validity;
+            this.mValidity = new Validity(Long.valueOf((Integer)claims.get("validity", HashMap.class).get("start")),
+                                                   Long.valueOf((Integer)claims.get("validity", HashMap.class).get("stop")));
 
             //this.mValidity                 = claims.get("validity", )//credentials.getValidity();
 
@@ -115,6 +117,10 @@ class Credential {
     boolean deviceCertificateMatches(Certificate matching) {
         return mCertificate.equals(matching);
     }
+
+    //boolean isValid() {
+    //
+    //}
 
     private boolean rightMatchesServiceIdentifier(String right, String serviceIdentifier) {
         String rightParts[] = right.split("/");
@@ -188,29 +194,41 @@ class Credential {
     }
 }
 
+enum ValidityStatus
+{
+    PENDING,
+    VALID,
+    EXPIRED,
+    INVALID
+}
+
 class Validity {
     private final static String PRETTY_DATE_TIME_FORMATTER = "MM/dd/yyyy h:mm a z";
 
-    private Integer mStart;
+    private Long mStart;
 
-    private Integer mStop;
+    private Long mStop;
 
-    Validity(Integer start, Integer stop) {
+    Validity(Long start, Long stop) {
         mStart = start;
         mStop = stop;
     }
 
-    boolean isValid() {
-        // TODO
+    ValidityStatus getStatus() {
+        Long currentTime = System.currentTimeMillis() / 1000;
 
-        return true;
+        if (mStart > mStop) return ValidityStatus.INVALID;
+        if (currentTime < mStart) return ValidityStatus.PENDING;
+        if (currentTime > mStop) return ValidityStatus.EXPIRED;
+
+        return ValidityStatus.VALID;
     }
 
-    public Integer getStart() {
+    public Long getStart() {
         return mStart;
     }
 
-    public Integer getStop() {
+    public Long getStop() {
         return mStop;
     }
 }

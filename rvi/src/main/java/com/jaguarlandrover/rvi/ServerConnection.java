@@ -77,12 +77,12 @@ class ServerConnection implements RemoteConnectionInterface
             if (mSocket != null)
                 mSocket.close();
 
-            mRemoteDeviceCertificate = null;
-            mSocket                  = null;
-
         } catch (Exception e) {
             Log.d(TAG, e.getLocalizedMessage());
         }
+
+        mRemoteDeviceCertificate = null;
+        mSocket                  = null;
 
         if (mRemoteConnectionListener != null) mRemoteConnectionListener.onRemoteConnectionDidDisconnect(trigger);
     }
