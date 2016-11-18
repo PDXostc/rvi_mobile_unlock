@@ -137,7 +137,9 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
             public void onRVIDidFailToSendPacket(DlinkPacket packet, Throwable error) {
                 Log.e(TAG, Util.getMethodName() + ": " + ((error == null) ? "(null)" : error.getLocalizedMessage()));
 
-                if (packet.getClass() == DlinkReceivePacket.class) {
+                if (packet == null) {
+                    if (mListener != null) mListener.nodeSendServiceInvocationFailed(RVIRemoteNode.this, null, error);
+                } else if (packet.getClass() == DlinkReceivePacket.class) {
                     if (mListener != null) mListener.nodeSendServiceInvocationFailed(RVIRemoteNode.this, ((DlinkReceivePacket) packet).getService().getServiceIdentifier(), error);
                 } else if (packet.getClass() == DlinkPacket.class && packet.mCmd == DlinkPacket.Command.RECEIVE) {
                     if (mListener != null) mListener.nodeSendServiceInvocationFailed(RVIRemoteNode.this, null, error);

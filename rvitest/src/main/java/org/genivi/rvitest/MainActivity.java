@@ -115,9 +115,6 @@ public class MainActivity extends AppCompatActivity {
             RVILocalNode.setDeviceKeyStore(deviceCertificateKeyStore);
             RVILocalNode.setDeviceKeyStorePassword(deviceCertificatePassword);
 
-            //if (newCredentials != null)
-            //    RVILocalNode.setCredentials(this, newCredentials);
-
             TestServerNode.connect();
 
             testSetButton1.setEnabled(true);
@@ -141,6 +138,12 @@ public class MainActivity extends AppCompatActivity {
                 intent.setClass(MainActivity.this, TestSet1Activity.class);
             else if (view == testSetButton2)
                 intent.setClass(MainActivity.this, TestSet2Activity.class);
+            else if (view == testSetButton3)
+                intent.setClass(MainActivity.this, TestSet3Activity.class);
+            else if (view == testSetButton4)
+                intent.setClass(MainActivity.this, TestSet4Activity.class);
+            else if (view == testSetButton5)
+                intent.setClass(MainActivity.this, TestSet5Activity.class);
 
             startActivityForResult(intent, 0);
         }

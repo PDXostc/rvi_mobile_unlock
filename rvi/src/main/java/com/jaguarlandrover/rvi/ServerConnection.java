@@ -78,7 +78,8 @@ class ServerConnection implements RemoteConnectionInterface
                 mSocket.close();
 
         } catch (Exception e) {
-            Log.d(TAG, e.getLocalizedMessage());
+            if (e.getLocalizedMessage() != null)
+                Log.d(TAG, e.getLocalizedMessage());
         }
 
         mRemoteDeviceCertificate = null;
