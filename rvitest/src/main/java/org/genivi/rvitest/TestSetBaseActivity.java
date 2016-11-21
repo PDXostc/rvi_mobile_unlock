@@ -78,6 +78,8 @@ public class TestSetBaseActivity extends AppCompatActivity {
     Button.OnClickListener buttonListener = new Button.OnClickListener() {
         @Override
         public void onClick(View view) {
+            Log.d(TAG, "onClick");
+
             if      (view == testButton1 ) runTest1 ("Running test 1");
             else if (view == testButton2 ) runTest2 ("Running test 2");
             else if (view == testButton3 ) runTest3 ("Running test 3");
