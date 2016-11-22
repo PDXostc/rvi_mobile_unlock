@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.jaguarlandrover.pki.PKICertificateResponse;
@@ -44,7 +43,6 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
     private final static String DEFAULT_PROVISIONING_SERVER_CSR_URL          = "/csr";
     private final static String DEFAULT_PROVISIONING_SERVER_VERIFICATION_URL = "/verification";
-
 
     private boolean mBluetoothRangingServiceConnected = false;
     private boolean mAllValidCertsAcquired            = false;
@@ -96,7 +94,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         }
 
         if (!mValidatingToken) {
-            if (PKIManager.hasValidSignedDeviceCert(this) && PKIManager.hasValidSignedServerCert(this)) {
+            if (PKIManager.hasValidDeviceCert(this) && PKIManager.hasValidServerCert(this)) {
                 mLoginActivityFragment.hideControls(true);
                 mLoginActivityFragment.setStatusTextText("Loading...");
 
@@ -108,7 +106,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 setUpRviAndConnectToServer(PKIManager.getServerKeyStore(this), PKIManager.getDeviceKeyStore(this), null, null);
                 launchLockActivityWhenReady();
 
-            } else if (PKIManager.hasValidSignedDeviceCert(this)) {
+            } else if (PKIManager.hasValidDeviceCert(this)) {
                 mLoginActivityFragment.setVerifyButtonText("Resend email");
                 mLoginActivityFragment.setStatusTextText("Please check your email account and click the 'Verify' link.");
 
