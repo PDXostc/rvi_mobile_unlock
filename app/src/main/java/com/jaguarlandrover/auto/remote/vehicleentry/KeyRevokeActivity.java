@@ -27,7 +27,7 @@ public class KeyRevokeActivity extends ActionBarActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_key_change);
+        setContentView(R.layout.activity_key_revoke);
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -51,7 +51,7 @@ public class KeyRevokeActivity extends ActionBarActivity
             }
         }
 
-        RemoteCredentialsAdapter adapter = new RemoteCredentialsAdapter(this, mFilteredRemotes);
+        KeyRevokeGuestKeysArrayAdapter adapter = new KeyRevokeGuestKeysArrayAdapter(this, mFilteredRemotes);
         ListView listView = (ListView) findViewById(R.id.sharedKeys);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
@@ -91,15 +91,12 @@ public class KeyRevokeActivity extends ActionBarActivity
     }
 
     public User selectKey() {
-
-        //ArrayList<User> guestUsers = ServerNode.getUserData().getGuests();
-
         return mFilteredRemotes.get(mPosition);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_key_change, menu);
+        getMenuInflater().inflate(R.menu.menu_key_revoke, menu);
         return true;
     }
 

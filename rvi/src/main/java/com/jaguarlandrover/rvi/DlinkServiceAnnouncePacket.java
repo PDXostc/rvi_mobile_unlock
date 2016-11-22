@@ -14,11 +14,9 @@ package com.jaguarlandrover.rvi;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-import android.util.Log;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * The type Dlink "service announce" request packet. This request is used to announce RVI node services.
@@ -26,6 +24,11 @@ import java.util.HashMap;
 class DlinkServiceAnnouncePacket extends DlinkPacket
 {
     private final static String TAG = "RVI/DlinkSrvcAnncPacket";
+
+    enum Status {
+        AVAILABLE,
+        UNAVAILABLE
+    }
 
     /**
      * The status.
@@ -50,11 +53,11 @@ class DlinkServiceAnnouncePacket extends DlinkPacket
      *
      * @param services The array of services to announce
      */
-    DlinkServiceAnnouncePacket(ArrayList<String> services) {
+    DlinkServiceAnnouncePacket(ArrayList<String> services, Status status) {
         super(Command.SERVICE_ANNOUNCE);
 
-        mStatus = "av"; // TODO: Confirm what this is/where is comes from
-        mServices = services;//getServiceFQNames(services);
+        mStatus = status == Status.AVAILABLE ? "av" : "un";
+        mServices = services;
     }
 
     /**
@@ -64,6 +67,10 @@ class DlinkServiceAnnouncePacket extends DlinkPacket
      */
     ArrayList<String> getServices() {
         return mServices;
+    }
+
+    Status getStatus() {
+        return mStatus.equals("un") ? Status.UNAVAILABLE : Status.AVAILABLE;
     }
 
     String getType() { return "SA"; }

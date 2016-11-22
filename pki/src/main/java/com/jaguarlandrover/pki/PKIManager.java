@@ -17,7 +17,6 @@ package com.jaguarlandrover.pki;
 import android.content.Context;
 
 import java.security.KeyStore;
-import java.util.ArrayList;
 import java.util.Date;
 
 
@@ -63,12 +62,12 @@ public class PKIManager
         KeyStoreInterface.deleteServerCerts(context);
     }
 
-    public static Boolean hasValidSignedDeviceCert(Context context) {
-        return KeyStoreInterface.hasValidSignedDeviceCert(context);
+    public static Boolean hasValidDeviceCert(Context context) {
+        return KeyStoreInterface.hasValidDeviceCert(context);
     }
 
-    public static Boolean hasValidSignedServerCert(Context context) {
-        return KeyStoreInterface.hasValidSignedServerCert(context);
+    public static Boolean hasValidServerCert(Context context) {
+        return KeyStoreInterface.hasValidServerCert(context);
     }
 
     public static KeyStore getDeviceKeyStore(Context context) {

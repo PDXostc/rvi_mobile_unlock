@@ -357,7 +357,7 @@ class KeyStoreInterface
         return null;
     }
 
-    static Boolean hasValidSignedDeviceCert(Context context) {
+    static Boolean hasValidDeviceCert(Context context) {
         KeyStore keyStore = null;
 
         try {
@@ -386,7 +386,7 @@ class KeyStoreInterface
         return true;
     }
 
-    static Boolean hasValidSignedServerCert(Context context) {
+    static Boolean hasValidServerCert(Context context) {
         KeyStore keyStore = null;
 
         try {

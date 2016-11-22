@@ -45,8 +45,8 @@ public class RemoteConnectionManager
             }
 
             @Override
-            public void onPacketFailedToParse(Throwable error) {
-                if (mListener != null) mListener.onRVIDidFailToReceivePacket(error);
+            public void onPacketFailedToParse(DlinkPacket packet, Throwable error) {
+                if (mListener != null) mListener.onRVIDidFailToReceivePacket(packet, error);
             }
         });
 
@@ -79,7 +79,7 @@ public class RemoteConnectionManager
 
             @Override
             public void onDidFailToSendDataToRemoteConnection(Throwable error) {
-                if (mListener != null) mListener.onRVIDidFailToSendPacket(error);
+                if (mListener != null) mListener.onRVIDidFailToSendPacket(null, error);
             }
         };
 
@@ -121,11 +121,11 @@ public class RemoteConnectionManager
         Log.d(TAG, "SNDRVI(" + dlinkPacket.getType() + "): " + dlinkPacket.toJsonString());
 
         if (mRemoteConnection == null) {
-            if (mListener != null) mListener.onRVIDidFailToSendPacket(new Error("Interface not selected"));
+            if (mListener != null) mListener.onRVIDidFailToSendPacket(dlinkPacket, new Error("Interface not selected"));
         } else if (!mRemoteConnection.isConfigured()) {
-            if (mListener != null) mListener.onRVIDidFailToSendPacket(new Error("Interface not configured"));
+            if (mListener != null) mListener.onRVIDidFailToSendPacket(dlinkPacket, new Error("Interface not configured"));
         } else if (!mRemoteConnection.isConnected()) {
-            if (mListener != null) mListener.onRVIDidFailToSendPacket(new Error("Interface not connected"));
+            if (mListener != null) mListener.onRVIDidFailToSendPacket(dlinkPacket, new Error("Interface not connected"));
         } else {
             mRemoteConnection.sendRviRequest(dlinkPacket);
         }
