@@ -35,8 +35,6 @@ class Service
 
     private transient String mServiceIdentifier = null;
 
-    private transient String mBundleIdentifier = null;
-
     private transient String mDomain = null;
 
     private transient String mNodeIdentifier = null;
@@ -54,17 +52,16 @@ class Service
      *
      *   @param nodeIdentifier the service's nodeIdentifier
      *
-     *   @param bundleIdentifier the bundle identifier
      *
      *   @param serviceIdentifier the service identifier
      */
-    Service(String domain, String nodeIdentifier, String bundleIdentifier, String serviceIdentifier) {
+    Service(String domain, String nodeIdentifier, String serviceIdentifier) {
         mDomain            = domain;
         mNodeIdentifier    = nodeIdentifier;
-        mBundleIdentifier  = bundleIdentifier;
         mServiceIdentifier = serviceIdentifier;
 
-        mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceIdentifier();
+        if (!(mDomain == null || mNodeIdentifier == null || mServiceIdentifier == null))
+            mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceIdentifier();
     }
 
     HashMap unwrap(ArrayList<LinkedTreeMap> parameters) {
@@ -173,17 +170,17 @@ class Service
         mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceIdentifier();
     }
 
-    /**
-     * Gets bundle identifier.
-     *
-     * @return the bundle identifier
-     */
-    String getBundleIdentifier() {
-        if (shouldParseServiceName())
-            parseFullyQualifiedServiceName();
-
-        return mBundleIdentifier;
-    }
+//    /**
+//     * Gets bundle identifier.
+//     *
+//     * @return the bundle identifier
+//     */
+//    String getBundleIdentifier() {
+//        if (shouldParseServiceName())
+//            parseFullyQualifiedServiceName();
+//
+//        return mBundleIdentifier;
+//    }
 
     /**
      * Gets service identifier.
@@ -240,7 +237,7 @@ class Service
     }
 
     public Service copy() {
-        Service copy = new Service(this.getDomain(), this.getNodeIdentifier(), this.getBundleIdentifier(), this.getServiceIdentifier());
+        Service copy = new Service(this.getDomain(), this.getNodeIdentifier(), this.getServiceIdentifier());
 
         copy.setTimeout(this.getTimeout());
         copy.setParameters(this.getParameters());

@@ -118,11 +118,7 @@ class Credential {
         return mCertificate.equals(matching);
     }
 
-    //boolean isValid() {
-    //
-    //}
-
-    private boolean rightMatchesServiceIdentifier(String right, String serviceIdentifier) {
+    private boolean rightMatchesServiceIdentifierNonTailHashMatching(String right, String serviceIdentifier) {
         String rightParts[] = right.split("/");
         String serviceParts[] = serviceIdentifier.split("/");
 
@@ -137,9 +133,34 @@ class Credential {
         return true;
     }
 
+    private boolean rightMatchesServiceIdentifier(String right, String serviceIdentifier) {
+        String rightParts[] = right.split("/");
+        String serviceParts[] = serviceIdentifier.split("/");
+
+        if (rightParts.length == 0)
+            return false;
+
+        if (rightParts.length > serviceParts.length)
+            return false;
+
+        for (int i = 0; i < rightParts.length; i++) {
+            if (!rightParts[i].toLowerCase().equals(serviceParts[i].toLowerCase()) && !rightParts[i].equals("+"))
+                return false;
+        }
+
+        if (rightParts.length < serviceParts.length)
+            if (!rightParts[rightParts.length - 1].equals("#"))
+                return false;
+
+        return true;
+    }
+
     boolean grantsRightToReceive(String fullyQualifiedServiceIdentifier) {
+        if (fullyQualifiedServiceIdentifier == null || mRightToReceive == null)
+            return false;
+
         for (String right : mRightToReceive) {
-            if (rightMatchesServiceIdentifier(right, fullyQualifiedServiceIdentifier))
+            if (rightMatchesServiceIdentifierNonTailHashMatching(right, fullyQualifiedServiceIdentifier))
                 return true;
         }
 
@@ -147,23 +168,16 @@ class Credential {
     }
 
     boolean grantsRightToInvoke(String fullyQualifiedServiceIdentifier) {
+        if (fullyQualifiedServiceIdentifier == null || mRightToInvoke == null)
+            return false;
+
         for (String right : mRightToInvoke) {
-            if (rightMatchesServiceIdentifier(right, fullyQualifiedServiceIdentifier))
+            if (rightMatchesServiceIdentifierNonTailHashMatching(right, fullyQualifiedServiceIdentifier))
                 return true;
         }
 
         return false;
     }
-
-//    Boolean isValid(Key serverKey) {
-//        try {
-//            Jwts.parser().setSigningKey(serverKey).parseClaimsJws(getJwt());
-//        } catch (Exception e) {
-//            return false;
-//        }
-//
-//        return true;
-//    }
 
     String getJwt() {
         return mJwt;
