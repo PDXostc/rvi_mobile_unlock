@@ -131,7 +131,7 @@ public class RVILocalNode {
             String validatedServiceIdentifier = Util.validated(serviceIdentifier, false);
 
             if (!allLocalServices.containsKey(validatedServiceIdentifier)) {
-                allLocalServices.put(validatedServiceIdentifier, new Service(rviDomain, getLocalNodeIdentifier(context), null, validatedServiceIdentifier));
+                allLocalServices.put(validatedServiceIdentifier, new Service(rviDomain, getLocalNodeIdentifier(context), validatedServiceIdentifier));
             }
         }
 

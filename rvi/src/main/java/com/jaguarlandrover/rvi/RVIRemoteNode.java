@@ -295,7 +295,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
         if (null != (service = mAuthorizedRemoteServices.get(serviceIdentifier)))
             return service;
 
-        return new Service(null, null, null, serviceIdentifier);
+        return new Service(null, null, serviceIdentifier);
     }
 
     private void queueServiceInvocation(String serviceIdentifier, Service service) {
@@ -407,7 +407,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 
             String serviceIdentifier = builder.toString();
 
-            mAnnouncedRemoteServices.put(serviceIdentifier, new Service(domain, nodeIdentifier, null, serviceIdentifier));
+            mAnnouncedRemoteServices.put(serviceIdentifier, new Service(domain, nodeIdentifier, serviceIdentifier));
             //addRemoteService(serviceIdentifier, new Service(domain, nodeIdentifier, null, serviceIdentifier));
         }
 
