@@ -47,7 +47,7 @@ public class RVILocalNode {
 
     private static RVILocalNode ourInstance = new RVILocalNode();
 
-    private static Boolean localNodeStarted = false;
+    //private static Boolean localNodeStarted = false;
 
     private static ArrayList<Credential> localCredentials = new ArrayList<>();
 
@@ -55,7 +55,7 @@ public class RVILocalNode {
     private static KeyStore deviceKeyStore = null;
     private static String   deviceKeyStorePassword = null;
 
-    private static String rviDomain;
+    private static String rviDomain = null;
 
     private static HashMap<String, Service> allLocalServices = new HashMap<>();
 
@@ -77,36 +77,44 @@ public class RVILocalNode {
         void onLocalCredentialsUpdated();
     }
 
-    /**
-     * Instantiates a new Service bundle.
-     *
-     * @param context          the current context. This value cannot be null.
-     *
-     * @param domain           the domain portion of the RVI node's prefix (e.g., "jlr.com"). The domain must only contain
-     *                         alphanumeric characters, underscores, hyphens, and/or periods. No other characters or whitespace
-     *                         are allowed, including forward-slashes. This value cannot be an empty string or null.
-     *
-     * @exception java.lang.IllegalArgumentException Throws an exception when the context is null, or if the domain is an empty
-     *                                               string, contain special characters, or is null.
-     */
-    public static void start(Context context, String domain) {
-        if (context == null) {
-            throw new IllegalArgumentException("Context parameter must not be null.");
-        }
+//    /**
+//     * Instantiates a new Service bundle.
+//     *
+//     * @param context          the current context. This value cannot be null.
+//     *
+//     * @param domain           the domain portion of the RVI node's prefix (e.g., "jlr.com"). The domain must only contain
+//     *                         alphanumeric characters, underscores, hyphens, and/or periods. No other characters or whitespace
+//     *                         are allowed, including forward-slashes. This value cannot be an empty string or null.
+//     *
+//     * @exception java.lang.IllegalArgumentException Throws an exception when the context is null, or if the domain is an empty
+//     *                                               string, contain special characters, or is null.
+//     */
+//    public static void start(Context context, String domain) {
+//        if (context == null) {
+//            throw new IllegalArgumentException("Context parameter must not be null.");
+//        }
+//
+//        rviDomain        = Util.validated(domain, true);
+//        localNodeStarted = true;
+//
+//        loadCredentials(context);
+//
+//        for (LocalNodeListener listener : localNodeListeners)
+//            listener.onLocalCredentialsUpdated();
+//    }
+//
+//    private static void checkIfReady() {
+//        if (!localNodeStarted) {
+//            throw new RuntimeException("The local RVI node has not yet been started.");
+//        }
+//    }
 
-        rviDomain        = Util.validated(domain, true);
-        localNodeStarted = true;
-
-        loadCredentials(context);
-
-        for (LocalNodeListener listener : localNodeListeners)
-            listener.onLocalCredentialsUpdated();
+    public static void setRviDomain(String rviDomain) {
+        RVILocalNode.rviDomain = Util.validated(rviDomain, true);
     }
 
-    private static void checkIfReady() {
-        if (!localNodeStarted) {
-            throw new RuntimeException("The local RVI node has not yet been started.");
-        }
+    public static String getRviDomain() {
+        return rviDomain;
     }
 
     /**
@@ -124,6 +132,7 @@ public class RVILocalNode {
      */
     public static void addLocalServices(Context context, ArrayList<String> serviceIdentifiers) {
         if (context == null) throw new IllegalArgumentException("Context can't be null");
+        if (rviDomain == null) throw new IllegalStateException("RVI Domain must be set to a valid domain");
 
         if (serviceIdentifiers == null) return;
 
@@ -154,6 +163,7 @@ public class RVILocalNode {
      */
     public static void removeLocalServices(Context context, ArrayList<String> serviceIdentifiers) {
         if (context == null) throw new IllegalArgumentException("Context can't be null");
+        if (rviDomain == null) throw new IllegalStateException("RVI Domain must be set to a valid domain");
 
         if (serviceIdentifiers == null) return;
 
@@ -199,8 +209,8 @@ public class RVILocalNode {
      * @param serverKeyStore
      * @throws Exception
      */
-    public static void setServerKeyStore(KeyStore serverKeyStore) throws Exception {
-        checkIfReady();
+    public static void setServerKeyStore(KeyStore serverKeyStore) {//throws Exception {
+//        checkIfReady();
 
 //        validateKeystore(serverKeyStore, null);
 
@@ -211,8 +221,8 @@ public class RVILocalNode {
         return deviceKeyStore;
     }
 
-    public static void setDeviceKeyStore(KeyStore deviceKeyStore) throws Exception {
-        checkIfReady();
+    public static void setDeviceKeyStore(KeyStore deviceKeyStore) {//throws Exception {
+//        checkIfReady();
 
 //        validateKeystore(deviceKeyStore, RVILocalNode.deviceKeyStorePassword);
 
@@ -223,8 +233,8 @@ public class RVILocalNode {
         return deviceKeyStorePassword;
     }
 
-    public static void setDeviceKeyStorePassword(String deviceKeyStorePassword) throws Exception {
-        checkIfReady();
+    public static void setDeviceKeyStorePassword(String deviceKeyStorePassword) {//throws Exception {
+//        checkIfReady();
 
 //        validateKeystore(RVILocalNode.deviceKeyStore, deviceKeyStorePassword);
 
@@ -259,7 +269,8 @@ public class RVILocalNode {
 //        return entry.getTrustedCertificate();
 //    }
 
-    private static void saveCredentials(Context context) {
+    //private
+    public static void saveCredentials(Context context) {
         Gson gson = new Gson();
         String jsonString = gson.toJson(CredentialManager.toCredentialStringArray(localCredentials));
 
@@ -274,7 +285,8 @@ public class RVILocalNode {
         }
     }
 
-    private static void loadCredentials(Context context) {
+    //private
+    public static void loadCredentials(Context context) {
         Gson gson = new Gson();
 
         File file = context.getFileStreamPath(SAVED_CREDENTIALS_FILE);
@@ -299,28 +311,28 @@ public class RVILocalNode {
     }
 
     static ArrayList<Credential> getCredentials() {
-        checkIfReady();
+        //checkIfReady();
 
         return localCredentials;
     }
 
     public static void setCredentials(Context context, ArrayList<String> credentialStrings) {
-        checkIfReady();
+        //checkIfReady();
 
         localCredentials = CredentialManager.fromCredentialStringArray(credentialStrings);
 
-        saveCredentials(context);
+        //saveCredentials(context);
 
         for (LocalNodeListener listener : localNodeListeners)
             listener.onLocalCredentialsUpdated();
     }
 
     public static void removeAllCredentials(Context context) {
-        checkIfReady();
+        //checkIfReady();
 
         localCredentials.clear();
 
-        saveCredentials(context);
+        //saveCredentials(context);
 
         for (LocalNodeListener listener : localNodeListeners)
             listener.onLocalCredentialsUpdated();

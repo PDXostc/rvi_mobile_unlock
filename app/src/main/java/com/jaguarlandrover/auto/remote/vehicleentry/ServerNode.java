@@ -173,12 +173,13 @@ class ServerNode
                                 // TODO: Check this #amm
                                 ArrayList<String> credentials = (ArrayList<String>) ((LinkedTreeMap<String, Object>) parameters).get("credentials");
                                 RVILocalNode.setCredentials(applicationContext, credentials);
+                                RVILocalNode.saveCredentials(applicationContext);
 
                                 break;
 
                             case REVOKE_CREDENTIALS:
                                 RVILocalNode.setCredentials(applicationContext, null);
-
+                                RVILocalNode.saveCredentials(applicationContext);
                                 break;
                         }
 

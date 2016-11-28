@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         testSetButton4.setOnClickListener(buttonListener);
         testSetButton5.setOnClickListener(buttonListener);
 
-        RVILocalNode.start(this, RVI_DOMAIN);
+        RVILocalNode.setRviDomain(RVI_DOMAIN);
 
         if (PKIManager.hasValidDeviceCert(this) && PKIManager.hasValidServerCert(this)) {
             setUpRviAndConnectToServer(PKIManager.getServerKeyStore(this), PKIManager.getDeviceKeyStore(this), null, null);
