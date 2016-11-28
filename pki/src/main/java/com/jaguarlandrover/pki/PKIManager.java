@@ -81,4 +81,12 @@ public class PKIManager
     public static String getPublicKey(Context context) {
         return KeyStoreInterface.getPublicKey(context);
     }
+
+    public static void printPemEncodedDeviceCertificate(Context context) {
+        KeyStoreInterface.printPemEncodedDeviceCertificate(context);
+    }
+
+    public static void printPemEncodedServerCertificate(Context context) {
+        KeyStoreInterface.printPemEncodedServerCertificate(context);
+    }
 }

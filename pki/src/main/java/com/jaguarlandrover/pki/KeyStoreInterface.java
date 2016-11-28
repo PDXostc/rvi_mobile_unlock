@@ -75,6 +75,7 @@ class KeyStoreInterface
     private final static String PEM_FOOTER_PATTERN = "\n-----END %s-----";
 
     private final static String PEM_CERTIFICATE_SIGNING_REQUEST_HEADER_FOOTER_STRING = "CERTIFICATE REQUEST";
+    private final static String PEM_CERTIFICATE_HEADER_FOOTER_STRING                 = "CERTIFICATE";
     private final static String PEM_PUBLIC_KEY_HEADER_FOOTER_STRING                  = "PUBLIC KEY";
 
     private final static Integer KEY_SIZE = 2048;//4096;
@@ -416,39 +417,6 @@ class KeyStoreInterface
         return true;
     }
 
-//    static Boolean hasValidCerts(Context context) {
-//        KeyStore deviceKeyStore = null;
-//        KeyStore serverKeyStore = null;
-//
-//        try {
-//            FileInputStream inputStream = context.openFileInput(KEYSTORE_SERVER_ALIAS);
-//
-//            deviceKeyStore = KeyStore.getInstance("AndroidKeyStore");
-//            serverKeyStore = KeyStore.getInstance("BKS", "BC");
-//
-//            deviceKeyStore.load(null);
-//            serverKeyStore.load(inputStream, null);
-//
-//            if (!deviceKeyStore.containsAlias(KEYSTORE_CLIENT_ALIAS)) {
-//                return false;
-//            }
-//
-//            if (!serverKeyStore.containsAlias(KEYSTORE_SERVER_ALIAS)) {
-//                return false;
-//            }
-//
-//        } catch (FileNotFoundException fnfe) {
-//
-//            return false;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//
-//            return false;
-//        }
-//
-//        return true;
-//    }
-
     static KeyStore getDeviceKeyStore(Context context) {
         KeyStore keyStore = null;
 
@@ -505,5 +473,56 @@ class KeyStoreInterface
         }
 
         return null;
+    }
+
+    static void printPemEncodedDeviceCertificate(Context context) {
+        KeyStore keyStore = null;
+
+        try {
+            keyStore = KeyStore.getInstance("AndroidKeyStore");
+
+            keyStore.load(null);
+
+            if (!keyStore.containsAlias(KEYSTORE_CLIENT_ALIAS)) {
+                Log.i(TAG, "Cannot print device certificate; certificate not found.");
+                return;
+            }
+
+            KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(KEYSTORE_CLIENT_ALIAS, null);
+            X509Certificate certificate = (X509Certificate) entry.getCertificate();
+
+            Log.d(TAG, convertToPem(PEM_CERTIFICATE_HEADER_FOOTER_STRING, certificate.getEncoded()));
+
+        } catch (Exception e) {
+            Log.i(TAG, "Cannot print device certificate:");
+
+            e.printStackTrace();
+        }
+    }
+
+    static void printPemEncodedServerCertificate(Context context) {
+        KeyStore keyStore = null;
+
+        try {
+            FileInputStream inputStream = context.openFileInput(KEYSTORE_SERVER_ALIAS);
+
+            keyStore = KeyStore.getInstance("BKS", "BC");
+            keyStore.load(inputStream, null);
+
+            if (!keyStore.containsAlias(KEYSTORE_SERVER_ALIAS)) {
+                Log.i(TAG, "Cannot print server certificate; certificate not found.");
+                return;
+            }
+
+            KeyStore.TrustedCertificateEntry entry = (KeyStore.TrustedCertificateEntry) keyStore.getEntry(KEYSTORE_SERVER_ALIAS, null);
+            X509Certificate certificate = (X509Certificate) entry.getTrustedCertificate();
+
+            Log.d(TAG, convertToPem(PEM_CERTIFICATE_HEADER_FOOTER_STRING, certificate.getEncoded()));
+
+        } catch (Exception e) {
+            Log.i(TAG, "Cannot print device certificate:");
+
+            e.printStackTrace();
+        }
     }
 }
