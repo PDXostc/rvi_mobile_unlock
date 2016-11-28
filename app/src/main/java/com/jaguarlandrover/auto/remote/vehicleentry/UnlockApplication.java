@@ -27,7 +27,7 @@ public class UnlockApplication extends MultiDexApplication
     private static Application instance;
 
     @Override
-     protected void attachBaseContext(Context base) {
+    protected void attachBaseContext(Context base) {
          super.attachBaseContext(base);
          MultiDex.install(this);
      }
