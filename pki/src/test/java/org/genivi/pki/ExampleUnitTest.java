@@ -1,4 +1,4 @@
-package com.jaguarlandrover.pki;
+package org.genivi.pki;
 
 import org.junit.Test;
 

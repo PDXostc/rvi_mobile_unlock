@@ -13,11 +13,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.jaguarlandrover.pki.PSCertificateResponse;
-import com.jaguarlandrover.pki.PSCertificateSigningRequestRequest;
-import com.jaguarlandrover.pki.PKIManager;
-import com.jaguarlandrover.pki.ProvisioningServerResponse;
-import com.jaguarlandrover.pki.PSTokenVerificationRequest;
+import org.genivi.pki.PSCertificateResponse;
+import org.genivi.pki.PSCertificateSigningRequestRequest;
+import org.genivi.pki.PKIManager;
+import org.genivi.pki.ProvisioningServerResponse;
+import org.genivi.pki.PSTokenVerificationRequest;
 import com.jaguarlandrover.rvi.RVILocalNode;
 
 import java.security.KeyStore;

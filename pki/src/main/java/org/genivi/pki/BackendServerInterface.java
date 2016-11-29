@@ -1,4 +1,4 @@
-package com.jaguarlandrover.pki;
+package org.genivi.pki;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2016 Jaguar Land Rover.

@@ -1,4 +1,4 @@
-package com.jaguarlandrover.pki;
+package org.genivi.pki;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2016 Jaguar Land Rover.
@@ -7,7 +7,7 @@ package com.jaguarlandrover.pki;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    PSErrorResponse.java
+ * File:    PSVerificationNeededResponse.java
  * Project: UnlockDemo
  *
  * Created by Lilli Szafranski on 10/13/16.
@@ -16,21 +16,15 @@ package com.jaguarlandrover.pki;
 
 import com.google.gson.annotations.SerializedName;
 
-public class PSErrorResponse extends ProvisioningServerResponse
+public class PSVerificationNeededResponse extends ProvisioningServerResponse
 {
-    @SerializedName("reason")
-    private String mReason = "unknown";
+    @SerializedName("message")
+    private String mMessage = "";
 
-    public PSErrorResponse() {
+    public PSVerificationNeededResponse() {
     }
 
-    PSErrorResponse(String reason) {
-        setStatus("error");
-
-        mReason = reason;
-    }
-
-    public String getReason() {
-        return mReason;
+    public String getMessage() {
+        return mMessage;
     }
 }

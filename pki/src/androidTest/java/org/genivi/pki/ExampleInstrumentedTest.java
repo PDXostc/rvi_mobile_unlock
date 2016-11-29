@@ -1,4 +1,4 @@
-package com.jaguarlandrover.pki;
+package org.genivi.pki;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.jaguarlandrover.pki.test", appContext.getPackageName());
+        assertEquals("org.genivi.pki.test", appContext.getPackageName());
     }
 }

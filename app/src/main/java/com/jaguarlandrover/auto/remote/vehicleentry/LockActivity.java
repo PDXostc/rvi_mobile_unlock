@@ -20,7 +20,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.jaguarlandrover.pki.PKIManager;
+import org.genivi.pki.PKIManager;
 import com.jaguarlandrover.rvi.RVILocalNode;
 
 
