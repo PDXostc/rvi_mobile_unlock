@@ -563,6 +563,11 @@ public class DlinkPacketParserTest extends AndroidTestCase implements DlinkPacke
     }
 
     @Override
+    public void onPacketFailedToParse(DlinkPacket packet, Throwable error) {
+
+    }
+
+    @Override
     public void onJsonStringParsed(String jsonString) {
         mInStringHandler = true;
 
