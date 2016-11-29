@@ -21,10 +21,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
-import com.jaguarlandrover.pki.PKIManager;
-import com.jaguarlandrover.rvi.RVILocalNode;
-import com.jaguarlandrover.rvi.RVIRemoteNode;
-import com.jaguarlandrover.rvi.RVIRemoteNodeListener;
+import org.genivi.pki.PKIManager;
+import org.genivi.rvi.RVILocalNode;
+import org.genivi.rvi.RVIRemoteNode;
+import org.genivi.rvi.RVIRemoteNodeListener;
 
 import java.util.*;
 

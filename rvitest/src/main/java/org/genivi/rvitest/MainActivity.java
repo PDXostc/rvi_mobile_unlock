@@ -7,11 +7,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import com.jaguarlandrover.pki.PSCertificateResponse;
-import com.jaguarlandrover.pki.PSCertificateSigningRequestRequest;
-import com.jaguarlandrover.pki.PKIManager;
-import com.jaguarlandrover.pki.ProvisioningServerResponse;
-import com.jaguarlandrover.rvi.RVILocalNode;
+import org.genivi.pki.PSCertificateResponse;
+import org.genivi.pki.PSCertificateSigningRequestRequest;
+import org.genivi.pki.PKIManager;
+import org.genivi.pki.ProvisioningServerResponse;
+import org.genivi.rvi.RVILocalNode;
 
 import java.security.KeyStore;
 import java.util.ArrayList;
