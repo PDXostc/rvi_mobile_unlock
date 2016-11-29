@@ -8,7 +8,7 @@ package org.genivi.pki;
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
  * File:    PSVerificationNeededResponse.java
- * Project: UnlockDemo
+ * Project: PKI
  *
  * Created by Lilli Szafranski on 10/13/16.
  *
