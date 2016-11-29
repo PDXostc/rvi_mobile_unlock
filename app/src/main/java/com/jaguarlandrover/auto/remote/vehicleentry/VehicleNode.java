@@ -20,8 +20,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.gson.annotations.SerializedName;
-import com.jaguarlandrover.rvi.RVIRemoteNode;
-import com.jaguarlandrover.rvi.RVIRemoteNodeListener;
+import org.genivi.rvi.RVIRemoteNode;
+import org.genivi.rvi.RVIRemoteNodeListener;
 
 import java.util.*;
 

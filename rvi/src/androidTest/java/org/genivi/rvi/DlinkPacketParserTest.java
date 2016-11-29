@@ -1,4 +1,4 @@
-package com.jaguarlandrover.rvi;
+package org.genivi.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * Copyright (c) 2015 Jaguar Land Rover.

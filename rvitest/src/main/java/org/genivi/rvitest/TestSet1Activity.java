@@ -8,7 +8,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 
-import com.jaguarlandrover.rvi.RVILocalNode;
+import org.genivi.rvi.RVILocalNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -21,7 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import org.genivi.pki.PKIManager;
-import com.jaguarlandrover.rvi.RVILocalNode;
+import org.genivi.rvi.RVILocalNode;
 
 
 public class LockActivity extends ActionBarActivity implements LockActivityFragment.LockFragmentButtonListener, ServerNode.Listener, VehicleNode.Listener {

@@ -18,9 +18,9 @@ package org.genivi.rvitest;
 import android.os.Handler;
 import android.util.Log;
 
-import com.jaguarlandrover.rvi.RVILocalNode;
-import com.jaguarlandrover.rvi.RVIRemoteNode;
-import com.jaguarlandrover.rvi.RVIRemoteNodeListener;
+import org.genivi.rvi.RVILocalNode;
+import org.genivi.rvi.RVIRemoteNode;
+import org.genivi.rvi.RVIRemoteNodeListener;
 
 import java.util.*;
 

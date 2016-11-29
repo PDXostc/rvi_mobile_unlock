@@ -18,7 +18,7 @@ import org.genivi.pki.PSCertificateSigningRequestRequest;
 import org.genivi.pki.PKIManager;
 import org.genivi.pki.ProvisioningServerResponse;
 import org.genivi.pki.PSTokenVerificationRequest;
-import com.jaguarlandrover.rvi.RVILocalNode;
+import org.genivi.rvi.RVILocalNode;
 
 import java.security.KeyStore;
 import java.util.ArrayList;
