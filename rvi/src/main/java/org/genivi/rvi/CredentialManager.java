@@ -7,8 +7,8 @@ package org.genivi.rvi;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    RVICredentialManager.java
- * Project: UnlockDemo
+ * File:    CredentialManager.java
+ * Project: RVI
  *
  * Created by Lilli Szafranski on 10/4/16.
  *

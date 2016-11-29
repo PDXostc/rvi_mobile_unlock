@@ -8,7 +8,7 @@ package org.genivi.rvi;
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
  * File:    RVILocalNode.java
- * Project: UnlockDemo
+ * Project: RVI
  *
  * Created by Lilli Szafranski on 10/4/16.
  *

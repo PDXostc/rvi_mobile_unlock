@@ -8,7 +8,7 @@ package org.genivi.rvi;
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
  * File:    RemoteConnectionInterface.java
- * Project: RVI SDK
+ * Project: RVI
  *
  * Created by Lilli Szafranski on 5/19/15.
  *

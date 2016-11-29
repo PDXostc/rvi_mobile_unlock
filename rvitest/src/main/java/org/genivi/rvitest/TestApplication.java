@@ -8,7 +8,7 @@ package org.genivi.rvitest;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    UnlockApplication.java
+ * File:    TestApplication.java
  * Project: UnlockDemo
  *
  * Created by Lilli Szafranski on 10/28/15.
