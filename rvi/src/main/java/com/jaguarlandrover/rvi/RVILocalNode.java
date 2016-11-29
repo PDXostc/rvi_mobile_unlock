@@ -17,6 +17,7 @@ package com.jaguarlandrover.rvi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -24,18 +25,10 @@ import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.security.Key;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.StringTokenizer;
 import java.util.UUID;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -46,8 +39,6 @@ public class RVILocalNode {
     private final static String SAVED_CREDENTIALS_FILE = "org.genivi.rvi.saved_credentials";
 
     private static RVILocalNode ourInstance = new RVILocalNode();
-
-    //private static Boolean localNodeStarted = false;
 
     private static ArrayList<Credential> localCredentials = new ArrayList<>();
 
@@ -77,38 +68,6 @@ public class RVILocalNode {
         void onLocalCredentialsUpdated();
     }
 
-//    /**
-//     * Instantiates a new Service bundle.
-//     *
-//     * @param context          the current context. This value cannot be null.
-//     *
-//     * @param domain           the domain portion of the RVI node's prefix (e.g., "jlr.com"). The domain must only contain
-//     *                         alphanumeric characters, underscores, hyphens, and/or periods. No other characters or whitespace
-//     *                         are allowed, including forward-slashes. This value cannot be an empty string or null.
-//     *
-//     * @exception java.lang.IllegalArgumentException Throws an exception when the context is null, or if the domain is an empty
-//     *                                               string, contain special characters, or is null.
-//     */
-//    public static void start(Context context, String domain) {
-//        if (context == null) {
-//            throw new IllegalArgumentException("Context parameter must not be null.");
-//        }
-//
-//        rviDomain        = Util.validated(domain, true);
-//        localNodeStarted = true;
-//
-//        loadCredentials(context);
-//
-//        for (LocalNodeListener listener : localNodeListeners)
-//            listener.onLocalCredentialsUpdated();
-//    }
-//
-//    private static void checkIfReady() {
-//        if (!localNodeStarted) {
-//            throw new RuntimeException("The local RVI node has not yet been started.");
-//        }
-//    }
-
     public static void setRviDomain(String rviDomain) {
         RVILocalNode.rviDomain = Util.validated(rviDomain, true);
     }
@@ -135,6 +94,8 @@ public class RVILocalNode {
         if (rviDomain == null) throw new IllegalStateException("RVI Domain must be set to a valid domain");
 
         if (serviceIdentifiers == null) return;
+
+        Log.d(TAG, "Adding local services (count: " + serviceIdentifiers.size() + ")");
 
         for (String serviceIdentifier : serviceIdentifiers) {
             String validatedServiceIdentifier = Util.validated(serviceIdentifier, false);
@@ -167,6 +128,8 @@ public class RVILocalNode {
 
         if (serviceIdentifiers == null) return;
 
+        Log.d(TAG, "Removing local services (count: " + serviceIdentifiers.size() + ")");
+
         for (String serviceIdentifier : serviceIdentifiers) {
             String validatedServiceIdentifier = Util.validated(serviceIdentifier, false);
 
@@ -183,23 +146,6 @@ public class RVILocalNode {
         return new ArrayList<Service>(allLocalServices.values());
     }
 
-//    private static void validateKeystore(KeyStore keyStore, String password) throws Exception {
-//        if (keyStore != null) {
-////            keyStore.load(null, password == null ? null : password.toCharArray());
-//
-//            Enumeration<String> aliases = keyStore.aliases();
-//
-//            if (!aliases.hasMoreElements())
-//                return; /* If the device keystore requires a password, but we haven't passed the password yet, then loading the keystore results in no entries,
-//                           which we don't really have to check for here anyway, because if keystore really doesn't have entries at time of connection when
-//                           passing the password for real or bc maybe it was just empty, the connection would fail anyway. */
-//
-//            String firstAlias = aliases.nextElement();
-//            if (aliases.hasMoreElements())
-//                throw new Exception("Keystore contains more than one entry");
-//        }
-//    }
-
     static KeyStore getServerKeyStore() {
         return serverKeyStore;
     }
@@ -207,13 +153,8 @@ public class RVILocalNode {
     /**
      * Set the BKS key store containing the server cert. Keystore needs to be loaded and can only contain 1 entry. // TODO: Confirm loaded and one entry
      * @param serverKeyStore
-     * @throws Exception
      */
-    public static void setServerKeyStore(KeyStore serverKeyStore) {//throws Exception {
-//        checkIfReady();
-
-//        validateKeystore(serverKeyStore, null);
-
+    public static void setServerKeyStore(KeyStore serverKeyStore) {
         RVILocalNode.serverKeyStore = serverKeyStore;
     }
 
@@ -221,11 +162,7 @@ public class RVILocalNode {
         return deviceKeyStore;
     }
 
-    public static void setDeviceKeyStore(KeyStore deviceKeyStore) {//throws Exception {
-//        checkIfReady();
-
-//        validateKeystore(deviceKeyStore, RVILocalNode.deviceKeyStorePassword);
-
+    public static void setDeviceKeyStore(KeyStore deviceKeyStore) {
         RVILocalNode.deviceKeyStore = deviceKeyStore;
     }
 
@@ -233,44 +170,13 @@ public class RVILocalNode {
         return deviceKeyStorePassword;
     }
 
-    public static void setDeviceKeyStorePassword(String deviceKeyStorePassword) {//throws Exception {
-//        checkIfReady();
-
-//        validateKeystore(RVILocalNode.deviceKeyStore, deviceKeyStorePassword);
-
+    public static void setDeviceKeyStorePassword(String deviceKeyStorePassword) {
         RVILocalNode.deviceKeyStorePassword = deviceKeyStorePassword;
     }
 
-//    static Certificate getDeviceCertificate() throws Exception {
-//        if (deviceKeyStore == null) throw new Exception("Device keystore is null");
-//
-//        deviceKeyStore.load(null, deviceKeyStorePassword == null ? null : deviceKeyStorePassword.toCharArray());
-//
-//        Enumeration<String> aliases = deviceKeyStore.aliases();
-//
-//        String alias = aliases.nextElement();
-//
-//        KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) deviceKeyStore.getEntry(alias, null);
-//
-//        return entry.getCertificate();
-//    }
-//
-//    static Certificate getServerCertificate() throws Exception {
-//        if (serverKeyStore == null) throw new Exception("Server keystore is null");
-//
-//        serverKeyStore.load(null);
-//
-//        Enumeration<String> aliases = serverKeyStore.aliases();
-//
-//        String alias = aliases.nextElement();
-//
-//        KeyStore.TrustedCertificateEntry entry = (KeyStore.TrustedCertificateEntry) serverKeyStore.getEntry(alias, null);
-//
-//        return entry.getTrustedCertificate();
-//    }
-
-    //private
     public static void saveCredentials(Context context) {
+        Log.d(TAG, "Saving local credentials (count: " + localCredentials.size() + ")");
+
         Gson gson = new Gson();
         String jsonString = gson.toJson(CredentialManager.toCredentialStringArray(localCredentials));
 
@@ -285,7 +191,6 @@ public class RVILocalNode {
         }
     }
 
-    //private
     public static void loadCredentials(Context context) {
         Gson gson = new Gson();
 
@@ -303,6 +208,8 @@ public class RVILocalNode {
                 // TODO: Handle all kinds of errors here
                 localCredentials = CredentialManager.fromCredentialStringArray((ArrayList<String>) gson.fromJson(jsonString, new TypeToken<ArrayList<String>>(){}.getType()));
 
+                Log.d(TAG, "Loading saved credentials (count: " + localCredentials.size() + ")");
+
             } catch (Exception e) {
 
                 e.printStackTrace();
@@ -311,28 +218,22 @@ public class RVILocalNode {
     }
 
     static ArrayList<Credential> getCredentials() {
-        //checkIfReady();
-
         return localCredentials;
     }
 
     public static void setCredentials(Context context, ArrayList<String> credentialStrings) {
-        //checkIfReady();
+        Log.d(TAG, "Setting new local credentials (count: " + credentialStrings.size() + ")");
 
         localCredentials = CredentialManager.fromCredentialStringArray(credentialStrings);
-
-        //saveCredentials(context);
 
         for (LocalNodeListener listener : localNodeListeners)
             listener.onLocalCredentialsUpdated();
     }
 
     public static void removeAllCredentials(Context context) {
-        //checkIfReady();
+        Log.d(TAG, "Removing all local credentials (count: " + localCredentials.size() + ")");
 
         localCredentials.clear();
-
-        //saveCredentials(context);
 
         for (LocalNodeListener listener : localNodeListeners)
             listener.onLocalCredentialsUpdated();
@@ -388,21 +289,3 @@ public class RVILocalNode {
     }
 }
 
-
-//    /**
-//     * Sets the certs of the remote RVI node, when using a TCP/IP link to interface with a remote node.
-//     *
-//     * @param serverKeyStore the KeyStore object that contains your server's self-signed certificate that the TLS connection should accept.
-//     *                 To make this KeyStore object, use BouncyCastle (http://www.bouncycastle.org/download/bcprov-jdk15on-146.jar), and
-//     *                 this command-line command:
-//     *                 $ keytool -import -v -trustcacerts -alias 0 \
-//     *                 -file [PATH_TO_SELF_CERT.PEM] \
-//     *                 -keystore [PATH_TO_KEYSTORE] \
-//     *                 -storetype BKS \
-//     *                 -provider org.bouncycastle.jce.provider.BouncyCastleProvider \
-//     *                 -providerpath [PATH_TO_bcprov-jdk15on-146.jar] \
-//     *                 -storepass [STOREPASS]
-//     * @param clientKeyStore the KeyStore object that contains your client's self-signed certificate that the TLS connection sends to the server.
-//     *                       // TODO: openssl pkcs12 -export -in insecure_device_cert.crt -inkey insecure_device_key.pem -out client.p12 -name "client-certs"
-//     * @param clientKeyStorePassword the password of the client key store
-//     */
