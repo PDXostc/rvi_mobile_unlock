@@ -95,8 +95,6 @@ public class RVILocalNode {
 
         if (serviceIdentifiers == null) return;
 
-        Log.d(TAG, "Adding local services (count: " + serviceIdentifiers.size() + ")");
-
         for (String serviceIdentifier : serviceIdentifiers) {
             String validatedServiceIdentifier = Util.validated(serviceIdentifier, false);
 
@@ -104,6 +102,8 @@ public class RVILocalNode {
                 allLocalServices.put(validatedServiceIdentifier, new Service(rviDomain, getLocalNodeIdentifier(context), validatedServiceIdentifier));
             }
         }
+
+        Log.d(TAG, "Adding local services (" + serviceIdentifiers.size() + " new service(s), " + allLocalServices.size() + " total)");
 
         for (LocalNodeListener listener : localNodeListeners)
             listener.onLocalServicesUpdated();
@@ -128,8 +128,6 @@ public class RVILocalNode {
 
         if (serviceIdentifiers == null) return;
 
-        Log.d(TAG, "Removing local services (count: " + serviceIdentifiers.size() + ")");
-
         for (String serviceIdentifier : serviceIdentifiers) {
             String validatedServiceIdentifier = Util.validated(serviceIdentifier, false);
 
@@ -137,6 +135,8 @@ public class RVILocalNode {
                 allLocalServices.remove(validatedServiceIdentifier);
             }
         }
+
+        Log.d(TAG, "Removing local services (" + serviceIdentifiers.size() + " removed service(s), " + allLocalServices.size() + " remaining)");
 
         for (LocalNodeListener listener : localNodeListeners)
             listener.onLocalServicesUpdated();

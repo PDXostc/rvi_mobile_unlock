@@ -106,6 +106,7 @@ public class RemoteConnectionManager
      */
     void disconnect() {
         if (mRemoteConnection != null) mRemoteConnection.disconnect(null);
+        else if (mListener != null) mListener.onRVIDidDisconnect(null);
 
         mDataParser.clear();
     }
