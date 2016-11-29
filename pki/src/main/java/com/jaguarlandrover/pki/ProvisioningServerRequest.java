@@ -16,8 +16,8 @@ package com.jaguarlandrover.pki;
 
 import com.google.gson.annotations.SerializedName;
 
-public class PKIServerRequest {
-    private final static String TAG = "UnlockDemo/ProvSrvrReq_";
+public class ProvisioningServerRequest {
+    private final static String TAG = "PKI/ProvServerRequest__";
 
     @SerializedName("type")
     private String mType = "undefined";
@@ -29,10 +29,10 @@ public class PKIServerRequest {
 
     }
 
-    public PKIServerRequest() {
+    public ProvisioningServerRequest() {
     }
 
-    public PKIServerRequest.Type getType() {
+    public ProvisioningServerRequest.Type getType() {
         switch (mType) {
             case "token_verification":
                 return Type.TOKEN_VERIFICATION;
@@ -43,7 +43,7 @@ public class PKIServerRequest {
         return Type.UNDEFINED;
     }
 
-    protected void setType(PKIServerRequest.Type type) {
+    protected void setType(ProvisioningServerRequest.Type type) {
         switch (type) {
             case UNDEFINED:
                 mType = "undefined";

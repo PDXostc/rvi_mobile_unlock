@@ -7,10 +7,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import com.jaguarlandrover.pki.PKICertificateResponse;
-import com.jaguarlandrover.pki.PKICertificateSigningRequestRequest;
+import com.jaguarlandrover.pki.PSCertificateResponse;
+import com.jaguarlandrover.pki.PSCertificateSigningRequestRequest;
 import com.jaguarlandrover.pki.PKIManager;
-import com.jaguarlandrover.pki.PKIServerResponse;
+import com.jaguarlandrover.pki.ProvisioningServerResponse;
 import com.jaguarlandrover.rvi.RVILocalNode;
 
 import java.security.KeyStore;
@@ -84,22 +84,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendCertificateSigningRequest(String certificateSigningRequest) {
-        PKICertificateSigningRequestRequest request = new PKICertificateSigningRequestRequest(certificateSigningRequest);
+        PSCertificateSigningRequestRequest request = new PSCertificateSigningRequestRequest(certificateSigningRequest);
 
         PKIManager.sendCertificateSigningRequest(this, new PKIManager.ProvisioningServerListener() {
             @Override
-            public void managerDidReceiveResponseFromServer(PKIServerResponse response) {
-                if (response.getStatus() == PKIServerResponse.Status.VERIFICATION_NEEDED) {
+            public void managerDidReceiveResponseFromServer(ProvisioningServerResponse response) {
+                if (response.getStatus() == ProvisioningServerResponse.Status.VERIFICATION_NEEDED) {
                     Log.e(TAG, "Problem: verification needed...");
 
-                } else if (response.getStatus() == PKIServerResponse.Status.CERTIFICATE_RESPONSE) {
+                } else if (response.getStatus() == ProvisioningServerResponse.Status.CERTIFICATE_RESPONSE) {
                     Log.d(TAG, "Certificate signing request received and server sent back certs and creds.");
 
-                    PKICertificateResponse certificateResponse = (PKICertificateResponse) response;
+                    PSCertificateResponse certificateResponse = (PSCertificateResponse) response;
 
                     setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtCredentials());
 
-                } else if (response.getStatus() == PKIServerResponse.Status.ERROR) {
+                } else if (response.getStatus() == ProvisioningServerResponse.Status.ERROR) {
                     Log.e(TAG, "Error from server");
 
                 }

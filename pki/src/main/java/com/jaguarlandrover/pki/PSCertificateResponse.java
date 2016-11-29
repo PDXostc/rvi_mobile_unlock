@@ -7,7 +7,7 @@ package com.jaguarlandrover.pki;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    CertificateResponse.java
+ * File:    PSCertificateResponse.java
  * Project: UnlockDemo
  *
  * Created by Lilli Szafranski on 10/13/16.
@@ -19,7 +19,7 @@ import com.google.gson.annotations.SerializedName;
 import java.security.KeyStore;
 import java.util.ArrayList;
 
-public class PKICertificateResponse extends PKIServerResponse
+public class PSCertificateResponse extends ProvisioningServerResponse
 {
     @SerializedName("signed_certificate")
     private String mDeviceCertificate;
@@ -34,7 +34,7 @@ public class PKICertificateResponse extends PKIServerResponse
 
     private transient KeyStore mDeviceKeyStore;
 
-    public PKICertificateResponse() {
+    public PSCertificateResponse() {
     }
 
     String getDeviceCertificate() {

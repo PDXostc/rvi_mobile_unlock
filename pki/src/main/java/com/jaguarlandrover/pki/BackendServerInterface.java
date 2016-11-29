@@ -39,13 +39,13 @@ import javax.net.ssl.HttpsURLConnection;
 
 class BackendServerInterface
 {
-    private final static String TAG = "PKI/ServerInterface____";
+    private final static String TAG = "PKI/BackendServerInterf";
 
     private static Gson gson = new Gson();
 
-    static void sendProvisioningServerRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, PKIServerRequest request) {
-        if (request.getType() == PKIServerRequest.Type.TOKEN_VERIFICATION) {
-            ((PKITokenVerificationRequest)request).setJwt(KeyStoreInterface.createJwt(context, ((PKITokenVerificationRequest)request).getJwtBody()));
+    static void sendProvisioningServerRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, ProvisioningServerRequest request) {
+        if (request.getType() == ProvisioningServerRequest.Type.TOKEN_VERIFICATION) {
+            ((PSTokenVerificationRequest)request).setJwt(KeyStoreInterface.createJwt(context, ((PSTokenVerificationRequest)request).getJwtBody()));
         }
 
         String requestString = "";
@@ -56,7 +56,7 @@ class BackendServerInterface
             e.printStackTrace();
 
             if (listener != null)
-                listener.managerDidReceiveResponseFromServer(new PKIErrorResponse("Problem parsing the json. Request never sent to server"));
+                listener.managerDidReceiveResponseFromServer(new PSErrorResponse("Problem parsing the json. Request never sent to server"));
         }
 
         new ProvisioningServerTask(context, listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, baseUrl, requestUrl, requestString);
@@ -99,24 +99,24 @@ class BackendServerInterface
             String serverResponse = params[0];
 
             try {
-                PKIServerResponse response = gson.fromJson(serverResponse, PKIServerResponse.class);
+                ProvisioningServerResponse response = gson.fromJson(serverResponse, ProvisioningServerResponse.class);
 
-                if (response.getStatus() == PKIServerResponse.Status.ERROR)
-                    response = gson.fromJson(serverResponse, PKIErrorResponse.class);
-                else if (response.getStatus() == PKIServerResponse.Status.VERIFICATION_NEEDED)
-                    response = gson.fromJson(serverResponse, PKIVerificationNeededResponse.class);
-                else if (response.getStatus() == PKIServerResponse.Status.CERTIFICATE_RESPONSE)
-                    response = gson.fromJson(serverResponse, PKICertificateResponse.class);
+                if (response.getStatus() == ProvisioningServerResponse.Status.ERROR)
+                    response = gson.fromJson(serverResponse, PSErrorResponse.class);
+                else if (response.getStatus() == ProvisioningServerResponse.Status.VERIFICATION_NEEDED)
+                    response = gson.fromJson(serverResponse, PSVerificationNeededResponse.class);
+                else if (response.getStatus() == ProvisioningServerResponse.Status.CERTIFICATE_RESPONSE)
+                    response = gson.fromJson(serverResponse, PSCertificateResponse.class);
 
-                if (response.getStatus() == PKIServerResponse.Status.CERTIFICATE_RESPONSE)
-                    processServerCertificateResponse(mContext, (PKICertificateResponse) response);
+                if (response.getStatus() == ProvisioningServerResponse.Status.CERTIFICATE_RESPONSE)
+                    processServerCertificateResponse(mContext, (PSCertificateResponse) response);
 
                 if (mListener != null)
                     mListener.managerDidReceiveResponseFromServer(response);
 
             } catch (Exception e) {
                 if (mListener != null)
-                    mListener.managerDidReceiveResponseFromServer(new PKIErrorResponse("Problem parsing the json. Request never sent to server"));
+                    mListener.managerDidReceiveResponseFromServer(new PSErrorResponse("Problem parsing the json. Request never sent to server"));
             }
         }
 
@@ -124,11 +124,11 @@ class BackendServerInterface
         protected void onPostExecute(Throwable result) {
             super.onPostExecute(result);
 
-            if (result != null) mListener.managerDidReceiveResponseFromServer(new PKIErrorResponse(result.getLocalizedMessage()));
+            if (result != null) mListener.managerDidReceiveResponseFromServer(new PSErrorResponse(result.getLocalizedMessage()));
         }
     }
 
-    private static void processServerCertificateResponse(Context context, PKICertificateResponse serverCertificateResponse) throws CertificateException {
+    private static void processServerCertificateResponse(Context context, PSCertificateResponse serverCertificateResponse) throws CertificateException {
 
         byte [] decodedServerCert  = Base64.decode(serverCertificateResponse.getServerCertificate().replaceAll("-----BEGIN CERTIFICATE-----", "").replaceAll("-----END CERTIFICATE-----", ""));
         X509Certificate serverCert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(decodedServerCert));
@@ -143,7 +143,7 @@ class BackendServerInterface
         serverCertificateResponse.setDeviceKeyStore(deviceKeyStore);
     }
 
-    static String sendStringToProvisioningServer(String baseUrl, String requestUrl, String data) {
+    private static String sendStringToProvisioningServer(String baseUrl, String requestUrl, String data) {
 
         if (data == null)
             throw new RuntimeException("Request string is null.");

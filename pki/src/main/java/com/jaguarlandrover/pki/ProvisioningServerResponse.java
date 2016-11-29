@@ -16,8 +16,8 @@ package com.jaguarlandrover.pki;
 
 import com.google.gson.annotations.SerializedName;
 
-public class PKIServerResponse {
-    private final static String TAG = "UnlockDemo/ProvSrvrResp";
+public class ProvisioningServerResponse {
+    private final static String TAG = "PKI/ProvServerResponse_";
 
     @SerializedName("status")
     private String mStatus = "unknown";
@@ -29,7 +29,7 @@ public class PKIServerResponse {
         CERTIFICATE_RESPONSE
     }
 
-    public PKIServerResponse() {
+    public ProvisioningServerResponse() {
     }
 
     public Status getStatus() {

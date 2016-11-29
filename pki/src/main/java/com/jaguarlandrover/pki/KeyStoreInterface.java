@@ -7,7 +7,7 @@ package com.jaguarlandrover.pki;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    KeyManager.java
+ * File:    KeyStoreInterface.java
  * Project: UnlockDemo
  *
  * Created by Lilli Szafranski on 8/8/16.
@@ -65,7 +65,7 @@ import javax.security.auth.x500.X500Principal;
 /* Code from here: http://stackoverflow.com/a/37898553 */
 class KeyStoreInterface
 {
-    private final static String TAG = "PKI/KeyStoreManager____";
+    private final static String TAG = "PKI/KeyStoreInterface__";
 
     private final static String KEYSTORE_CLIENT_ALIAS = "RVI_CLIENT_KEYSTORE_ALIAS";
     private final static String KEYSTORE_SERVER_ALIAS = "RVI_SERVER_KEYSTORE_ALIAS";
