@@ -21,7 +21,6 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.StringTokenizer;
 
 /**
  * The remote RVI node.
@@ -66,9 +65,12 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
                 openConnection();
 
                 if (mState != State.CONNECTED) {
+                    Log.d(TAG, "RVI REMOTE NODE CONNECTED");
+
                     mState = State.CONNECTED;
                     if (mListener != null) mListener.nodeDidConnect(RVIRemoteNode.this);
                 }
+
 
                 validateLocalCredentials();
                 authorizeNode();
@@ -76,11 +78,13 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 
             @Override
             public void onRVIDidFailToConnect(Throwable error) {
-                Log.d(TAG, Util.getMethodName() + ": " + ((error == null) ? "(null)" : error.getLocalizedMessage()));
+                Log.d(TAG, Util.getMethodName());
 
                 closeConnection();
 
                 if (mState != State.DISCONNECTED) {
+                    Log.d(TAG, "RVI REMOTE NODE FAILED TO CONNECT" + ": " + ((error == null) ? "(null)" : error.getLocalizedMessage()));
+
                     mState = State.DISCONNECTED;
                     if (mListener != null) mListener.nodeDidFailToConnect(RVIRemoteNode.this, error);
                 }
@@ -88,11 +92,13 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 
             @Override
             public void onRVIDidDisconnect(Throwable trigger) {
-                Log.d(TAG, Util.getMethodName() + ": " + ((trigger == null) ? "(null)" : trigger.getLocalizedMessage()));
+                Log.d(TAG, Util.getMethodName());
 
                 closeConnection();
 
                 if (mState != State.DISCONNECTED) {
+                    Log.d(TAG, "RVI REMOTE NODE DISCONNECTED" + ": " + ((trigger == null) ? "(null)" : trigger.getLocalizedMessage()));
+
                     mState = State.DISCONNECTED;
                     if (mListener != null) mListener.nodeDidDisconnect(RVIRemoteNode.this, trigger);
                 }
@@ -210,6 +216,8 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
      * Tells the local RVI node to connect to the remote RVI node, letting the RVINode choose the best connection.
      */
     public void connect() {
+        Log.d(TAG, "RVI REMOTE NODE CONNECTING...");
+
         mState = State.CONNECTING;
 
         mRemoteConnectionManager.setKeyStores(RVILocalNode.getServerKeyStore(), RVILocalNode.getDeviceKeyStore(), RVILocalNode.getDeviceKeyStorePassword());
@@ -220,6 +228,8 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
      * Tells the local RVI node to disconnect all connections to the remote RVI node.
      */
     public void disconnect() {
+        Log.d(TAG, "RVI REMOTE NODE DISCONNECTING...");
+
         mState = State.DISCONNECTING;
 
         mRemoteConnectionManager.disconnect();
@@ -432,12 +442,8 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
         validateRemoteCredentials();
         sortThroughLocalServices();
 
-        //sortThroughRemoteServices();
-
         mAuthorizedRemoteServices.clear(); // TODO: Check w Ulf about assumptions made wrt remote services and creds/auth and deleting list vs. adding to list and not checking against own creds
         if (mListener != null) mListener.nodeDidAuthorizeRemoteServices(this, mAuthorizedRemoteServices.keySet());
-
-        //announceServices();
     }
 
     private void validateLocalCredentials() {
@@ -465,6 +471,8 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
                 }
             }
         }
+
+        Log.d(TAG, "Validated local credentials (valid credentials: " + mValidLocalCredentials.size() + " of " + localCredentials.size() + " total local credentials).");
     }
 
     private void validateRemoteCredentials() {
@@ -491,10 +499,12 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
                     mValidRemoteCredentials.add(credential);
             }
         }
+
+        Log.d(TAG, "Validated remote credentials (valid credentials: " + mValidRemoteCredentials.size() + " of " + remoteCredentials.size() + " total remote credentials).");
     }
 
     private void sortThroughLocalServices() {
-        Log.d(TAG, "Sorting through local service list...");
+        Log.d(TAG, "Authorizing local services...");
 
         HashMap<String, Service> previouslyAuthorizedLocalServices = new HashMap<>(mAuthorizedLocalServices);
 
@@ -525,6 +535,9 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 
         for (String serviceIdentifier: mAuthorizedLocalServices.keySet())
             previouslyAuthorizedLocalServices.remove(serviceIdentifier);
+
+        Log.d(TAG, "Authorized local services (valid services: " + mAuthorizedLocalServices.size() + " of " + allLocalServices.size() + " total local services, "
+                + previouslyAuthorizedLocalServices.size() + " previously authorized service(s) being removed).");
 
         announceServices(mAuthorizedLocalServices, DlinkServiceAnnouncePacket.Status.AVAILABLE);
         announceServices(previouslyAuthorizedLocalServices, DlinkServiceAnnouncePacket.Status.UNAVAILABLE);
@@ -557,22 +570,22 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 
         for (Service service : authorizedRemoteServices)
             addRemoteService(service.getServiceIdentifier(), service);
-            //mAuthorizedRemoteServices.put(service.getFullyQualifiedServiceIdentifier(), service);
+
+        Log.d(TAG, "Authorized remote services (valid services: " + mAuthorizedRemoteServices.size() + " of " + allRemoteServices.size() + " total remote services).");
 
         if (mListener != null) mListener.nodeDidAuthorizeRemoteServices(this, mAuthorizedRemoteServices.keySet());
     }
 
     @Override
     public void onLocalServicesUpdated() {
-        Log.d(TAG, "Local services updated...");
+        Log.d(TAG, "Local services updated.");
 
         sortThroughLocalServices();
-        //announceServices();
     }
 
     @Override
     public void onLocalCredentialsUpdated() {
-        Log.d(TAG, "Local credentials updated...");
+        Log.d(TAG, "Local credentials updated.");
 
         validateLocalCredentials();
         authorizeNode();
@@ -580,7 +593,5 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
         sortThroughLocalServices();
 
         sortThroughRemoteServices();
-
-        //announceServices();
     }
 }

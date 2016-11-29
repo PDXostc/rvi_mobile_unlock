@@ -54,7 +54,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        RVILocalNode.start(this, RVI_DOMAIN);
+        RVILocalNode.setRviDomain(RVI_DOMAIN);
 
         setContentView(R.layout.activity_login2);
         handleExtra(getIntent());
@@ -209,8 +209,12 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             RVILocalNode.setDeviceKeyStore(deviceCertificateKeyStore);
             RVILocalNode.setDeviceKeyStorePassword(deviceCertificatePassword);
 
+            RVILocalNode.loadCredentials(this);
+
             if (newCredentials != null)
                 RVILocalNode.setCredentials(this, newCredentials);
+
+            RVILocalNode.saveCredentials(this);
 
             ServerNode.connect();
         } catch (Exception e) {
