@@ -7,7 +7,7 @@ package com.jaguarlandrover.pki;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    CertificateSigningRequest.java
+ * File:    PSCertificateSigningRequestRequest.java
  * Project: UnlockDemo
  *
  * Created by Lilli Szafranski on 10/13/16.
@@ -16,15 +16,16 @@ package com.jaguarlandrover.pki;
 
 import com.google.gson.annotations.SerializedName;
 
-public class PKICertificateSigningRequestRequest extends PKIServerRequest {
+public class PSCertificateSigningRequestRequest extends ProvisioningServerRequest
+{
     @SerializedName("certificate_signing_request")
     private String mCertificateSigningRequest;
 
-    public PKICertificateSigningRequestRequest() {
+    public PSCertificateSigningRequestRequest() {
         setType(Type.CERTIFICATE_SIGNING_REQUEST);
     }
 
-    public PKICertificateSigningRequestRequest(String certificateSigningRequest) {
+    public PSCertificateSigningRequestRequest(String certificateSigningRequest) {
         setType(Type.CERTIFICATE_SIGNING_REQUEST);
 
         mCertificateSigningRequest = certificateSigningRequest;

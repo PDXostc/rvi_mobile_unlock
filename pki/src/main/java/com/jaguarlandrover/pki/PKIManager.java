@@ -7,7 +7,7 @@ package com.jaguarlandrover.pki;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    ProvisioningServerInterface.java
+ * File:    PKIManager.java
  * Project: UnlockDemo
  *
  * Created by Lilli Szafranski on 8/9/16.
@@ -32,7 +32,7 @@ public class PKIManager
      */
     public interface ProvisioningServerListener
     {
-        void managerDidReceiveResponseFromServer(PKIServerResponse response);
+        void managerDidReceiveResponseFromServer(ProvisioningServerResponse response);
     }
 
     public interface CertificateSigningRequestGeneratorListener
@@ -46,11 +46,11 @@ public class PKIManager
         KeyStoreInterface.generateKeyPairAndCertificateSigningRequest(context, listener, startDate, endDate, principalFormatterPattern, principalFormatterArgs);
     }
 
-    public static void sendCertificateSigningRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, PKIServerRequest certificateSigningRequest) {
+    public static void sendCertificateSigningRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, ProvisioningServerRequest certificateSigningRequest) {
         BackendServerInterface.sendProvisioningServerRequest(context, listener, baseUrl, requestUrl, certificateSigningRequest);
     }
 
-    public static void sendTokenVerificationRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, PKIServerRequest tokenVerificationRequest) {
+    public static void sendTokenVerificationRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, ProvisioningServerRequest tokenVerificationRequest) {
         BackendServerInterface.sendProvisioningServerRequest(context, listener, baseUrl, requestUrl, tokenVerificationRequest);
     }
 

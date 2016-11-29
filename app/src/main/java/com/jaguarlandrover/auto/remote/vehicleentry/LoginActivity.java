@@ -13,11 +13,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.jaguarlandrover.pki.PKICertificateResponse;
-import com.jaguarlandrover.pki.PKICertificateSigningRequestRequest;
+import com.jaguarlandrover.pki.PSCertificateResponse;
+import com.jaguarlandrover.pki.PSCertificateSigningRequestRequest;
 import com.jaguarlandrover.pki.PKIManager;
-import com.jaguarlandrover.pki.PKIServerResponse;
-import com.jaguarlandrover.pki.PKITokenVerificationRequest;
+import com.jaguarlandrover.pki.ProvisioningServerResponse;
+import com.jaguarlandrover.pki.PSTokenVerificationRequest;
 import com.jaguarlandrover.rvi.RVILocalNode;
 
 import java.security.KeyStore;
@@ -85,7 +85,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
                 mValidatingToken = true;
 
-                PKITokenVerificationRequest request = new PKITokenVerificationRequest(token, certId);
+                PSTokenVerificationRequest request = new PSTokenVerificationRequest(token, certId);
 
                 Log.d(TAG, "Sending token verification request: " + request.toString());
 
@@ -127,8 +127,8 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
     private PKIManager.ProvisioningServerListener mProvisioningServerListener = new PKIManager.ProvisioningServerListener() {
         @Override
-        public void managerDidReceiveResponseFromServer(PKIServerResponse response) {
-            if (response.getStatus() == PKIServerResponse.Status.VERIFICATION_NEEDED) {
+        public void managerDidReceiveResponseFromServer(ProvisioningServerResponse response) {
+            if (response.getStatus() == ProvisioningServerResponse.Status.VERIFICATION_NEEDED) {
                 mValidatingToken = true;
                 mAllValidCertsAcquired = false;
 
@@ -139,7 +139,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 mLoginActivityFragment.setHasKeys(true);
                 mLoginActivityFragment.setHasSignedCerts(false);
 
-            } else if (response.getStatus() == PKIServerResponse.Status.CERTIFICATE_RESPONSE) {
+            } else if (response.getStatus() == ProvisioningServerResponse.Status.CERTIFICATE_RESPONSE) {
                 Log.d(TAG, "Got server stuff, trying to connect");
 
                 mValidatingToken = false;
@@ -148,11 +148,11 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                 mLoginActivityFragment.setHasKeys(true);
                 mLoginActivityFragment.setHasSignedCerts(true);
 
-                PKICertificateResponse certificateResponse = (PKICertificateResponse) response;
+                PSCertificateResponse certificateResponse = (PSCertificateResponse) response;
 
                 setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtCredentials());
                 launchLockActivityWhenReady();
-            } else if (response.getStatus() == PKIServerResponse.Status.ERROR) {
+            } else if (response.getStatus() == ProvisioningServerResponse.Status.ERROR) {
 
                 mLoginActivityFragment.setHasKeys(true);
                 mLoginActivityFragment.setHasSignedCerts(false);
@@ -186,7 +186,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
             String provisioningServerUrl = "http://" + preferences.getString("pref_provisioning_server_url", "38.129.64.40") + ":" + preferences.getString("pref_provisioning_server_port", "8000");
 
-            PKICertificateSigningRequestRequest request = new PKICertificateSigningRequestRequest(certificateSigningRequest);
+            PSCertificateSigningRequestRequest request = new PSCertificateSigningRequestRequest(certificateSigningRequest);
 
             PKIManager.sendCertificateSigningRequest(LoginActivity.this, mProvisioningServerListener, provisioningServerUrl, DEFAULT_PROVISIONING_SERVER_CSR_URL, request);
         }

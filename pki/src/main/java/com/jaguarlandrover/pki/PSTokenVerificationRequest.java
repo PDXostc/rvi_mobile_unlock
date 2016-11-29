@@ -7,7 +7,7 @@ package com.jaguarlandrover.pki;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    TokenVerification.java
+ * File:    PSTokenVerificationRequest.java
  * Project: UnlockDemo
  *
  * Created by Lilli Szafranski on 10/13/16.
@@ -16,7 +16,8 @@ package com.jaguarlandrover.pki;
 
 import com.google.gson.annotations.SerializedName;
 
-public class PKITokenVerificationRequest extends PKIServerRequest {
+public class PSTokenVerificationRequest extends ProvisioningServerRequest
+{
     private transient String mToken = "";
 
     private transient String mCertificateId = "";
@@ -24,11 +25,11 @@ public class PKITokenVerificationRequest extends PKIServerRequest {
     @SerializedName("jwt")
     private String jwt = null;
 
-    public PKITokenVerificationRequest() {
+    public PSTokenVerificationRequest() {
         setType(Type.TOKEN_VERIFICATION);
     }
 
-    public PKITokenVerificationRequest(String token, String certificateId) {
+    public PSTokenVerificationRequest(String token, String certificateId) {
         setType(Type.TOKEN_VERIFICATION);
 
         mToken = token;
