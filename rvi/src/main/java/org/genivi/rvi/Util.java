@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.io.UnsupportedEncodingException;
 import java.util.IllegalFormatCodePointException;
 
 /**
@@ -109,7 +110,6 @@ class Util
         return domain;
     }
 
-    // TODO: Test!
     /* An identifierComponent can have multiple topics in one string, e.g., "foo/bar/baz", but can't have empty topics, e.g., "foo//bar/baz", or begin
        or end with a topic separator string, e.g., "/foo/bar/baz/'. They can't be empty or null. They can't contain illegal characters: '+' and '#'.
        Topics that begin with the '$' are reserved, but we aren't checking that at this point. */
@@ -118,24 +118,6 @@ class Util
         /* Components can't be null and can't be empty. */
         if (identifierComponent == null) throw new IllegalArgumentException("Component can't be null.");
         if (identifierComponent.equals("")) throw new IllegalArgumentException("Component can't be an empty string.");
-
-//        /* Whitespace isn't allowed. */
-//        String regex = "\\s";
-//        boolean hasWhiteSpace = identifierComponent.matches(regex);
-//
-//        if (hasWhiteSpace)
-//            throw new IllegalArgumentException("Component \"" + identifierComponent + "\" contains a white-space character. Only the following characters are allowed: a-z, A-Z, 0-9, '-', '_', '.', and '/'.");
-
-//        /* Only the following characters are allowed: a-z, A-Z, 0-9, '-', '_', '.' (for domains), and '/' (for non-domains). */
-//        if (isDomain)
-//            regex = "^[a-zA-Z0-9-_\\.]+$";
-//        else
-//            regex = "^[a-zA-Z0-9-_/]+$";
-//
-//        boolean hasSpecialChar = !identifierComponent.matches(regex);
-//
-//        if (hasSpecialChar)
-//            throw new IllegalArgumentException("Component \"" + identifierComponent + "\" contains an illegal character. Only the following characters are allowed: a-z, A-Z, 0-9, '-', '_', '.', and '/'.");
 
         /* Look for repeating '/'s. */
         String regex = "/\1{2,}";
@@ -167,6 +149,23 @@ class Util
 
             // TODO: Validation for reserved services; service_component_parts with '$' or something; maybe check against known list
         }
+
+        /* Check if can be UTF-8 encoded/decoded properly. (Not sure if this works in every case, and couldn't really test it.) */
+        try {
+            byte[] bytes = identifierComponent.getBytes("UTF-8");
+
+            String recoded = new String(bytes, "UTF-8");
+
+            if (!recoded.equals(identifierComponent))
+                throw new IllegalArgumentException("Identifier component \"" + identifierComponent + "\" must contain only valid UTF-8 characters.");
+
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("Identifier component \"" + identifierComponent + "\" must contain only valid UTF-8 characters.");
+        }
+
+        /* Check if string contains null character */
+        if (identifierComponent.contains("\u0000"))
+            throw new IllegalArgumentException("Identifier component \"" + identifierComponent + "\" cannot contain UTF-8 null character (\u0000)");
 
         return identifierComponent;
     }

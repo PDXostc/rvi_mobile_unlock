@@ -528,4 +528,58 @@ public class UtilTest extends AndroidTestCase
         if (!exceptionHit)
             assertTrue("Test string '" + d1 + "' failed", false);
     }
+
+    public final void testIdentifierComponentValidation_NullUTF8Characters() {
+        Boolean exceptionHit = false;
+
+        String d1 = "\u0000";
+
+        try {
+            d1 = Util.validated(d1);
+        } catch (Exception e) {
+            exceptionHit = true;
+        }
+
+        if (!exceptionHit)
+            assertTrue("Test string '" + d1 + "' failed", false);
+
+        exceptionHit = false;
+
+        d1 = "foo\u0000";
+
+        try {
+            d1 = Util.validated(d1);
+        } catch (Exception e) {
+            exceptionHit = true;
+        }
+
+        if (!exceptionHit)
+            assertTrue("Test string '" + d1 + "' failed", false);
+
+        exceptionHit = false;
+
+        d1 = "foo\u0000foo";
+
+        try {
+            d1 = Util.validated(d1);
+        } catch (Exception e) {
+            exceptionHit = true;
+        }
+
+        if (!exceptionHit)
+            assertTrue("Test string '" + d1 + "' failed", false);
+
+        exceptionHit = false;
+
+        d1 = "\u0000foo";
+
+        try {
+            d1 = Util.validated(d1);
+        } catch (Exception e) {
+            exceptionHit = true;
+        }
+
+        if (!exceptionHit)
+            assertTrue("Test string '" + d1 + "' failed", false);
+    }
 }
