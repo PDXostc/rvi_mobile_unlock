@@ -99,7 +99,7 @@ class Service
     }
 
     private void parseFullyQualifiedServiceName() {
-        String[] serviceParts = mFullyQualifiedServiceIdentifier.split("/");
+        String[] serviceParts = mFullyQualifiedServiceIdentifier.split("/", -1);
 
         if (serviceParts.length < 4) return;
 

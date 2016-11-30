@@ -162,7 +162,7 @@ class ServerNode
 
             @Override
             public void nodeReceiveServiceInvocationSucceeded(RVIRemoteNode node, String serviceIdentifier, Object parameters) {
-                String[] serviceParts = serviceIdentifier.split("/");
+                String[] serviceParts = serviceIdentifier.split("/", -1);
 
                 if (serviceParts.length < 2) return;
 

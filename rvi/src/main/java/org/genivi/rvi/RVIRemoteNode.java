@@ -400,7 +400,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 
         for (String fullyQualifiedRemoteServiceName : packet.getServices()) {
 
-            String[] serviceParts = fullyQualifiedRemoteServiceName.split("/");
+            String[] serviceParts = fullyQualifiedRemoteServiceName.split("/", -1);
 
             if (serviceParts.length < 4) return; // TODO: Handle error
 
