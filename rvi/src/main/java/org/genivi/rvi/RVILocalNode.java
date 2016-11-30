@@ -69,7 +69,7 @@ public class RVILocalNode {
     }
 
     public static void setRviDomain(String rviDomain) {
-        RVILocalNode.rviDomain = Util.validated(rviDomain, true);
+        RVILocalNode.rviDomain = Util.rfc1035(rviDomain);
     }
 
     public static String getRviDomain() {
@@ -96,7 +96,7 @@ public class RVILocalNode {
         if (serviceIdentifiers == null) return;
 
         for (String serviceIdentifier : serviceIdentifiers) {
-            String validatedServiceIdentifier = Util.validated(serviceIdentifier, false);
+            String validatedServiceIdentifier = Util.validated(serviceIdentifier);
 
             if (!allLocalServices.containsKey(validatedServiceIdentifier)) {
                 allLocalServices.put(validatedServiceIdentifier, new Service(rviDomain, getLocalNodeIdentifier(context), validatedServiceIdentifier));
@@ -129,7 +129,7 @@ public class RVILocalNode {
         if (serviceIdentifiers == null) return;
 
         for (String serviceIdentifier : serviceIdentifiers) {
-            String validatedServiceIdentifier = Util.validated(serviceIdentifier, false);
+            String validatedServiceIdentifier = Util.validated(serviceIdentifier);
 
             if (allLocalServices.containsKey(validatedServiceIdentifier)) {
                 allLocalServices.remove(validatedServiceIdentifier);
