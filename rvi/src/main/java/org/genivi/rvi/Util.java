@@ -118,7 +118,7 @@ class Util
         /* Components can't be null and can't be empty. */
         if (identifierComponent == null) throw new IllegalArgumentException("Component can't be null.");
         if (identifierComponent.equals("")) throw new IllegalArgumentException("Component can't be an empty string.");
-        
+
 //        /* Whitespace isn't allowed. */
 //        String regex = "\\s";
 //        boolean hasWhiteSpace = identifierComponent.matches(regex);
