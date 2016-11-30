@@ -79,7 +79,7 @@ public class UtilTest extends AndroidTestCase
             return;
         }
 
-        assertTrue(false);
+        assertTrue("Test string '" + d1 + "' failed", false);
     }
 
     public final void testRFC1035DomainValidation_EmptyString() {
@@ -94,7 +94,7 @@ public class UtilTest extends AndroidTestCase
             return;
         }
 
-        assertTrue(false);
+        assertTrue("Test string '" + d1 + "' failed", false);
     }
 
     public final void testRFC1035DomainValidation_EmptyLabel() {
@@ -109,7 +109,7 @@ public class UtilTest extends AndroidTestCase
             return;
         }
 
-        assertTrue(false);
+        assertTrue("Test string '" + d1 + "' failed", false);
     }
 
     public final void testRFC1035DomainValidation_IllegalPrecedingDot() {
@@ -124,7 +124,7 @@ public class UtilTest extends AndroidTestCase
             return;
         }
 
-        assertTrue(false);
+        assertTrue("Test string '" + d1 + "' failed", false);
     }
 
     public final void testRFC1035DomainValidation_IllegalSucceedingDot() {
@@ -139,7 +139,7 @@ public class UtilTest extends AndroidTestCase
             return;
         }
 
-        assertTrue(false);
+        assertTrue("Test string '" + d1 + "' failed", false);
     }
 
     public final void testRFC1035DomainValidation_IllegalCharacters() {
@@ -154,7 +154,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -167,7 +167,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -180,7 +180,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -193,7 +193,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -206,7 +206,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -219,7 +219,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -232,7 +232,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
     }
 
     public final void testRFC1035DomainValidation_IllegalStartToSubdomain() {
@@ -247,7 +247,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -260,7 +260,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -273,7 +273,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -285,7 +285,7 @@ public class UtilTest extends AndroidTestCase
             exceptionHit = true;
         }
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -298,7 +298,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
     }
 
     public final void testIdentifierComponentValidation_ValidStrings() {
@@ -360,7 +360,7 @@ public class UtilTest extends AndroidTestCase
             return;
         }
 
-        assertTrue(false);
+        assertTrue("Test string '" + d1 + "' failed", false);
     }
 
     public final void testIdentifierComponentValidation_EmptyString() {
@@ -375,7 +375,7 @@ public class UtilTest extends AndroidTestCase
             return;
         }
 
-        assertTrue(false);
+        assertTrue("Test string '" + d1 + "' failed", false);
     }
 
     public final void testIdentifierComponentValidation_EmptyTopicLevel() {
@@ -390,7 +390,7 @@ public class UtilTest extends AndroidTestCase
             return;
         }
 
-        assertTrue(false);
+        assertTrue("Test string '" + d1 + "' failed", false);
     }
 
     public final void testIdentifierComponentValidation_IllegalPrecedingSlash() {
@@ -405,7 +405,7 @@ public class UtilTest extends AndroidTestCase
             return;
         }
 
-        assertTrue(false);
+        assertTrue("Test string '" + d1 + "' failed", false);
     }
 
     public final void testIdentifierComponentValidation_IllegalSucceedingSlash() {
@@ -420,7 +420,7 @@ public class UtilTest extends AndroidTestCase
             return;
         }
 
-        assertTrue(false);
+        assertTrue("Test string '" + d1 + "' failed", false);
     }
 
     public final void testIdentifierComponentValidation_IllegalCharacters() {
@@ -435,7 +435,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -448,7 +448,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -461,7 +461,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -474,7 +474,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -487,7 +487,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -500,7 +500,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -513,7 +513,7 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
 
         exceptionHit = false;
 
@@ -526,6 +526,6 @@ public class UtilTest extends AndroidTestCase
         }
 
         if (!exceptionHit)
-            assertTrue(false);
+            assertTrue("Test string '" + d1 + "' failed", false);
     }
 }

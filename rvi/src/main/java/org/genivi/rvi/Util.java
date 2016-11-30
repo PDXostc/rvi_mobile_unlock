@@ -89,16 +89,16 @@ class Util
             throw new IllegalArgumentException("Domain \"" + domain + "\" cannot begin with a '.' character, per the RFC1035 specification.");
 
         if (domain.endsWith("."))
-            throw new IllegalArgumentException("Domain \"" + domain + "\" cannot begin with a '.' character, per the RFC1035 specification.");
+            throw new IllegalArgumentException("Domain \"" + domain + "\" cannot end with a '.' character, per the RFC1035 specification.");
 
         /* Check that each label of the domain is at least one character and that the first character is a letter. */
-        String[] domainLabels = domain.split(".");
+        String[] domainLabels = domain.split("\\.");
 
         for (String domainLabel : domainLabels) {
             if (domainLabel.equals(""))
                 throw new IllegalArgumentException("Domain \"" + domain + "\" contains an empty label/subdomain.");
 
-            regex = "^[a-zA-Z]";
+            regex = "^[a-zA-Z].*";
 
             boolean startsWithNonLetter = !domainLabel.matches(regex);
 
@@ -143,6 +143,13 @@ class Util
 
         if (hasRepeatingSlash)
             throw new IllegalArgumentException("Component \"" + identifierComponent + "\" contains an illegal character sequence: two or more '/'s in a row.");
+
+        /* Check that the string does not begin or end with a forward-slash */
+        if (identifierComponent.startsWith("/"))
+            throw new IllegalArgumentException("Component \"" + identifierComponent + "\" cannot begin with a '/' character.");
+
+        if (identifierComponent.endsWith("/"))
+            throw new IllegalArgumentException("Component \"" + identifierComponent + "\" cannot end with a '/' character.");
 
         /* Split the string by the topic separator character, and check each bit to make sure it's legal */
         /* Check that each label of the domain is at least one character and that the first character is a letter. */
