@@ -119,8 +119,8 @@ class Credential {
     }
 
     private boolean rightMatchesServiceIdentifierNonTailHashMatching(String right, String serviceIdentifier) {
-        String rightParts[] = right.split("/");
-        String serviceParts[] = serviceIdentifier.split("/");
+        String rightParts[] = right.split("/", -1);
+        String serviceParts[] = serviceIdentifier.split("/", -1);
 
         if (rightParts.length > serviceParts.length)
             return false;
@@ -133,9 +133,15 @@ class Credential {
         return true;
     }
 
-    private boolean rightMatchesServiceIdentifier(String right, String serviceIdentifier) {
-        String rightParts[] = right.split("/");
-        String serviceParts[] = serviceIdentifier.split("/");
+    private static boolean rightMatchesServiceIdentifier(String right, String serviceIdentifier) {
+        /* If for whatever reason, the service identifier or topic filter (rights string) contains 2+ '/'s in a row,
+           then this is considered an empty topic level, which is not allowed, so return 'false' */
+        //String regex = "(/)\1{1,}";
+        if (right.contains("//") || serviceIdentifier.contains("//"))
+            return false;
+
+        String rightParts[] = right.split("/", -1);
+        String serviceParts[] = serviceIdentifier.split("/", -1);
 
         if (rightParts.length == 0)
             return false;
@@ -144,6 +150,7 @@ class Credential {
             return false;
 
         for (int i = 0; i < rightParts.length; i++) {
+
             if (!rightParts[i].toLowerCase().equals(serviceParts[i].toLowerCase()) && !rightParts[i].equals("+"))
                 return false;
         }
@@ -160,7 +167,7 @@ class Credential {
             return false;
 
         for (String right : mRightToReceive) {
-            if (rightMatchesServiceIdentifierNonTailHashMatching(right, fullyQualifiedServiceIdentifier))
+            if (rightMatchesServiceIdentifier(right, fullyQualifiedServiceIdentifier))
                 return true;
         }
 
@@ -172,7 +179,7 @@ class Credential {
             return false;
 
         for (String right : mRightToInvoke) {
-            if (rightMatchesServiceIdentifierNonTailHashMatching(right, fullyQualifiedServiceIdentifier))
+            if (rightMatchesServiceIdentifier(right, fullyQualifiedServiceIdentifier))
                 return true;
         }
 
