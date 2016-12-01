@@ -7,28 +7,18 @@ package org.genivi.rvi;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    DlinkPacketTest.java
+ * File:    UtilTest.java
  * Project: RVI
  *
- * Created by Lilli Szafranski on 7/6/15.
+ * Created by Lilli Szafranski on 11/30/2016.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.test.AndroidTestCase;
-import android.util.Log;
-
-import com.google.gson.Gson;
-
-import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
 
 public class UtilTest extends AndroidTestCase
 {
     private final static String TAG = "RVI/UtilTest___________";
-
-    private Integer tidCounter = 0;
-
-    private DlinkPacket mPacket;
 
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()

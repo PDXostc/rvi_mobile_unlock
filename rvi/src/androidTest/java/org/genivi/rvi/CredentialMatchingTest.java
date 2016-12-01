@@ -1,27 +1,25 @@
 package org.genivi.rvi;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- * Copyright (c) 2015 Jaguar Land Rover.
+ * Copyright (c) 2016 Jaguar Land Rover.
  *
  * This program is licensed under the terms and conditions of the
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    DlinkPacketTest.java
+ * File:    CredentialMatchingTest.java
  * Project: RVI
  *
- * Created by Lilli Szafranski on 7/6/15.
+ * Created by Lilli Szafranski on 11/30/16.
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-import android.graphics.YuvImage;
 import android.test.AndroidTestCase;
 import java.lang.reflect.Method;
-import org.genivi.rvi.Credential;
 
 public class CredentialMatchingTest extends AndroidTestCase
 {
-    private final static String TAG = "RVI/UtilTest___________";
+    private final static String TAG = "RVI/CredMatchingTest___";
 
     private Class[] argTypes = new Class[] { String.class, String.class };
     private Method rightMatchesServiceIdentifierMethod = null;
