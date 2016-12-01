@@ -83,7 +83,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
             String certId = uri.getQueryParameter("certificate_id");
 
             if (token != null && certId != null) {
-                RVILocalNode.removeAllCredentials(this);
+                RVILocalNode.removeAllPrivileges(this);
 
                 mLoginActivityFragment.setStatusTextText("Validating email...");
                 mLoginActivityFragment.setVerifyButtonEnabled(false);
@@ -158,7 +158,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
                 PSCertificateResponse certificateResponse = (PSCertificateResponse) response;
 
-                setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtCredentials());
+                setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtPrivileges());
                 launchLockActivityWhenReady();
             } else if (response.getStatus() == ProvisioningServerResponse.Status.ERROR) {
 
@@ -211,18 +211,18 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         }
     };
 
-    private void setUpRviAndConnectToServer(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceCertificatePassword, ArrayList<String> newCredentials) {
+    private void setUpRviAndConnectToServer(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceCertificatePassword, ArrayList<String> newPrivileges) {
         try {
             RVILocalNode.setServerKeyStore(serverCertificateKeyStore);
             RVILocalNode.setDeviceKeyStore(deviceCertificateKeyStore);
             RVILocalNode.setDeviceKeyStorePassword(deviceCertificatePassword);
 
-            RVILocalNode.loadCredentials(this);
+            RVILocalNode.loadPrivileges(this);
 
-            if (newCredentials != null)
-                RVILocalNode.setCredentials(this, newCredentials);
+            if (newPrivileges != null)
+                RVILocalNode.setPrivileges(this, newPrivileges);
 
-            RVILocalNode.saveCredentials(this);
+            RVILocalNode.savePrivileges(this);
 
             ServerNode.connect();
         } catch (Exception e) {
@@ -334,7 +334,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                             ServerNode.disconnect();
 
                             PKIManager.deleteAllKeysAndCerts(LoginActivity.this);
-                            RVILocalNode.removeAllCredentials(LoginActivity.this);
+                            RVILocalNode.removeAllPrivileges(LoginActivity.this);
                             ServerNode.deleteUserData();
 
                             mValidatingToken       = false;
@@ -350,7 +350,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
                             ServerNode.disconnect();
 
                             PKIManager.deleteServerCerts(LoginActivity.this);
-                            RVILocalNode.removeAllCredentials(LoginActivity.this);
+                            RVILocalNode.removeAllPrivileges(LoginActivity.this);
 
                             mValidatingToken       = false;
                             mAllValidCertsAcquired = false;

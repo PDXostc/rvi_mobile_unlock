@@ -58,7 +58,7 @@ interface RemoteConnectionInterface
      *
      * @param remoteConnectionListener the remote connection listener
      */
-    void setRemoteConnectionListener(RemoteConnectionListener remoteConnectionListener); // TODO: Probably bad architecture to expect interface implementations to correctly set and use an
+    void setRemoteConnectionListener(RemoteConnectionListener remoteConnectionListener);
 
     void setServerKeyStore(KeyStore serverKeyStore);
 

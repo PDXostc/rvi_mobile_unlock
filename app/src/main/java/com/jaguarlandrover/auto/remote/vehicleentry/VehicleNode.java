@@ -156,7 +156,7 @@ public class VehicleNode
     }
 
     static void connect() {
-        if (connectionStatus == ConnectionStatus.CONNECTING) return; // TODO: Do we want to move this logic down into the SDK?
+        if (connectionStatus == ConnectionStatus.CONNECTING) return;
 
         Log.d(TAG, "Attempting to connect to vehicle.");
 

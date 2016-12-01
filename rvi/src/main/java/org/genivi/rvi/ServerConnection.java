@@ -174,11 +174,15 @@ class ServerConnection implements RemoteConnectionInterface
 
                 java.security.cert.Certificate[] peerCertificates = session.getPeerCertificates();
 
-//                if (peerCertificates == null || peerCertificates.length != 1) {
-//                    throw new Exception("Remote certificate chain is null or contains more than 1 certificate");
-//                }
+                if (peerCertificates == null || peerCertificates.length == 0 || peerCertificates.length > 2) {
+                    throw new Exception("Remote certificate chain is null, empty, or contains more than 2 certificates.");
+                }
 
                 mRemoteDeviceCertificate = peerCertificates[0];
+
+                /* If there is 1 certificate, then probably the remote device certificate is the same as the server certificate (e.g., I'm connected to the server).
+                   If there are 2 certificates, then probably the first certificate is the device certificate and the second certificate is the servers. This
+                   should match my server certificate, right? I'm assuming this array is ordered as such, but the documentation doesn't say. */
 
                 Log.d(TAG, "Creating ssl socket complete");
 
@@ -256,7 +260,6 @@ class ServerConnection implements RemoteConnectionInterface
         }
     }
 
-    // TODO: Extract SendDataTask and ListenTask to their own classes that can be called by both BluetoothConnection and ServerConnection
     private class SendDataTask extends AsyncTask<Void, Void, Throwable>
     {
         private DlinkPacket mPacket;

@@ -28,7 +28,7 @@ public class PSCertificateResponse extends ProvisioningServerResponse
     private String mServerCertificate;
 
     @SerializedName("jwt")
-    private ArrayList<String> mJwtCredentials;
+    private ArrayList<String> mJwtPrivileges;
 
     private transient KeyStore mServerKeyStore;
 
@@ -45,8 +45,8 @@ public class PSCertificateResponse extends ProvisioningServerResponse
         return mServerCertificate;
     }
 
-    public ArrayList<String> getJwtCredentials() {
-        return mJwtCredentials;
+    public ArrayList<String> getJwtPrivileges() {
+        return mJwtPrivileges;
     }
 
     public KeyStore getServerKeyStore() {

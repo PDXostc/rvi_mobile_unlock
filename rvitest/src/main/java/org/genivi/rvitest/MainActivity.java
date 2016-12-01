@@ -100,11 +100,11 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "Problem: verification needed...");
 
                 } else if (response.getStatus() == ProvisioningServerResponse.Status.CERTIFICATE_RESPONSE) {
-                    Log.d(TAG, "Certificate signing request received and server sent back certs and creds.");
+                    Log.d(TAG, "Certificate signing request received and server sent back certs and privileges.");
 
                     PSCertificateResponse certificateResponse = (PSCertificateResponse) response;
 
-                    setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtCredentials());
+                    setUpRviAndConnectToServer(certificateResponse.getServerKeyStore(), certificateResponse.getDeviceKeyStore(), null, certificateResponse.getJwtPrivileges());
 
                 } else if (response.getStatus() == ProvisioningServerResponse.Status.ERROR) {
                     Log.e(TAG, "Error from server");
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void setUpRviAndConnectToServer(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceCertificatePassword, ArrayList<String> newCredentials) {
+    private void setUpRviAndConnectToServer(KeyStore serverCertificateKeyStore, KeyStore deviceCertificateKeyStore, String deviceCertificatePassword, ArrayList<String> newPrivileges) {
         try {
             RVILocalNode.setServerKeyStore(serverCertificateKeyStore);
             RVILocalNode.setDeviceKeyStore(deviceCertificateKeyStore);

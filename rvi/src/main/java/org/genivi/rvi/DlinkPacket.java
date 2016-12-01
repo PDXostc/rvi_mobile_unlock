@@ -108,7 +108,6 @@ class DlinkPacket
         //mSig = "";
     }
 
-    // TODO: 47765, probably need to remove this constructor and update tests
     /**
      * Instantiates a new Dlink packet.
      *
@@ -122,13 +121,8 @@ class DlinkPacket
 
         mCmd = command;
 
-        // TODO: What other args should be required?
         if (jsonHash.containsKey("tid"))
             mTid = ((Double) jsonHash.get("tid")).intValue();
-
-//        if (jsonHash.containsKey("sign"))
-//            mSig = (String) jsonHash.get("sign"); // TODO: Push for sign->sig
-
     }
 
     String getType() { return "PK"; }

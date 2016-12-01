@@ -83,7 +83,6 @@ class Service
     }
 
     private void parseParameters() {
-        // TODO: Why are parameters arrays of object, not just an object? This should probably get fixed everywhere. Has it been?
         if (mJsonParameters.getClass().equals(ArrayList.class) && ((ArrayList<LinkedTreeMap>)mJsonParameters).size() == 1)
             mParameters = ((ArrayList<LinkedTreeMap>) mJsonParameters).get(0);
         else if (mJsonParameters.getClass().equals(ArrayList.class) && ((ArrayList<LinkedTreeMap>)mJsonParameters).size() > 1)
