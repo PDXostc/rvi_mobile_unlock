@@ -19,6 +19,9 @@ import com.google.gson.annotations.SerializedName;
 import java.security.KeyStore;
 import java.util.ArrayList;
 
+/**
+ * Object that represents the body of a certificate response from the provisioning server.
+ */
 public class PSCertificateResponse extends ProvisioningServerResponse
 {
     @SerializedName("signed_certificate")
@@ -34,6 +37,9 @@ public class PSCertificateResponse extends ProvisioningServerResponse
 
     private transient KeyStore mDeviceKeyStore;
 
+    /**
+     * Constructor.
+     */
     public PSCertificateResponse() {
     }
 
@@ -45,10 +51,18 @@ public class PSCertificateResponse extends ProvisioningServerResponse
         return mServerCertificate;
     }
 
+    /**
+     * Gets a list of any server-signed JWT privileges sent to the device from the provisioning server.
+     * @return A list of any server-signed JWT privileges sent to the device from the provisioning server.
+     */
     public ArrayList<String> getJwtPrivileges() {
         return mJwtPrivileges;
     }
 
+    /**
+     * Gets the keystore containing the server's server-self-signed certificate.
+     * @return A keystore containing the server's server-self-signed certificate.
+     */
     public KeyStore getServerKeyStore() {
         return mServerKeyStore;
     }
@@ -57,6 +71,10 @@ public class PSCertificateResponse extends ProvisioningServerResponse
         mServerKeyStore = serverKeyStore;
     }
 
+    /**
+     * Gets the keystore containing the device's public/private key-pair and server-signed certificate.
+     * @return A keystore containing the device's public/private key-pair and server-signed certificate.
+     */
     public KeyStore getDeviceKeyStore() {
         return mDeviceKeyStore;
     }

@@ -172,7 +172,7 @@ public class RVILocalNode {
      * Send the certificate signing request to the provisioning server over a secure connection (e.g., https).
      * In this case, the provisioning server should establish trust through an existing well-known Trust Authority.
      * This step is all done out-of-band of RVI, so it is up to the implementer to guarantee the security of
-     * the certificate signing.
+     * the connection used.
      *
      * Once the server receives the certificate singing request, it is now going to assume the role of root
      * trust authority. The server should sign the device's certificate signing request with its own private

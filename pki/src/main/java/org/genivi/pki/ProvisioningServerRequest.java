@@ -16,6 +16,9 @@ package org.genivi.pki;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * Base class for all provisioning server request objects.
+ */
 public class ProvisioningServerRequest {
     private final static String TAG = "PKI/ProvServerRequest__";
 
@@ -29,9 +32,16 @@ public class ProvisioningServerRequest {
 
     }
 
+    /**
+     * Constructor.
+     */
     public ProvisioningServerRequest() {
     }
 
+    /**
+     * What kind of request object is this.
+     * @return The type.
+     */
     public ProvisioningServerRequest.Type getType() {
         switch (mType) {
             case "token_verification":
