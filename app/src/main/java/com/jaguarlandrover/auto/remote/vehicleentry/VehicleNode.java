@@ -41,7 +41,7 @@ public class VehicleNode
 
     private static SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
 
-    private static RVIRemoteNode rviNode = new RVIRemoteNode(null);
+    private static RVIRemoteNode rviNode = new RVIRemoteNode();
 
     private static ArrayList<Listener> listeners = new ArrayList<>();
 

@@ -102,35 +102,12 @@ class ServerConnection implements RemoteConnectionInterface
 
     private class ConnectTask extends AsyncTask<Void, String, Throwable>
     {
-        /**
-         * The destination address.
-         */
         String   dstAddress;
-        /**
-         * The destination port.
-         */
         int      dstPort;
-        /**
-         * The key store of the server certs.
-         */
         KeyStore serverKeyStore;
-        /**
-         * The key store of the client certs.
-         */
         KeyStore clientKeyStore;
-        /**
-         * The key store password of the client certs.
-         */
         String   clientKeyStorePassword;
 
-        /**
-         * Instantiates a new Connect task.
-         * @param addr the addr
-         * @param port the port
-         * @param sks the server key store
-         * @param cks the client key store
-         * @param cksPass the client key store password
-         */
         ConnectTask(String addr, int port, KeyStore sks, KeyStore cks, String cksPass) {
             dstAddress = addr;
             dstPort = port;
@@ -298,20 +275,10 @@ class ServerConnection implements RemoteConnectionInterface
         }
     }
 
-    /**
-     * Sets server url.
-     *
-     * @param serverUrl the server url
-     */
     void setServerUrl(String serverUrl) {
         mServerUrl = serverUrl;
     }
 
-    /**
-     * Sets server port.
-     *
-     * @param serverPort the server port
-     */
     void setServerPort(Integer serverPort) {
         mServerPort = serverPort;
     }

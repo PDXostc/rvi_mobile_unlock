@@ -25,21 +25,21 @@ interface RemoteConnectionInterface
     /**
      * Send an rvi request.
      *
-     * @param dlinkPacket the dlink packet
+     * @param dlinkPacket The dlink packet.
      */
     void sendRviRequest(DlinkPacket dlinkPacket);
 
     /**
      * Is the interface configured.
      *
-     * @return the boolean
+     * @return The boolean.
      */
     boolean isConfigured();
 
     /**
      * Is the interface connected.
      *
-     * @return the boolean
+     * @return The boolean.
      */
     boolean isConnected();
 
@@ -56,20 +56,52 @@ interface RemoteConnectionInterface
     /**
      * Sets remote connection listener.
      *
-     * @param remoteConnectionListener the remote connection listener
+     * @param remoteConnectionListener The remote connection listener.
      */
     void setRemoteConnectionListener(RemoteConnectionListener remoteConnectionListener);
 
+
+    /**
+     * Sets the key stores used by the connection.
+     *
+     * @param serverKeyStore The keystore containing the server certificate.
+     */
     void setServerKeyStore(KeyStore serverKeyStore);
 
+
+    /**
+     * Sets the key stores used by the connection.
+     *
+     * @param localDeviceKeyStore The keystore containing the device certificate.
+     */
     void setLocalDeviceKeyStore(KeyStore localDeviceKeyStore);
 
+    /**
+     * Sets the key stores used by the connection.
+     *
+     * @param localDeviceKeyStorePassword The password for the keystore containing the device certificate.
+     */
     void setLocalDeviceKeyStorePassword(String localDeviceKeyStorePassword);
 
+    /**
+     * Gets the remote device certificate used in the TLS connection.
+     *
+     * @return The remote device certificate used in the TLS connection.
+     */
     Certificate getRemoteDeviceCertificate();
 
+    /**
+     * Gets the local device certificate used in the TLS connection.
+     *
+     * @return The local device certificate used in the TLS connection.
+     */
     Certificate getLocalDeviceCertificate();
 
+    /**
+     * Gets the server certificate used in the TLS connection.
+     *
+     * @return The server certificate used in the TLS connection.
+     */
     Certificate getServerCertificate();
 
     /**
@@ -109,7 +141,7 @@ interface RemoteConnectionInterface
         /**
          * Callback method for when the the remote connection did fail to send data to the RVI node.
          *
-         * @param error the error
+         * @param error The error.
          */
         void onDidFailToSendDataToRemoteConnection(Throwable error);
     }

@@ -46,7 +46,7 @@ class DlinkReceivePacket extends DlinkPacket
     /**
      * Helper method to get a receive dlink json object.
      *
-     * @param service The service that is getting invoked
+     * @param service The service that is getting invoked.
      */
     DlinkReceivePacket(Service service) {
         super(Command.RECEIVE);
@@ -58,7 +58,7 @@ class DlinkReceivePacket extends DlinkPacket
     /**
      * Gets the service that is being invoked over the network.
      *
-     * @return the service that is being invoked
+     * @return the service that is being invoked.
      */
     Service getService() {
 //        if (mService == null && mData != null)
@@ -70,7 +70,7 @@ class DlinkReceivePacket extends DlinkPacket
     /**
      * Sets the service that is being invoked over the network.
      *
-     * @param service the service
+     * @param service The service.
      */
     void setService(Service service) {
         mService = service;

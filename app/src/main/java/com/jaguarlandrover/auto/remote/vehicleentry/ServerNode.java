@@ -43,7 +43,7 @@ class ServerNode
     private static SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
     private static Gson              gson        = new Gson();
 
-    private static RVIRemoteNode rviNode = new RVIRemoteNode(null);
+    private static RVIRemoteNode rviNode = new RVIRemoteNode();
 
     private static ArrayList<Listener> listeners = new ArrayList<>();
 

@@ -31,7 +31,7 @@ class Util
     /**
      * Gets the name of the current method on the stack.
      *
-     * @return the method name
+     * @return The method name.
      */
     static String getMethodName() {
         return Thread.currentThread().getStackTrace()[3].getMethodName();
@@ -40,7 +40,7 @@ class Util
     /**
      * Print view information.
      *
-     * @param view the view
+     * @param view The view.
      */
     static void printView(View view) {
         Log.d(TAG, view.getClass().toString() + " frame:    (x:" + view.getLeft() + ", " +
@@ -62,6 +62,12 @@ class Util
 
     }
 
+    /**
+     * Checks if the domain string is RFC1035 and follows the other rules laid out regarding FQSIs.
+     *
+     * @param domain The domain string.
+     * @return The domain string, if valid.
+     */
     static String rfc1035(String domain) {
 
         /* Domains can't be null and can't be empty. */
@@ -110,9 +116,17 @@ class Util
         return domain;
     }
 
-    /* An identifierComponent can have multiple topics in one string, e.g., "foo/bar/baz", but can't have empty topics, e.g., "foo//bar/baz", or begin
-       or end with a topic separator string, e.g., "/foo/bar/baz/'. They can't be empty or null. They can't contain illegal characters: '+' and '#'.
-       Topics that begin with the '$' are reserved, but we aren't checking that at this point. */
+
+    /**
+     * Checks the identifier component is valid.
+     *
+     * An identifierComponent can have multiple topics in one string, e.g., "foo/bar/baz", but can't have empty topics, e.g., "foo//bar/baz", or begin
+     * or end with a topic separator string, e.g., "/foo/bar/baz/'. They can't be empty or null. They can't contain illegal characters: '+' and '#'.
+     * Topics that begin with the '$' are reserved, but we aren't checking that at this point.
+     *
+     * @param identifierComponent The identifier component string.
+     * @return The identifier component string, if valid.
+     */
     static String validated(String identifierComponent) {
 
         /* Components can't be null and can't be empty. */
