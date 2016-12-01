@@ -146,18 +146,22 @@ class Credential {
         if (rightParts.length == 0)
             return false;
 
-        if (rightParts.length > serviceParts.length)
-            return false;
+        //if (rightParts.length > (serviceParts.length + 1))
+        //    return false;
 
         for (int i = 0; i < rightParts.length; i++) {
+            if (i == (rightParts.length - 1) && rightParts[i].equals("#"))
+                return true;
+
+            if (i >= serviceParts.length)
+                return false;
 
             if (!rightParts[i].toLowerCase().equals(serviceParts[i].toLowerCase()) && !rightParts[i].equals("+"))
                 return false;
         }
 
         if (rightParts.length < serviceParts.length)
-            if (!rightParts[rightParts.length - 1].equals("#"))
-                return false;
+            return false;
 
         return true;
     }

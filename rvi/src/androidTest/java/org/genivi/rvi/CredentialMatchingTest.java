@@ -14,6 +14,7 @@ package org.genivi.rvi;
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import android.graphics.YuvImage;
 import android.test.AndroidTestCase;
 import java.lang.reflect.Method;
 import org.genivi.rvi.Credential;
@@ -279,6 +280,38 @@ public class CredentialMatchingTest extends AndroidTestCase
     }
 
     public final void testCredentialMatching_SingleLevelWildcards_Test1() {
+        String r1  = "+";
+        String s1  = "foo";         /* Matching     */
+        String s2  = "foo/";        /* Not matching */
+        String s3  = " ";           /* Matching     */
+        String s4  = "/foo";        /* Not matching */
+        String s5  = "+";           /* Matching (but illegal) */
+        String s6  = "!@%";         /* Matching     */
+        String s7  = "foo/bar/";    /* Not matching */
+        String s8  = "foo/bar/baz"; /* Not matching */
+        String s9  = "/foo/bar";    /* Not matching */
+        String s10 = "foo//";       /* Not matching */
+        String s11 = "foo///";       /* Not matching */
+        String s12 = "foo//bar";    /* Not matching */
+        String s13 = "foo/ /";      /* Not matching */
+
+        assertTrue (ym_message(r1, s1 ), rightMatchesServiceIdentifierMethod(r1, s1 ));
+        assertFalse(nm_message(r1, s2 ), rightMatchesServiceIdentifierMethod(r1, s2 ));
+        assertTrue (ym_message(r1, s3 ), rightMatchesServiceIdentifierMethod(r1, s3 ));
+        assertFalse(nm_message(r1, s4 ), rightMatchesServiceIdentifierMethod(r1, s4 ));
+        assertTrue (ym_message(r1, s5 ), rightMatchesServiceIdentifierMethod(r1, s5 ));
+        assertTrue (ym_message(r1, s6 ), rightMatchesServiceIdentifierMethod(r1, s6 ));
+        assertFalse(nm_message(r1, s7 ), rightMatchesServiceIdentifierMethod(r1, s7 ));
+        assertFalse(nm_message(r1, s8 ), rightMatchesServiceIdentifierMethod(r1, s8 ));
+        assertFalse(nm_message(r1, s9 ), rightMatchesServiceIdentifierMethod(r1, s9 ));
+        assertFalse(nm_message(r1, s10), rightMatchesServiceIdentifierMethod(r1, s10));
+        assertFalse(nm_message(r1, s11), rightMatchesServiceIdentifierMethod(r1, s11));
+        assertFalse(nm_message(r1, s12), rightMatchesServiceIdentifierMethod(r1, s12));
+        assertFalse(nm_message(r1, s13), rightMatchesServiceIdentifierMethod(r1, s13));
+    }
+
+
+    public final void testCredentialMatching_SingleLevelWildcards_Test2() {
         String r1  = "foo/+";
         String s1  = "foo";         /* Not matching */
         String s2  = "foo/";        /* Matching     */
@@ -309,7 +342,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r1, s13), rightMatchesServiceIdentifierMethod(r1, s13));
     }
 
-    public final void testCredentialMatching_SingleLevelWildcards_Test2() {
+    public final void testCredentialMatching_SingleLevelWildcards_Test3() {
         String r1  = "+/bar";
         String s1  = "bar";         /* Not matching */
         String s2  = "/bar";        /* Matching     */
@@ -342,7 +375,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r1, s14), rightMatchesServiceIdentifierMethod(r1, s14));
     }
 
-    public final void testCredentialMatching_SingleLevelWildcards_Test3() {
+    public final void testCredentialMatching_SingleLevelWildcards_Test4() {
         String r1  = "foo/+/baz";
         String s1  = "foo/bar/baz";     /* Matching     */
         String s2  = "foo/ /baz";       /* Matching     */
@@ -373,7 +406,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r1, s13), rightMatchesServiceIdentifierMethod(r1, s13));
     }
 
-    public final void testCredentialMatching_SingleLevelWildcards_Test4() {
+    public final void testCredentialMatching_SingleLevelWildcards_Test5() {
         String r1  = "foo/+/+/gazook";
         String s1  = "foo/bar/baz/gazook";  /* Matching     */
         String s2  = "foo/ / /gazook";      /* Matching     */
@@ -400,7 +433,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r1, s11), rightMatchesServiceIdentifierMethod(r1, s11));
     }
 
-    public final void testCredentialMatching_SingleLevelWildcards_Test5() {
+    public final void testCredentialMatching_SingleLevelWildcards_Test6() {
         String r1  = "foo/+/bar/+/baz";
         String s1  = "foo/!@%/bar/!@%/baz"; /* Matching     */
         String s2  = "foo/ /bar/ /baz";     /* Matching     */
@@ -427,7 +460,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r1, s11), rightMatchesServiceIdentifierMethod(r1, s11));
     }
 
-    public final void testCredentialMatching_SingleLevelWildcards_Test6() {
+    public final void testCredentialMatching_SingleLevelWildcards_Test7() {
         String s1  = "/foo";
         String r1  = "+/+";  /* Matching     */
         String r2  = "/+";   /* Matching     */
@@ -447,27 +480,198 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r6, s2 ), rightMatchesServiceIdentifierMethod(r6, s2 ));
     }
 
-    public final void testRFC1035DomainValidation_NormalDomains() {
-        String d1 = "foo";
-        String d2 = "foo.bar";
-        String d3 = "foo.bar.baz";
-        String d4 = "foo.bar.baz1";
-        String d5 = "foo.bar2.baz1";
-        String d6 = "foo3.bar2.baz1";
-        String d7 = "foo3.bar2.baz1-gazook";
+    public final void testCredentialMatching_MultiLevelWildcards_Test1() {
+        String r1  = "#";
+        String s1  = "foo";         /* Matching     */
+        String s2  = "foo/";        /* Matching     */
+        String s3  = "foo/ ";       /* Matching     */
+        String s4  = "foo/bar";     /* Matching     */
+        String s5  = "foo/+";       /* Matching (but illegal) */
+        String s6  = "foo/!@%";     /* Matching     */
+        String s7  = "foo/bar/";    /* Matching     */
+        String s8  = "foo/bar/baz"; /* Matching     */
+        String s9  = "/foo/bar";    /* Matching     */
+        String s10 = "foo//";       /* Not matching */
+        String s11 = "foo///";      /* Not matching */
+        String s12 = "foo//bar";    /* Not matching */
+        String s13 = "foo/ /";      /* Matching     */
 
-        try {
-            assertEquals(d1, Util.rfc1035(d1));
-            assertEquals(d2, Util.rfc1035(d2));
-            assertEquals(d3, Util.rfc1035(d3));
-            assertEquals(d4, Util.rfc1035(d4));
-            assertEquals(d5, Util.rfc1035(d5));
-            assertEquals(d6, Util.rfc1035(d6));
-            assertEquals(d7, Util.rfc1035(d7));
-
-        } catch (Exception e) {
-            assertTrue(e.getMessage(), false);
-        }
+        assertTrue (ym_message(r1, s1 ), rightMatchesServiceIdentifierMethod(r1, s1 ));
+        assertTrue (ym_message(r1, s2 ), rightMatchesServiceIdentifierMethod(r1, s2 ));
+        assertTrue (ym_message(r1, s3 ), rightMatchesServiceIdentifierMethod(r1, s3 ));
+        assertTrue (ym_message(r1, s4 ), rightMatchesServiceIdentifierMethod(r1, s4 ));
+        assertTrue (ym_message(r1, s5 ), rightMatchesServiceIdentifierMethod(r1, s5 ));
+        assertTrue (ym_message(r1, s6 ), rightMatchesServiceIdentifierMethod(r1, s6 ));
+        assertTrue (ym_message(r1, s7 ), rightMatchesServiceIdentifierMethod(r1, s7 ));
+        assertTrue (ym_message(r1, s8 ), rightMatchesServiceIdentifierMethod(r1, s8 ));
+        assertTrue (ym_message(r1, s9 ), rightMatchesServiceIdentifierMethod(r1, s9 ));
+        assertFalse(nm_message(r1, s10), rightMatchesServiceIdentifierMethod(r1, s10));
+        assertFalse(nm_message(r1, s11), rightMatchesServiceIdentifierMethod(r1, s11));
+        assertFalse(nm_message(r1, s12), rightMatchesServiceIdentifierMethod(r1, s12));
+        assertTrue (ym_message(r1, s13), rightMatchesServiceIdentifierMethod(r1, s13));
     }
 
+    public final void testCredentialMatching_MultiLevelWildcards_Test2() {
+        String r1  = "/#";
+        String s1  = "foo";         /* Not matching */
+        String s2  = "foo/";        /* Not matching */
+        String s3  = "foo/ ";       /* Not matching */
+        String s4  = "foo/bar";     /* Not matching */
+        String s5  = "foo/+";       /* Not matching */
+        String s6  = "foo/!@%";     /* Not matching */
+        String s7  = "foo/bar/";    /* Not matching */
+        String s8  = "foo/bar/baz"; /* Not matching */
+        String s9  = "/";           /* Matching     */
+        String s10 = "/foo";        /* Matching     */
+        String s11 = "/foo/bar";    /* Matching     */
+
+        assertFalse(nm_message(r1, s1 ), rightMatchesServiceIdentifierMethod(r1, s1 ));
+        assertFalse(nm_message(r1, s2 ), rightMatchesServiceIdentifierMethod(r1, s2 ));
+        assertFalse(nm_message(r1, s3 ), rightMatchesServiceIdentifierMethod(r1, s3 ));
+        assertFalse(nm_message(r1, s4 ), rightMatchesServiceIdentifierMethod(r1, s4 ));
+        assertFalse(nm_message(r1, s5 ), rightMatchesServiceIdentifierMethod(r1, s5 ));
+        assertFalse(nm_message(r1, s6 ), rightMatchesServiceIdentifierMethod(r1, s6 ));
+        assertFalse(nm_message(r1, s7 ), rightMatchesServiceIdentifierMethod(r1, s7 ));
+        assertFalse(nm_message(r1, s8 ), rightMatchesServiceIdentifierMethod(r1, s8 ));
+        assertTrue (ym_message(r1, s9 ), rightMatchesServiceIdentifierMethod(r1, s9 ));
+        assertTrue (ym_message(r1, s10), rightMatchesServiceIdentifierMethod(r1, s10));
+        assertTrue (ym_message(r1, s11), rightMatchesServiceIdentifierMethod(r1, s11));
+    }
+
+    public final void testCredentialMatching_MultiLevelWildcards_Test3() {
+        String r1  = "foo/#";
+        String s1  = "foo";         /* Matching */
+        String s2  = "foo/";        /* Matching     */
+        String s3  = "foo/ ";       /* Matching     */
+        String s4  = "foo/bar";     /* Matching     */
+        String s5  = "foo/+";       /* Matching (but illegal) */
+        String s6  = "foo/!@%";     /* Matching     */
+        String s7  = "foo/bar/";    /* Matching     */
+        String s8  = "foo/bar/baz"; /* Matching     */
+        String s9  = "/foo/bar";    /* Not matching */
+        String s10 = "foo//";       /* Not matching */
+        String s11 = "foo///";      /* Not matching */
+        String s12 = "foo//bar";    /* Not matching */
+        String s13 = "foo/ /";      /* Matching     */
+
+        assertTrue (ym_message(r1, s1 ), rightMatchesServiceIdentifierMethod(r1, s1 ));
+        assertTrue (ym_message(r1, s2 ), rightMatchesServiceIdentifierMethod(r1, s2 ));
+        assertTrue (ym_message(r1, s3 ), rightMatchesServiceIdentifierMethod(r1, s3 ));
+        assertTrue (ym_message(r1, s4 ), rightMatchesServiceIdentifierMethod(r1, s4 ));
+        assertTrue (ym_message(r1, s5 ), rightMatchesServiceIdentifierMethod(r1, s5 ));
+        assertTrue (ym_message(r1, s6 ), rightMatchesServiceIdentifierMethod(r1, s6 ));
+        assertTrue (ym_message(r1, s7 ), rightMatchesServiceIdentifierMethod(r1, s7 ));
+        assertTrue (ym_message(r1, s8 ), rightMatchesServiceIdentifierMethod(r1, s8 ));
+        assertFalse(nm_message(r1, s9 ), rightMatchesServiceIdentifierMethod(r1, s9 ));
+        assertFalse(nm_message(r1, s10), rightMatchesServiceIdentifierMethod(r1, s10));
+        assertFalse(nm_message(r1, s11), rightMatchesServiceIdentifierMethod(r1, s11));
+        assertFalse(nm_message(r1, s12), rightMatchesServiceIdentifierMethod(r1, s12));
+        assertTrue (ym_message(r1, s13), rightMatchesServiceIdentifierMethod(r1, s13));
+    }
+
+    public final void testCredentialMatching_MultiLevelWildcards_Test4() {
+        String r1  = "#/bar";       /* Not even legal */
+        String s1  = "bar";         /* Not matching */
+        String s2  = "/bar";        /* Not matching */
+        String s3  = " /bar";       /* Not matching */
+        String s4  = "foo/bar";     /* Not matching */
+        String s5  = "/bar";        /* Not matching */
+        String s6  = "#/bar";       /* Matching (but illegal) */
+        String s7  = "!@%/bar";     /* Not matching */
+        String s8  = "foo/bar/";    /* Not matching */
+        String s9  = "foo/bar/baz"; /* Not matching */
+        String s10 = "/foo/bar";    /* Not matching */
+        String s11 = "//bar";       /* Not matching */
+        String s12 = "///bar";      /* Not matching */
+        String s13 = "foo//bar";    /* Not matching */
+        String s14 = "/ /bar";      /* Not matching */
+
+        assertFalse(nm_message(r1, s1 ), rightMatchesServiceIdentifierMethod(r1, s1 ));
+        assertFalse(nm_message(r1, s2 ), rightMatchesServiceIdentifierMethod(r1, s2 ));
+        assertFalse(nm_message(r1, s3 ), rightMatchesServiceIdentifierMethod(r1, s3 ));
+        assertFalse(nm_message(r1, s4 ), rightMatchesServiceIdentifierMethod(r1, s4 ));
+        assertFalse(nm_message(r1, s5 ), rightMatchesServiceIdentifierMethod(r1, s5 ));
+        assertTrue (ym_message(r1, s6 ), rightMatchesServiceIdentifierMethod(r1, s6 ));
+        assertFalse(nm_message(r1, s7 ), rightMatchesServiceIdentifierMethod(r1, s7 ));
+        assertFalse(nm_message(r1, s8 ), rightMatchesServiceIdentifierMethod(r1, s8 ));
+        assertFalse(nm_message(r1, s9 ), rightMatchesServiceIdentifierMethod(r1, s9 ));
+        assertFalse(nm_message(r1, s10), rightMatchesServiceIdentifierMethod(r1, s10));
+        assertFalse(nm_message(r1, s11), rightMatchesServiceIdentifierMethod(r1, s11));
+        assertFalse(nm_message(r1, s12), rightMatchesServiceIdentifierMethod(r1, s12));
+        assertFalse(nm_message(r1, s13), rightMatchesServiceIdentifierMethod(r1, s13));
+        assertFalse(nm_message(r1, s14), rightMatchesServiceIdentifierMethod(r1, s14));
+    }
+
+    public final void testCredentialMatching_MultiLevelWildcards_Test5() {
+        String r1  = "foo/+/baz/#";
+        String s1  = "foo/bar/baz";          /* Matching     */
+        String s2  = "foo/ /baz";            /* Matching     */
+        String s3  = "foo/+/baz";            /* Matching (but illegal) */
+        String s4  = "foo/!@%/baz";          /* Matching     */
+        String s5  = "foo/baz";              /* Not matching */
+        String s6  = "foo/bar";              /* Not matching */
+        String s7  = "foo/baz/";             /* Not matching */
+        String s8  = "foo/bar/bar";          /* Not matching */
+        String s9  = "/foo/bar/baz";         /* Not matching */
+        String s10 = "foo//baz";             /* Not matching */
+        String s11 = "foo///baz";            /* Not matching */
+        String s12 = "foo/bar/baz/";         /* Matching     */
+        String s13 = "foo/bar/bar/baz";      /* Not matching */
+        String s14 = "foo/bar/baz/baz";      /* Matching     */
+        String s15 = "foo/bar/baz/";         /* Matching     */
+        String s16 = "foo/bar/baz/baz/baz";  /* Matching     */
+        String s17 = "foo/bar/baz/baz/baz/"; /* Matching     */
+
+        assertTrue (ym_message(r1, s1 ), rightMatchesServiceIdentifierMethod(r1, s1 ));
+        assertTrue (ym_message(r1, s2 ), rightMatchesServiceIdentifierMethod(r1, s2 ));
+        assertTrue (ym_message(r1, s3 ), rightMatchesServiceIdentifierMethod(r1, s3 ));
+        assertTrue (ym_message(r1, s4 ), rightMatchesServiceIdentifierMethod(r1, s4 ));
+        assertFalse(nm_message(r1, s5 ), rightMatchesServiceIdentifierMethod(r1, s5 ));
+        assertFalse(nm_message(r1, s6 ), rightMatchesServiceIdentifierMethod(r1, s6 ));
+        assertFalse(nm_message(r1, s7 ), rightMatchesServiceIdentifierMethod(r1, s7 ));
+        assertFalse(nm_message(r1, s8 ), rightMatchesServiceIdentifierMethod(r1, s8 ));
+        assertFalse(nm_message(r1, s9 ), rightMatchesServiceIdentifierMethod(r1, s9 ));
+        assertFalse(nm_message(r1, s10), rightMatchesServiceIdentifierMethod(r1, s10));
+        assertFalse(nm_message(r1, s11), rightMatchesServiceIdentifierMethod(r1, s11));
+        assertTrue (ym_message(r1, s12), rightMatchesServiceIdentifierMethod(r1, s12));
+        assertFalse(nm_message(r1, s13), rightMatchesServiceIdentifierMethod(r1, s13));
+        assertTrue (ym_message(r1, s14), rightMatchesServiceIdentifierMethod(r1, s14));
+        assertTrue (ym_message(r1, s15), rightMatchesServiceIdentifierMethod(r1, s15));
+        assertTrue (ym_message(r1, s16), rightMatchesServiceIdentifierMethod(r1, s16));
+        assertTrue (ym_message(r1, s17), rightMatchesServiceIdentifierMethod(r1, s17));
+    }
+
+    public final void testCredentialMatching_MultiLevelWildcards_Test6() {
+        String r1  = "foo/+/+/gazook/#";
+        String s1  = "foo/bar/baz/gazook";         /* Matching     */
+        String s2  = "foo/ / /gazook";             /* Matching     */
+        String s3  = "foo/+/+/gazook";             /* Matching (but illegal) */
+        String s4  = "foo/!@%/!@%/gazook";         /* Matching     */
+        String s5  = "foo/gazook";                 /* Not matching */
+        String s6  = "foo/bar/gazook";             /* Not matching */
+        String s7  = "foo//gazook";                /* Not matching */
+        String s8  = "foo///gazook";               /* Not matching */
+        String s9  = "/foo/bar/baz/gazook";        /* Not matching */
+        String s10 = "foo/bar/baz/baz";            /* Not matching */
+        String s11 = "foo/bar/baz/gazook/";        /* Matching     */
+        String s12 = "foo/bar/baz/gazook/baz";     /* Matching     */
+        String s13 = "foo/bar/baz/gazook/baz/";    /* Matching     */
+        String s14 = "foo/bar/baz/gazook/baz/baz"; /* Matching     */
+
+
+        assertTrue (ym_message(r1, s1 ), rightMatchesServiceIdentifierMethod(r1, s1 ));
+        assertTrue (ym_message(r1, s2 ), rightMatchesServiceIdentifierMethod(r1, s2 ));
+        assertTrue (ym_message(r1, s3 ), rightMatchesServiceIdentifierMethod(r1, s3 ));
+        assertTrue (ym_message(r1, s4 ), rightMatchesServiceIdentifierMethod(r1, s4 ));
+        assertFalse(nm_message(r1, s5 ), rightMatchesServiceIdentifierMethod(r1, s5 ));
+        assertFalse(nm_message(r1, s6 ), rightMatchesServiceIdentifierMethod(r1, s6 ));
+        assertFalse(nm_message(r1, s7 ), rightMatchesServiceIdentifierMethod(r1, s7 ));
+        assertFalse(nm_message(r1, s8 ), rightMatchesServiceIdentifierMethod(r1, s8 ));
+        assertFalse(nm_message(r1, s9 ), rightMatchesServiceIdentifierMethod(r1, s9 ));
+        assertFalse(nm_message(r1, s10), rightMatchesServiceIdentifierMethod(r1, s10));
+        assertTrue (ym_message(r1, s11), rightMatchesServiceIdentifierMethod(r1, s11));
+        assertTrue (ym_message(r1, s12), rightMatchesServiceIdentifierMethod(r1, s12));
+        assertTrue (ym_message(r1, s13), rightMatchesServiceIdentifierMethod(r1, s13));
+        assertTrue (ym_message(r1, s14), rightMatchesServiceIdentifierMethod(r1, s14));
+    }
 }
