@@ -154,7 +154,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                             ServerNode.disconnect();
 
                             PKIManager.deleteAllKeysAndCerts(LockActivity.this);
-                            RVILocalNode.removeAllCredentials(LockActivity.this);
+                            RVILocalNode.removeAllPrivileges(LockActivity.this);
                             ServerNode.deleteUserData();
 
                             Intent intent = new Intent();
@@ -167,7 +167,7 @@ public class LockActivity extends ActionBarActivity implements LockActivityFragm
                             ServerNode.disconnect();
 
                             PKIManager.deleteServerCerts(LockActivity.this);
-                            RVILocalNode.removeAllCredentials(LockActivity.this);
+                            RVILocalNode.removeAllPrivileges(LockActivity.this);
 
                             Intent intent = new Intent();
                             intent.setClass(LockActivity.this, LoginActivity.class);

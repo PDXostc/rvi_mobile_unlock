@@ -7,7 +7,7 @@ package org.genivi.rvi;
  * Mozilla Public License, version 2.0. The full text of the
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  *
- * File:    CredentialMatchingTest.java
+ * File:    PrivilegeMatchingTest.java
  * Project: RVI
  *
  * Created by Lilli Szafranski on 11/30/16.
@@ -17,9 +17,9 @@ package org.genivi.rvi;
 import android.test.AndroidTestCase;
 import java.lang.reflect.Method;
 
-public class CredentialMatchingTest extends AndroidTestCase
+public class PrivilegeMatchingTest extends AndroidTestCase
 {
-    private final static String TAG = "RVI/CredMatchingTest___";
+    private final static String TAG = "RVI/PrivMatchingTest___";
 
     private Class[] argTypes = new Class[] { String.class, String.class };
     private Method rightMatchesServiceIdentifierMethod = null;
@@ -59,7 +59,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         return false;
     }
 
-    public final void testCredentialMatching_AbsoluteStrings_NoWildcards_Matching() {
+    public final void testPrivilegeMatching_AbsoluteStrings_NoWildcards_Matching() {
         String r1  = "foo";
         String r2  = "foo/bar";
         String r3  = "foo/bar/baz";
@@ -115,7 +115,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertTrue(ym_message(r17, s17), rightMatchesServiceIdentifierMethod(r17, s17));
     }
 
-    public final void testCredentialMatching_AbsoluteStrings_NoWildcards_NotMatching() {
+    public final void testPrivilegeMatching_AbsoluteStrings_NoWildcards_NotMatching() {
         String r1  = "foo";
         String s1  = "bar";
 
@@ -277,7 +277,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r1, s1), rightMatchesServiceIdentifierMethod(r1, s1));
     }
 
-    public final void testCredentialMatching_SingleLevelWildcards_Test1() {
+    public final void testPrivilegeMatching_SingleLevelWildcards_Test1() {
         String r1  = "+";
         String s1  = "foo";         /* Matching     */
         String s2  = "foo/";        /* Not matching */
@@ -309,7 +309,7 @@ public class CredentialMatchingTest extends AndroidTestCase
     }
 
 
-    public final void testCredentialMatching_SingleLevelWildcards_Test2() {
+    public final void testPrivilegeMatching_SingleLevelWildcards_Test2() {
         String r1  = "foo/+";
         String s1  = "foo";         /* Not matching */
         String s2  = "foo/";        /* Matching     */
@@ -340,7 +340,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r1, s13), rightMatchesServiceIdentifierMethod(r1, s13));
     }
 
-    public final void testCredentialMatching_SingleLevelWildcards_Test3() {
+    public final void testPrivilegeMatching_SingleLevelWildcards_Test3() {
         String r1  = "+/bar";
         String s1  = "bar";         /* Not matching */
         String s2  = "/bar";        /* Matching     */
@@ -373,7 +373,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r1, s14), rightMatchesServiceIdentifierMethod(r1, s14));
     }
 
-    public final void testCredentialMatching_SingleLevelWildcards_Test4() {
+    public final void testPrivilegeMatching_SingleLevelWildcards_Test4() {
         String r1  = "foo/+/baz";
         String s1  = "foo/bar/baz";     /* Matching     */
         String s2  = "foo/ /baz";       /* Matching     */
@@ -404,7 +404,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r1, s13), rightMatchesServiceIdentifierMethod(r1, s13));
     }
 
-    public final void testCredentialMatching_SingleLevelWildcards_Test5() {
+    public final void testPrivilegeMatching_SingleLevelWildcards_Test5() {
         String r1  = "foo/+/+/gazook";
         String s1  = "foo/bar/baz/gazook";  /* Matching     */
         String s2  = "foo/ / /gazook";      /* Matching     */
@@ -431,7 +431,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r1, s11), rightMatchesServiceIdentifierMethod(r1, s11));
     }
 
-    public final void testCredentialMatching_SingleLevelWildcards_Test6() {
+    public final void testPrivilegeMatching_SingleLevelWildcards_Test6() {
         String r1  = "foo/+/bar/+/baz";
         String s1  = "foo/!@%/bar/!@%/baz"; /* Matching     */
         String s2  = "foo/ /bar/ /baz";     /* Matching     */
@@ -458,7 +458,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r1, s11), rightMatchesServiceIdentifierMethod(r1, s11));
     }
 
-    public final void testCredentialMatching_SingleLevelWildcards_Test7() {
+    public final void testPrivilegeMatching_SingleLevelWildcards_Test7() {
         String s1  = "/foo";
         String r1  = "+/+";  /* Matching     */
         String r2  = "/+";   /* Matching     */
@@ -478,7 +478,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r6, s2 ), rightMatchesServiceIdentifierMethod(r6, s2 ));
     }
 
-    public final void testCredentialMatching_MultiLevelWildcards_Test1() {
+    public final void testPrivilegeMatching_MultiLevelWildcards_Test1() {
         String r1  = "#";
         String s1  = "foo";         /* Matching     */
         String s2  = "foo/";        /* Matching     */
@@ -509,7 +509,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertTrue (ym_message(r1, s13), rightMatchesServiceIdentifierMethod(r1, s13));
     }
 
-    public final void testCredentialMatching_MultiLevelWildcards_Test2() {
+    public final void testPrivilegeMatching_MultiLevelWildcards_Test2() {
         String r1  = "/#";
         String s1  = "foo";         /* Not matching */
         String s2  = "foo/";        /* Not matching */
@@ -536,7 +536,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertTrue (ym_message(r1, s11), rightMatchesServiceIdentifierMethod(r1, s11));
     }
 
-    public final void testCredentialMatching_MultiLevelWildcards_Test3() {
+    public final void testPrivilegeMatching_MultiLevelWildcards_Test3() {
         String r1  = "foo/#";
         String s1  = "foo";         /* Matching */
         String s2  = "foo/";        /* Matching     */
@@ -567,7 +567,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertTrue (ym_message(r1, s13), rightMatchesServiceIdentifierMethod(r1, s13));
     }
 
-    public final void testCredentialMatching_MultiLevelWildcards_Test4() {
+    public final void testPrivilegeMatching_MultiLevelWildcards_Test4() {
         String r1  = "#/bar";       /* Not even legal */
         String s1  = "bar";         /* Not matching */
         String s2  = "/bar";        /* Not matching */
@@ -600,7 +600,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertFalse(nm_message(r1, s14), rightMatchesServiceIdentifierMethod(r1, s14));
     }
 
-    public final void testCredentialMatching_MultiLevelWildcards_Test5() {
+    public final void testPrivilegeMatching_MultiLevelWildcards_Test5() {
         String r1  = "foo/+/baz/#";
         String s1  = "foo/bar/baz";          /* Matching     */
         String s2  = "foo/ /baz";            /* Matching     */
@@ -639,7 +639,7 @@ public class CredentialMatchingTest extends AndroidTestCase
         assertTrue (ym_message(r1, s17), rightMatchesServiceIdentifierMethod(r1, s17));
     }
 
-    public final void testCredentialMatching_MultiLevelWildcards_Test6() {
+    public final void testPrivilegeMatching_MultiLevelWildcards_Test6() {
         String r1  = "foo/+/+/gazook/#";
         String s1  = "foo/bar/baz/gazook";         /* Matching     */
         String s2  = "foo/ / /gazook";             /* Matching     */

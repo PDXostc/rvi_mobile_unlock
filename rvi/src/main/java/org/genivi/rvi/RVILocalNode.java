@@ -36,11 +36,11 @@ import static android.content.Context.MODE_PRIVATE;
 public class RVILocalNode {
     private final static String TAG = "RVI/RVILocalNode_______";
 
-    private final static String SAVED_CREDENTIALS_FILE = "org.genivi.rvi.saved_credentials";
+    private final static String SAVED_PRIVILEGES_FILE = "org.genivi.rvi.saved_privileges";
 
     private static RVILocalNode ourInstance = new RVILocalNode();
 
-    private static ArrayList<Privilege> localCredentials = new ArrayList<>();
+    private static ArrayList<Privilege> localPrivileges = new ArrayList<>();
 
     private static KeyStore serverKeyStore = null;
     private static KeyStore deviceKeyStore = null;
@@ -65,7 +65,7 @@ public class RVILocalNode {
         void onLocalServicesUpdated();
 
         /** Called when local services have been added or remove so that RVIRemoteNodes can check if they are authorized */
-        void onLocalCredentialsUpdated();
+        void onLocalPrivilegesUpdated();
     }
 
     public static void setRviDomain(String rviDomain) {
@@ -174,14 +174,14 @@ public class RVILocalNode {
         RVILocalNode.deviceKeyStorePassword = deviceKeyStorePassword;
     }
 
-    public static void saveCredentials(Context context) {
-        Log.d(TAG, "Saving local credentials (count: " + localCredentials.size() + ")");
+    public static void savePrivileges(Context context) {
+        Log.d(TAG, "Saving local privileges (count: " + localPrivileges.size() + ")");
 
         Gson gson = new Gson();
-        String jsonString = gson.toJson(CredentialManager.toCredentialStringArray(localCredentials));
+        String jsonString = gson.toJson(PrivilegeManager.toPrivilegeStringArray(localPrivileges));
 
         try {
-            FileOutputStream fileOutputStream = context.openFileOutput(SAVED_CREDENTIALS_FILE, Context.MODE_PRIVATE);
+            FileOutputStream fileOutputStream = context.openFileOutput(SAVED_PRIVILEGES_FILE, Context.MODE_PRIVATE);
             fileOutputStream.write(jsonString.getBytes());
             fileOutputStream.close();
 
@@ -191,13 +191,13 @@ public class RVILocalNode {
         }
     }
 
-    public static void loadCredentials(Context context) {
+    public static void loadPrivileges(Context context) {
         Gson gson = new Gson();
 
-        File file = context.getFileStreamPath(SAVED_CREDENTIALS_FILE);
+        File file = context.getFileStreamPath(SAVED_PRIVILEGES_FILE);
         if (file != null && file.exists()) {
             try {
-                FileInputStream fileInputStream = context.openFileInput(SAVED_CREDENTIALS_FILE);
+                FileInputStream fileInputStream = context.openFileInput(SAVED_PRIVILEGES_FILE);
                 int c;
                 String jsonString = "";
 
@@ -206,9 +206,9 @@ public class RVILocalNode {
                 }
 
                 // TODO: Handle all kinds of errors here
-                localCredentials = CredentialManager.fromCredentialStringArray((ArrayList<String>) gson.fromJson(jsonString, new TypeToken<ArrayList<String>>(){}.getType()));
+                localPrivileges = PrivilegeManager.fromPrivilegeStringArray((ArrayList<String>) gson.fromJson(jsonString, new TypeToken<ArrayList<String>>(){}.getType()));
 
-                Log.d(TAG, "Loading saved credentials (count: " + localCredentials.size() + ")");
+                Log.d(TAG, "Loading saved privileges (count: " + localPrivileges.size() + ")");
 
             } catch (Exception e) {
 
@@ -217,26 +217,26 @@ public class RVILocalNode {
         }
     }
 
-    static ArrayList<Privilege> getCredentials() {
-        return localCredentials;
+    static ArrayList<Privilege> getPrivileges() {
+        return localPrivileges;
     }
 
-    public static void setCredentials(Context context, ArrayList<String> credentialStrings) {
-        Log.d(TAG, "Setting new local credentials (count: " + credentialStrings.size() + ")");
+    public static void setPrivileges(Context context, ArrayList<String> privilegeStrings) {
+        Log.d(TAG, "Setting new local privileges (count: " + privilegeStrings.size() + ")");
 
-        localCredentials = CredentialManager.fromCredentialStringArray(credentialStrings);
+        localPrivileges = PrivilegeManager.fromPrivilegeStringArray(privilegeStrings);
 
         for (LocalNodeListener listener : localNodeListeners)
-            listener.onLocalCredentialsUpdated();
+            listener.onLocalPrivilegesUpdated();
     }
 
-    public static void removeAllCredentials(Context context) {
-        Log.d(TAG, "Removing all local credentials (count: " + localCredentials.size() + ")");
+    public static void removeAllPrivileges(Context context) {
+        Log.d(TAG, "Removing all local privileges (count: " + localPrivileges.size() + ")");
 
-        localCredentials.clear();
+        localPrivileges.clear();
 
         for (LocalNodeListener listener : localNodeListeners)
-            listener.onLocalCredentialsUpdated();
+            listener.onLocalPrivilegesUpdated();
     }
 
     static void addLocalNodeListener(LocalNodeListener listener) {

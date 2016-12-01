@@ -197,11 +197,11 @@ class TestServerNode
         listeners.remove(listener);
     }
 
-    static void updatedLocalCredentials(ArrayList<String> credentialStrings) {
-        RVILocalNode.setCredentials(TestApplication.getContext(), credentialStrings);
+    static void updatedLocalPrivileges(ArrayList<String> privilegeStrings) {
+        RVILocalNode.setPrivileges(TestApplication.getContext(), privilegeStrings);
     }
 
-    static void updateRemoteCredentials(ArrayList<String> credentialStrings) {
+    static void updateRemotePrivileges(ArrayList<String> privilegeStrings) {
 
     }
 }

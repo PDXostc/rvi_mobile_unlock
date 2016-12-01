@@ -17,7 +17,6 @@ package org.genivi.rvi;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * The Dlink "authorization" packet. This request is used to authorize an RVI node.
@@ -35,23 +34,23 @@ class DlinkAuthPacket extends DlinkPacket
     @SerializedName("ver")
     private String mVer;
 
-    @SerializedName("creds")
-    private ArrayList<String> mCreds;
+    @SerializedName("creds") // TODO: Change in rename branch
+    private ArrayList<String> mPrivileges;
 
     /**
      * Default constructor
      */
-    DlinkAuthPacket(ArrayList<String> creds) {
+    DlinkAuthPacket(ArrayList<String> privileges) {
         super(Command.AUTHORIZE);
 
         mAddr = "0.0.0.0";
         mPort = 0;
         mVer = "1.0";
-        mCreds = creds;
+        mPrivileges = privileges;
     }
 
-    public ArrayList<String> getCreds() {
-        return mCreds;
+    public ArrayList<String> getPrivileges() {
+        return mPrivileges;
     }
 
     public String getVer() {

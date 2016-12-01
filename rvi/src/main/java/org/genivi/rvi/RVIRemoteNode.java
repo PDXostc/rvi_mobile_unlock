@@ -37,10 +37,10 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
     private HashMap<String, Service>            mAnnouncedRemoteServices   = new HashMap<>();
     private HashMap<String, ArrayList<Service>> mPendingServiceInvocations = new HashMap<>();
 
-    private ArrayList<Privilege> mRemoteCredentials = new ArrayList<>();
+    private ArrayList<Privilege> mRemotePrivileges = new ArrayList<>();
 
-    private ArrayList<Privilege> mValidRemoteCredentials = new ArrayList<Privilege>();
-    private ArrayList<Privilege> mValidLocalCredentials  = new ArrayList<Privilege>();
+    private ArrayList<Privilege> mValidRemotePrivileges = new ArrayList<Privilege>();
+    private ArrayList<Privilege> mValidLocalPrivileges  = new ArrayList<Privilege>();
 
     private Integer mRemotePort;
     private String  mRemoteAddr;
@@ -72,7 +72,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
                 }
 
 
-                validateLocalCredentials();
+                validateLocalPrivileges();
                 authorizeNode();
             }
 
@@ -164,10 +164,10 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
         mAuthorizedRemoteServices.clear();
         mAuthorizedLocalServices.clear();
 
-        mValidRemoteCredentials.clear();
-        mValidLocalCredentials.clear();
+        mValidRemotePrivileges.clear();
+        mValidLocalPrivileges.clear();
 
-        mRemoteCredentials.clear();
+        mRemotePrivileges.clear();
 
         mRemotePort = null;
         mRemoteAddr = null;
@@ -247,7 +247,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
      * @param timeout the timeout, in milliseconds. This is added to the current system time.
      */
     public void invokeService(String serviceIdentifier, Object parameters, Integer timeout) {
-        credentialsRevalidationCheck();
+        privilegesRevalidationCheck();
 
         Service service = getRemoteService(serviceIdentifier);
 
@@ -343,9 +343,9 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
         }
     }
 
-    private void credentialsRevalidationCheck() {
-        if (CredentialManager.localCredentialsRevalidationNeeded()) {
-            validateLocalCredentials();
+    private void privilegesRevalidationCheck() {
+        if (PrivilegeManager.localPrivilegesRevalidationNeeded()) {
+            validateLocalPrivileges();
             authorizeNode();
             sortThroughLocalServices();
 
@@ -353,8 +353,8 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
             //announceServices();
         }
 
-        if (CredentialManager.remoteCredentialsRevalidationNeeded()) {
-            validateRemoteCredentials();
+        if (PrivilegeManager.remotePrivilegesRevalidationNeeded()) {
+            validateRemotePrivileges();
             sortThroughLocalServices();
             sortThroughRemoteServices();
 
@@ -370,7 +370,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
     }
 
     private void authorizeNode() {
-        mRemoteConnectionManager.sendPacket(new DlinkAuthPacket(CredentialManager.toCredentialStringArray(mValidLocalCredentials)));
+        mRemoteConnectionManager.sendPacket(new DlinkAuthPacket(PrivilegeManager.toPrivilegeStringArray(mValidLocalPrivileges)));
     }
 
     private void invokeService(Service service) {
@@ -380,7 +380,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
     private void handleReceivePacket(DlinkReceivePacket packet) {
         Service service = packet.getService();
 
-        credentialsRevalidationCheck();
+        privilegesRevalidationCheck();
 
         if (!mAuthorizedLocalServices.containsKey(service.getServiceIdentifier())) {
             if (mListener != null) mListener.nodeReceiveServiceInvocationFailed(this, null, new Throwable("Service invocation packet did not contain a valid service identifier."));
@@ -433,72 +433,72 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
     }
 
     private void handleAuthPacket(DlinkAuthPacket packet) {
-        mRemoteCredentials = CredentialManager.fromCredentialStringArray(packet.getCreds());
+        mRemotePrivileges = PrivilegeManager.fromPrivilegeStringArray(packet.getPrivileges());
         mRemoteAddr = packet.getAddr();
         mRemotePort = packet.getPort();
 
-        validateRemoteCredentials();
+        validateRemotePrivileges();
         sortThroughLocalServices();
 
         mAuthorizedRemoteServices.clear();
         if (mListener != null) mListener.nodeDidAuthorizeRemoteServices(this, mAuthorizedRemoteServices.keySet());
     }
 
-    private void validateLocalCredentials() {
-        Log.d(TAG, "Validating local credentials...");
+    private void validateLocalPrivileges() {
+        Log.d(TAG, "Validating local privileges...");
 
         Certificate localCertificate  = mRemoteConnectionManager.getLocalDeviceCertificate();
         Certificate serverCertificate = mRemoteConnectionManager.getServerCertificate();
 
         if (localCertificate == null || serverCertificate == null) return; // TODO: There's a problem, but have we already handled it and disconnected?
 
-        ArrayList<Privilege> localCredentials = RVILocalNode.getCredentials();
+        ArrayList<Privilege> localPrivileges = RVILocalNode.getPrivileges();
 
-        mValidLocalCredentials.clear();
-        CredentialManager.clearLocalCredentialsRevalidationTime();
+        mValidLocalPrivileges.clear();
+        PrivilegeManager.clearLocalPrivilegesRevalidationTime();
 
-        for (Privilege credential : localCredentials) {
-            if (credential.parse(serverCertificate.getPublicKey()) && credential.deviceCertificateMatches(localCertificate)) {
-                if (credential.getValidity().getStatus() == ValidityStatus.PENDING) {
-                    CredentialManager.updateLocalCredentialsRevalidationTime(credential.getValidity().getStart());
+        for (Privilege privilege : localPrivileges) {
+            if (privilege.parse(serverCertificate.getPublicKey()) && privilege.deviceCertificateMatches(localCertificate)) {
+                if (privilege.getValidity().getStatus() == ValidityStatus.PENDING) {
+                    PrivilegeManager.updateLocalPrivilegesRevalidationTime(privilege.getValidity().getStart());
 
-                } else if (credential.getValidity().getStatus() == ValidityStatus.VALID) {
-                    CredentialManager.updateLocalCredentialsRevalidationTime(credential.getValidity().getStop());
+                } else if (privilege.getValidity().getStatus() == ValidityStatus.VALID) {
+                    PrivilegeManager.updateLocalPrivilegesRevalidationTime(privilege.getValidity().getStop());
 
-                    mValidLocalCredentials.add(credential);
+                    mValidLocalPrivileges.add(privilege);
                 }
             }
         }
 
-        Log.d(TAG, "Validated local credentials (valid credentials: " + mValidLocalCredentials.size() + " of " + localCredentials.size() + " total local credentials).");
+        Log.d(TAG, "Validated local privileges (valid privileges: " + mValidLocalPrivileges.size() + " of " + localPrivileges.size() + " total local privileges).");
     }
 
-    private void validateRemoteCredentials() {
-        Log.d(TAG, "Validating remote credentials...");
+    private void validateRemotePrivileges() {
+        Log.d(TAG, "Validating remote privileges...");
 
         Certificate remoteCertificate = mRemoteConnectionManager.getRemoteDeviceCertificate();
         Certificate serverCertificate = mRemoteConnectionManager.getServerCertificate();
 
         if (remoteCertificate == null || serverCertificate == null) return; // TODO: There's a problem, but have we already handled it and disconnected?
 
-        ArrayList<Privilege> remoteCredentials = mRemoteCredentials;
+        ArrayList<Privilege> remotePrivileges = mRemotePrivileges;
 
-        mValidRemoteCredentials.clear();
-        CredentialManager.clearRemoteCredentialsRevalidationTime();
+        mValidRemotePrivileges.clear();
+        PrivilegeManager.clearRemotePrivilegesRevalidationTime();
 
-        for (Privilege credential : remoteCredentials) {
-            if (credential.parse(serverCertificate.getPublicKey()) && credential.deviceCertificateMatches(remoteCertificate))
-                if (credential.getValidity().getStatus() == ValidityStatus.PENDING) {
-                    CredentialManager.updateRemoteCredentialsRevalidationTime(credential.getValidity().getStart());
+        for (Privilege privilege : remotePrivileges) {
+            if (privilege.parse(serverCertificate.getPublicKey()) && privilege.deviceCertificateMatches(remoteCertificate))
+                if (privilege.getValidity().getStatus() == ValidityStatus.PENDING) {
+                    PrivilegeManager.updateRemotePrivilegesRevalidationTime(privilege.getValidity().getStart());
 
-                } else if (credential.getValidity().getStatus() == ValidityStatus.VALID) {
-                    CredentialManager.updateRemoteCredentialsRevalidationTime(credential.getValidity().getStop());
+                } else if (privilege.getValidity().getStatus() == ValidityStatus.VALID) {
+                    PrivilegeManager.updateRemotePrivilegesRevalidationTime(privilege.getValidity().getStop());
 
-                    mValidRemoteCredentials.add(credential);
+                    mValidRemotePrivileges.add(privilege);
             }
         }
 
-        Log.d(TAG, "Validated remote credentials (valid credentials: " + mValidRemoteCredentials.size() + " of " + remoteCredentials.size() + " total remote credentials).");
+        Log.d(TAG, "Validated remote privileges (valid privileges: " + mValidRemotePrivileges.size() + " of " + remotePrivileges.size() + " total remote privileges).");
     }
 
     private void sortThroughLocalServices() {
@@ -510,16 +510,16 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
         ArrayList<Service> authorizedToReceive = new ArrayList<>();
         ArrayList<Service> authorizedLocalServices = new ArrayList<>();
 
-        for (Privilege credential : mValidLocalCredentials) {
+        for (Privilege privilege : mValidLocalPrivileges) {
             for (Service service : allLocalServices) {
-                if (credential.grantsRightToReceive(service.getFullyQualifiedServiceIdentifier()))
+                if (privilege.grantsRightToReceive(service.getFullyQualifiedServiceIdentifier()))
                     authorizedToReceive.add(service);
             }
         }
 
-        for (Privilege credential : mValidRemoteCredentials) {
+        for (Privilege privilege : mValidRemotePrivileges) {
             for (Service service : authorizedToReceive) {
-                if (credential.grantsRightToInvoke(service.getFullyQualifiedServiceIdentifier()))
+                if (privilege.grantsRightToInvoke(service.getFullyQualifiedServiceIdentifier()))
                     authorizedLocalServices.add(service);
             }
         }
@@ -550,16 +550,16 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
         ArrayList<Service> authorizedToInvoke = new ArrayList<>();
         ArrayList<Service> authorizedRemoteServices = new ArrayList<>();
 
-        for (Privilege credential : mValidLocalCredentials) {
+        for (Privilege privilege : mValidLocalPrivileges) {
             for (Service service : allRemoteServices) {
-                if (credential.grantsRightToInvoke(service.getFullyQualifiedServiceIdentifier()))
+                if (privilege.grantsRightToInvoke(service.getFullyQualifiedServiceIdentifier()))
                     authorizedToInvoke.add(service);
             }
         }
 
-        for (Privilege credential : mValidRemoteCredentials) {
+        for (Privilege privilege : mValidRemotePrivileges) {
             for (Service service : authorizedToInvoke) {
-                if (credential.grantsRightToReceive(service.getFullyQualifiedServiceIdentifier()))
+                if (privilege.grantsRightToReceive(service.getFullyQualifiedServiceIdentifier()))
                     authorizedRemoteServices.add(service);
             }
         }
@@ -582,10 +582,10 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
     }
 
     @Override
-    public void onLocalCredentialsUpdated() {
-        Log.d(TAG, "Local credentials updated.");
+    public void onLocalPrivilegesUpdated() {
+        Log.d(TAG, "Local privileges updated.");
 
-        validateLocalCredentials();
+        validateLocalPrivileges();
         authorizeNode();
 
         sortThroughLocalServices();

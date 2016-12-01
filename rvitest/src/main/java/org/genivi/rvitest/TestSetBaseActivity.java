@@ -24,8 +24,8 @@ import java.util.Set;
 public class TestSetBaseActivity extends AppCompatActivity {
     private static final String TAG = "RVITest/TestSetBaseActv";
 
-    protected ArrayList<String> localCredentials  = null;
-    protected ArrayList<String> remoteCredentials = null;
+    protected ArrayList<String> localPrivileges  = null;
+    protected ArrayList<String> remotePrivileges = null;
 
     protected Set<String> expectedLocalServices  = null;
     protected Set<String> expectedRemoteServices = null;

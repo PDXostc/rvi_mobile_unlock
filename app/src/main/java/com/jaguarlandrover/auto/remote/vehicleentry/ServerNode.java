@@ -56,12 +56,12 @@ class ServerNode
 
     /* * * * * * * * * * * * * * * * * RVI service identifier parts * * * * * * * * * * * * * * * **/
     /* * * *  Service bundle * * * */
-    private final static String CREDENTIAL_MANAGEMENT_BUNDLE = "credential_management";
+    private final static String PRIVILEGE_MANAGEMENT_BUNDLE = "credential_management"; // TODO: Rename "privilege_management" here and on the server;
     /* Local services */
-    private final static String REVOKE_CREDENTIALS  = "revoke_credentials";
-    private final static String UPDATE_CREDENTIALS  = "update_credentials";
+    private final static String REVOKE_PRIVILEGES  = "revoke_credentials";  // TODO: Rename "revoke_privileges" here and on the server;
+    private final static String UPDATE_PRIVILEGES  = "update_credentials";  // TODO: Rename "update_privileges" here and on the server;
     /* Remote services */
-    private final static String REQUEST_CREDENTIALS = "request_credentials";
+    private final static String REQUEST_PRIVILEGES = "request_credentials"; // TODO: Rename "request_privileges" here and on the server;
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -83,10 +83,10 @@ class ServerNode
 
 
     /* * * * * * * * * * * * * * * * Local service identifier lists * * * * * * * * * * * * * * * **/
-    private final static ArrayList<String> credentialManagementBundleLocalServiceIdentifiers =
+    private final static ArrayList<String> privilegeManagementBundleLocalServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
-                    CREDENTIAL_MANAGEMENT_BUNDLE + "/" + REVOKE_CREDENTIALS,
-                    CREDENTIAL_MANAGEMENT_BUNDLE + "/" + UPDATE_CREDENTIALS));
+                    PRIVILEGE_MANAGEMENT_BUNDLE + "/" + REVOKE_PRIVILEGES,
+                    PRIVILEGE_MANAGEMENT_BUNDLE + "/" + UPDATE_PRIVILEGES));
 
     @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
     private final static ArrayList<String> accountManagementBundleLocalServiceIdentifiers =
@@ -108,7 +108,7 @@ class ServerNode
 
     private static ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
     private static boolean shouldTryAndReconnect = false;
-    private static boolean needsToRequestNewCredentials = false;
+    private static boolean needsToRequestNewPrivileges = false;
 
     private static ServerNode ourInstance = new ServerNode();
 
@@ -121,7 +121,7 @@ class ServerNode
                 Log.d(TAG, "Connected to RVI provisioning server!");
                 connectionStatus = ConnectionStatus.CONNECTED;
 
-                needsToRequestNewCredentials = true;
+                needsToRequestNewPrivileges = true;
 
                 stopRepeatingTask();
 
@@ -167,19 +167,19 @@ class ServerNode
                 if (serviceParts.length < 2) return;
 
                 switch (serviceParts[0]) {
-                    case CREDENTIAL_MANAGEMENT_BUNDLE:
+                    case PRIVILEGE_MANAGEMENT_BUNDLE:
                         switch (serviceParts[1]) {
-                            case UPDATE_CREDENTIALS:
+                            case UPDATE_PRIVILEGES:
                                 // TODO: Check this #amm
-                                ArrayList<String> credentials = (ArrayList<String>) ((LinkedTreeMap<String, Object>) parameters).get("credentials");
-                                RVILocalNode.setCredentials(applicationContext, credentials);
-                                RVILocalNode.saveCredentials(applicationContext);
+                                ArrayList<String> privileges = (ArrayList<String>) ((LinkedTreeMap<String, Object>) parameters).get("credentials");
+                                RVILocalNode.setPrivileges(applicationContext, privileges);
+                                RVILocalNode.savePrivileges(applicationContext);
 
                                 break;
 
-                            case REVOKE_CREDENTIALS:
-                                RVILocalNode.setCredentials(applicationContext, null);
-                                RVILocalNode.saveCredentials(applicationContext);
+                            case REVOKE_PRIVILEGES:
+                                RVILocalNode.setPrivileges(applicationContext, null);
+                                RVILocalNode.savePrivileges(applicationContext);
                                 break;
                         }
 
@@ -223,10 +223,10 @@ class ServerNode
                 Log.d(TAG, "Remote services available: " + serviceIdentifiers.toString());
 
                 for (String serviceIdentifier : serviceIdentifiers) {
-                    if (serviceIdentifier.equals(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + REQUEST_CREDENTIALS)) {
-                        if (needsToRequestNewCredentials) {
-                            needsToRequestNewCredentials = false;
-                            requestCredentials();
+                    if (serviceIdentifier.equals(PRIVILEGE_MANAGEMENT_BUNDLE + "/" + REQUEST_PRIVILEGES)) {
+                        if (needsToRequestNewPrivileges) {
+                            needsToRequestNewPrivileges = false;
+                            requestPrivileges();
                         }
                     } else if (serviceIdentifier.equals(ACCOUNT_MANAGEMENT_BUNDLE + "/" + GET_USER_DATA)) {
                         requestUserData();
@@ -237,7 +237,7 @@ class ServerNode
 
         rviNode.setListener(nodeListener);
 
-        RVILocalNode.addLocalServices(UnlockApplication.getContext(), credentialManagementBundleLocalServiceIdentifiers);
+        RVILocalNode.addLocalServices(UnlockApplication.getContext(), privilegeManagementBundleLocalServiceIdentifiers);
         RVILocalNode.addLocalServices(UnlockApplication.getContext(), accountManagementBundleLocalServiceIdentifiers);
         RVILocalNode.addLocalServices(UnlockApplication.getContext(), reportingBundleLocalServiceIdentifiers);
     }
@@ -285,8 +285,8 @@ class ServerNode
         return connectionStatus == ConnectionStatus.CONNECTED;
     }
 
-    static void requestCredentials() {
-        Log.d(TAG, "Requesting credentials from RVI provisioning server.");
+    static void requestPrivileges() {
+        Log.d(TAG, "Requesting privileges from RVI provisioning server.");
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
@@ -299,7 +299,7 @@ class ServerNode
             e.printStackTrace();
         }
 
-        rviNode.invokeService(CREDENTIAL_MANAGEMENT_BUNDLE + "/" + REQUEST_CREDENTIALS, parameters, 60 * 1000);
+        rviNode.invokeService(PRIVILEGE_MANAGEMENT_BUNDLE + "/" + REQUEST_PRIVILEGES, parameters, 60 * 1000);
     }
 
     static void requestUserData() {
@@ -327,7 +327,7 @@ class ServerNode
     }
 
     static void authorizeServices(User remoteUser) {
-        Log.d(TAG, "Creating remote credentials on RVI provisioning server.");
+        Log.d(TAG, "Creating remote privileges on RVI provisioning server.");
 
         if (connectionStatus == ConnectionStatus.DISCONNECTED) connect();
 
@@ -348,13 +348,13 @@ class ServerNode
         return userData;
     }
 
-    private static void setUserData(String userCredsStr) {
-        //userCredsStr = "  {  \"username\": \"pdxostc.android@gmail.com\",  \"first_name\": \"Pdxostc\",  \"last_name\": \"Android\",  \"guests\": [{   \"username\": \"admin\",   \"first_name\": \"Admin\",   \"last_name\": \"Overlord\"  }, {   \"username\": \"pdxostc.android@gmail.com\",   \"first_name\": \"Pdxostc\",   \"last_name\": \"Android\"  }, {   \"username\": \"android.pdxostc@gmail.com\",   \"first_name\": \"Android\",   \"last_name\": \"Pdxostc\"  }],  \"vehicles\": [{   \"vehicle_id\": \"fake1\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"fake1\",   \"user_type\": \"guest\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"false\",    \"windows\": \"false\",    \"lock\": \"True\",    \"hazard\": \"false\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }, {   \"vehicle_id\": \"fake2\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"fake2\",   \"user_type\": \"guest\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"True\",    \"windows\": \"True\",    \"lock\": \"True\",    \"hazard\": \"True\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }, {   \"vehicle_id\": \"genivi-amm-ftype\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"F-Type\",   \"user_type\": \"owner\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"True\",    \"windows\": \"True\",    \"lock\": \"True\",    \"hazard\": \"True\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }, {   \"vehicle_id\": \"DummyL405\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"L405-Test\",   \"user_type\": \"owner\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"True\",    \"windows\": \"True\",    \"lock\": \"True\",    \"hazard\": \"True\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }] }";
+    private static void setUserData(String userPrivsStr) {
+        //userPrivsStr = "  {  \"username\": \"pdxostc.android@gmail.com\",  \"first_name\": \"Pdxostc\",  \"last_name\": \"Android\",  \"guests\": [{   \"username\": \"admin\",   \"first_name\": \"Admin\",   \"last_name\": \"Overlord\"  }, {   \"username\": \"pdxostc.android@gmail.com\",   \"first_name\": \"Pdxostc\",   \"last_name\": \"Android\"  }, {   \"username\": \"android.pdxostc@gmail.com\",   \"first_name\": \"Android\",   \"last_name\": \"Pdxostc\"  }],  \"vehicles\": [{   \"vehicle_id\": \"fake1\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"fake1\",   \"user_type\": \"guest\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"false\",    \"windows\": \"false\",    \"lock\": \"True\",    \"hazard\": \"false\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }, {   \"vehicle_id\": \"fake2\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"fake2\",   \"user_type\": \"guest\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"True\",    \"windows\": \"True\",    \"lock\": \"True\",    \"hazard\": \"True\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }, {   \"vehicle_id\": \"genivi-amm-ftype\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"F-Type\",   \"user_type\": \"owner\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"True\",    \"windows\": \"True\",    \"lock\": \"True\",    \"hazard\": \"True\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }, {   \"vehicle_id\": \"DummyL405\",   \"valid_from\": \"2016-10-11T21:46:48.000Z\",   \"display_name\": \"L405-Test\",   \"user_type\": \"owner\",   \"valid_to\": \"2017-10-11T21:46:48.000Z\",   \"authorized_services\": {    \"engine\": \"True\",    \"windows\": \"True\",    \"lock\": \"True\",    \"hazard\": \"True\",    \"horn\": \"True\",    \"lights\": \"True\",    \"trunk\": \"True\"   }  }] }";
 
         User previousUserData = getUserData();
 
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(USER_DATA_KEY, userCredsStr);
+        editor.putString(USER_DATA_KEY, userPrivsStr);
         editor.commit();
 
         if (!previousUserData.equals(getUserData()))
