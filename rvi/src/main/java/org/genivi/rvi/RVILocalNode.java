@@ -157,17 +157,13 @@ public class RVILocalNode {
     }
 
     /**
-     * Removes local services
+     * Removes local services.
      *
-     * @param context            the current context. This value cannot be null.
+     * @param context            The current context. This value cannot be null.
      *
-     * @param serviceIdentifiers a list of the identifiers for all the local services. The service identifiers must only contain
-     *                           alphanumeric characters, underscores, hyphens, or forward-slashes. No other characters or whitespace
-     *                           are allowed. Two forward-slashes in a row is also forbidden. This value cannot be an empty string or null.
-     *                           Leading and trailing forward-slashes are trimmed.
-     *
-     * @exception java.lang.IllegalArgumentException Throws an exception when the context is null or if any of the service identifiers are
-     *                                               empty strings, contain illegal characters, or are null.
+     * @param serviceIdentifiers A list of the identifiers for all the local services. Two forward-slashes in a row is also forbidden.
+     *                           Leading and trailing forward-slashes are not allowed. This value cannot be an empty string or null.
+     *                           The strings can't contain '+', '#', or the null unicode character. Must be UTF-8.
      */
     public static void removeLocalServices(Context context, ArrayList<String> serviceIdentifiers) {
         if (context == null) throw new IllegalArgumentException("Context can't be null");
@@ -189,38 +185,116 @@ public class RVILocalNode {
             listener.onLocalServicesUpdated();
     }
 
+    /**
+     * Gets the list of local services.
+     *
+     * @return The list of local services.
+     */
     static ArrayList<Service> getLocalServices() {
         return new ArrayList<Service>(allLocalServices.values());
     }
 
+    /**
+     * Gets the server keystore.
+     *
+     * @return The server keystore.
+     */
     static KeyStore getServerKeyStore() {
         return serverKeyStore;
     }
 
     /**
-     * Set the BKS key store containing the server cert. Keystore needs to be loaded and can only contain 1 entry. // TODO: Confirm loaded and one entry
-     * @param serverKeyStore
+     * Sets the BKS key store containing the server's certificate.
+     *
+     * The server's certificate should contain the public key of the root provisioning server containing and it must
+     * be signed by the matching private key of the server. This must be the same private key used to signed the JWT
+     * privileges. It is passed to the local rvi node so that it can be used as both a trust authority to complete the
+     * upgrade to TLS and to validate the JWT privileges sent by the local node and received from the remote node.
+     *
+     * The keystore needs to be loaded and can only contain 1 entry.
+     *
+     * The provider for the Android key store that contains the server certificate is "BKS"/"BC" (Bouncy Castle).
+     *
+     * The certificate should be in X509 format.
+     *
+     * @param serverKeyStore The server key store.
      */
-    public static void setServerKeyStore(KeyStore serverKeyStore) {
+    public static void setServerKeyStore(KeyStore serverKeyStore) { // TODO: Confirm that the keystore has been loaded and that it only contains one entry
         RVILocalNode.serverKeyStore = serverKeyStore;
     }
 
+    /**
+     * Gets the device keystore.
+     *
+     * @return The device keystore.
+     */
     static KeyStore getDeviceKeyStore() {
         return deviceKeyStore;
     }
 
+    /**
+     * Sets the device key store. The key store may or may not be password protected. If there is a password. Use
+     * the method setDeviceKeyStorePassword(deviceKeyStorePassword) to set the password.
+     *
+     * The key store must contain a unique public/private key pair that is unique to this device. It must also
+     * contain an X509 certificate that contains the device's public key and is signed by the device's private
+     * key. This certificate is further signed with the private key of the root provisioning server. The server
+     * key that signs this certificate must be the same private key that signs all privileges passed between the
+     * remote and local rvi nodes and the same private key used to sign the trust authority certificate used
+     * by RVI during upgrade to TLS.
+     *
+     * In detail, generate a public and private key pair. Generate an X509 certificate signing request. Embed
+     * the device's public key in the certificate signing request. This public key is essentially this device's
+     * identity. Sign the certificate signing request with the device's private key, which guarantees that the
+     * certificate containing the device's public key does, in fact, belong to that device, as it was signed
+     * by the device's private key. We now know that the certificate and public key have not been tampered with.
+     *
+     * Send the certificate signing request to the provisioning server over a secure connection (e.g., https).
+     * In this case, the provisioning server should establish trust through an existing well-known Trust Authority.
+     * This step is all done out-of-band of RVI, so it is up to the implementer to guarantee the security of
+     * the certificate signing.
+     *
+     * Once the server receives the certificate singing request, it is now going to assume the role of root
+     * trust authority. The server should sign the device's certificate signing request with its own private
+     * key. The server must also create its own certificate which contains the server's public key corresponding
+     * to the private key used in signing the device's certificate. This server will need to generate its own
+     * certificate, containing the server's public key. The server's certificate will be self-signed by the same
+     * private key used in all JWT privileges sent by the local node and received from the remote node.
+     *
+     * Much of this can been done for you by the Genivi RVI PKI Android reference module, found here:
+     * https://github.com/GENIVI/rvi_pki_android.
+     *
+     * @param deviceKeyStore The device key store.
+     */
     public static void setDeviceKeyStore(KeyStore deviceKeyStore) {
         RVILocalNode.deviceKeyStore = deviceKeyStore;
     }
 
+    /**
+     * Gets the device keystore password.
+     *
+     * @return The device keystore password.
+     */
     static String getDeviceKeyStorePassword() {
         return deviceKeyStorePassword;
     }
 
+    /**
+     * Sets the device key store password, if the device key store requires a password.
+     *
+     * @param deviceKeyStorePassword The device key store password.
+     */
     public static void setDeviceKeyStorePassword(String deviceKeyStorePassword) {
         RVILocalNode.deviceKeyStorePassword = deviceKeyStorePassword;
     }
 
+    /**
+     * Tells the RVILocalNode to save its list of privileges to disk. This must be called explicitly if you want the
+     * convenience of the RVILocalNode saving your JWT privileges to disk. Otherwise, it is up to you to save and load
+     * them yourself and hand them to the local node every time you start up your application.
+     *
+     * @param context The current context.
+     */
     public static void savePrivileges(Context context) {
         Log.d(TAG, "Saving local privileges (count: " + localPrivileges.size() + ")");
 
@@ -238,6 +312,13 @@ public class RVILocalNode {
         }
     }
 
+    /**
+     * Tells the RVILocalNode to load its list of privileges from disk. This must be called explicitly if you want the
+     * convenience of the RVILocalNode lading your saved JWT privileges from disk. Otherwise, it is up to you to save
+     * and load them yourself and hand them to the local node every time you start up your application.
+     *
+     * @param context The current context.
+     */
     public static void loadPrivileges(Context context) {
         Gson gson = new Gson();
 
@@ -264,10 +345,33 @@ public class RVILocalNode {
         }
     }
 
+    /**
+     * Returns the list of local privileges.
+     *
+     * @return The list of local privileges.
+     */
     static ArrayList<Privilege> getPrivileges() {
         return localPrivileges;
     }
 
+    /**
+     * Sets the privileges for the local rvi node. Replaces the current list of privileges. If you want the node to save the privileges
+     * you must call the savePrivileges(context) method explicitly. If you want the node to load privileges you have previously saved, you
+     * must call loadPrivileges(context) explicitly.
+     *
+     * Calling this method while a remote RVI node is connected will re-initiate RVI authorization. When privileges change, the list
+     * of valid remote and local services will also be updated.
+     *
+     * @param context The current context.
+     * @param privilegeStrings A list of strings, where each string is a JWT encoded privilege. The JWTs should be signed by the provisioning
+     *                         server and contain the local device's signed certificate. This certificate should be signed by the private
+     *                         key of the device that corresponds to the public key that is embedded in the device's certificate. The
+     *                         same public/private key pair needs to be made available to the local rvi node for use in the upgrade to
+     *                         TLS when connecting to remote nodes. The server's certificate, containing the server's public key and signed
+     *                         by the same private key used to signed the JWTs, must also be passed to the local rvi node so that it can
+     *                         be used as both a trust authority to complete the upgrade to TLS and to validate the JWT privileges both
+     *                         sent by the local node and received from the remote node.
+     */
     public static void setPrivileges(Context context, ArrayList<String> privilegeStrings) {
         Log.d(TAG, "Setting new local privileges (count: " + privilegeStrings.size() + ")");
 
@@ -277,6 +381,16 @@ public class RVILocalNode {
             listener.onLocalPrivilegesUpdated();
     }
 
+
+    /**
+     * Removes all the privileges from the local rvi node. If you want the node to save the now-empty privileges you must call the
+     * savePrivileges(context) method explicitly.
+     *
+     * Calling this method while a remote RVI node is connected will re-initiate RVI authorization. When privileges change, the list
+     * of valid remote and local services will also be updated.
+     *
+     * @param context The current context.
+     */
     public static void removeAllPrivileges(Context context) {
         Log.d(TAG, "Removing all local privileges (count: " + localPrivileges.size() + ")");
 
@@ -286,19 +400,35 @@ public class RVILocalNode {
             listener.onLocalPrivilegesUpdated();
     }
 
+    /**
+     * Adds an RVIRemoteNode to the list of LocalNodeListeners. Used by all RVIRemoteNodes so that they can properly and dynamically
+     * respond to changes in privileges and available services. Called when an RVIRemoteNode connects to a remote node over the network.
+     *
+     * @param listener The LocalNodeListener.
+     */
     static void addLocalNodeListener(LocalNodeListener listener) {
         localNodeListeners.add(listener);
     }
 
+    /**
+     * Removes an RVIRemoteNode to the list of LocalNodeListeners. Called when an RVIRemoteNode disconnects from a remote node over the network.
+     *
+     * @param listener The LocalNodeListener.
+     */
     static void removeLocalNodeListener(LocalNodeListener listener) {
         localNodeListeners.remove(listener);
     }
 
     private final static String SHARED_PREFS_STRING         = "com.rvisdk.settings";
     private final static String LOCAL_SERVICE_PREFIX_STRING = "localServicePrefix";
-
+    
+    /**
+     * Creates the UUID. Uses the fact that the UUID is a bunch of base-16 characters to shorten the string through base 64 encoding.
+     *
+     * @return A uuid.
+     */
     // TODO: Test and verify this function
-    public static String uuidB58String() {
+    static String uuidB58String() {
         UUID uuid = UUID.randomUUID();
         String b64Str;
 
@@ -316,10 +446,11 @@ public class RVILocalNode {
     }
 
     /**
-     * Gets the prefix of the local RVI node
+     * Gets the node identifier of the local RVI node. The node identifier consists of the device type id (i.e., "android") and a universally unique identifier
+     * for this device. The node identifier is used by RVI for routing service invocations to the correct remote nodes.
      *
-     * @param context the application context
-     * @return the local prefix
+     * @param context The application context.
+     * @return The local prefix.
      */
     public static String getLocalNodeIdentifier(Context context) { // TODO: There is no easy way to reset this once it's stored, is there? Maybe an app version check?
         SharedPreferences sharedPrefs = context.getSharedPreferences(SHARED_PREFS_STRING, MODE_PRIVATE);

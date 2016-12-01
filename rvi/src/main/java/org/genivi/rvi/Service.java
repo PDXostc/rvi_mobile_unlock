@@ -52,10 +52,10 @@ class Service
      *                 E.g., "genivi.org" or "jaguarlandrover.com".
      *
      *   @param nodeIdentifier The service's nodeIdentifier. Must be two parts, separated by a '/', the device type token and a unique device id.
-     *                         E.g., "android/12345" or "vehicle/54321".
+     *                         Can't contain '+', '#', or the null unicode character. Must be UTF-8. E.g., "android/12345" or "vehicle/54321".
      *
      *   @param serviceIdentifier The rest of the fully qualified service identifier. Should be more "topic levels" separated by '/'s. Shouldn't
-     *                            begin or end with a '/'.
+     *                            begin or end with a '/'. Can't contain '+', '#', or the null unicode character. Must be UTF-8.
      */
     Service(String domain, String nodeIdentifier, String serviceIdentifier) {
         mDomain            = domain == null            ? null : Util.rfc1035(domain);
