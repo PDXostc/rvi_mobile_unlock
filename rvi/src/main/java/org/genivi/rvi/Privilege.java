@@ -15,23 +15,20 @@ package org.genivi.rvi;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import android.util.Base64;
-
-import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
-
 import java.io.ByteArrayInputStream;
 import java.security.Key;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
-
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.impl.DefaultClaims;
 
+/**
+ * The class that encapsulates an RVI Privilege object: a server-signed JWT that contains privileges such as the right_to_invoke and right_to_receive services,
+ * when those rights are available, the server-signed device certificate of the presenting RVI node, and a few other things.
+ */
 class Privilege {
     private final static String TAG = "RVI/Privilege__________";
 
@@ -60,10 +57,21 @@ class Privilege {
     public Privilege() {
     }
 
+    /**
+     * Constructor for the Privilege, which takes a server-signed jwt as a parameter. JWT can't be validated until we have the server and device certificate
+     *
+     * @param jwt JWT containing the privilege, signed by the server
+     */
     Privilege(String jwt) {
         this.mJwt = jwt;
     }
 
+    /**
+     * Validates the JWT, using the server certificate passed in to the function, and deserializes its contents into the rest of the Privilege class's properties.
+     *
+     * @param key The server key used to verify the signature of the JWT
+     * @return True if validation succeeds and JWT was parsed successfully, false if there was a problem
+     */
     Boolean parse(Key key) {
         try {
             this.mRightToInvoke            = null;
@@ -96,10 +104,23 @@ class Privilege {
         return true;
     }
 
+    /**
+     * Confirms that the embedded device certificate matches the one provided.
+     *
+     * @param matching The certificate to compare.
+     * @return True if matching, false if not.
+     */
     boolean deviceCertificateMatches(Certificate matching) {
         return mCertificate.equals(matching);
     }
 
+    /**
+     * Old comparator method before use of multi-topic-level tail matching ('#').
+     * @param right The topic filter contained in the credential, representing a pattern for a service identifier to match against to confirm if the node has the
+     *              right to receive or right to invoke that service.
+     * @param serviceIdentifier The service identifier the right to receive string or right to invoke string is being compared against.
+     * @return True if matches, false if not.
+     */
     private boolean rightMatchesServiceIdentifierNonTailHashMatching(String right, String serviceIdentifier) {
         String rightParts[] = right.split("/", -1);
         String serviceParts[] = serviceIdentifier.split("/", -1);
@@ -115,6 +136,15 @@ class Privilege {
         return true;
     }
 
+    /**
+     * This is the method that takes a string representing a service identifier and one of the string contained in the privilege's right_to_receive/right_to_invoke
+     * arrays and matches that string against the service identifier.
+     *
+     * @param right The topic filter contained in the credential, representing a pattern for a service identifier to match against to confirm if the node has the
+     *              right to receive or right to invoke that service.
+     * @param serviceIdentifier The service identifier the right to receive string or right to invoke string is being compared against.
+     * @return True if matches, false if not.
+     */
     private static boolean rightMatchesServiceIdentifier(String right, String serviceIdentifier) {
         /* If for whatever reason, the service identifier or topic filter (rights string) contains 2+ '/'s in a row,
            then this is considered an empty topic level, which is not allowed, so return 'false' */
@@ -143,7 +173,7 @@ class Privilege {
 
         return true;
     }
-
+    
     boolean grantsRightToReceive(String fullyQualifiedServiceIdentifier) {
         if (fullyQualifiedServiceIdentifier == null || mRightToReceive == null)
             return false;

@@ -26,8 +26,8 @@ class DlinkServiceAnnouncePacket extends DlinkPacket
     private final static String TAG = "RVI/DlinkSrvcAnncPacket";
 
     enum Status {
-        AVAILABLE,
-        UNAVAILABLE
+        AVAILABLE,   /* "av" */
+        UNAVAILABLE  /* "un" */
     }
 
     /**
@@ -49,9 +49,9 @@ class DlinkServiceAnnouncePacket extends DlinkPacket
     }
 
     /**
-     * Helper method to get a service announce dlink json object
+     * Helper method to get a service announce dlink json object.
      *
-     * @param services The array of services to announce
+     * @param services The array of services to announce.
      */
     DlinkServiceAnnouncePacket(ArrayList<String> services, Status status) {
         super(Command.SERVICE_ANNOUNCE);
@@ -63,7 +63,7 @@ class DlinkServiceAnnouncePacket extends DlinkPacket
     /**
      * Gets list of fully-qualified local service names.
      *
-     * @return the list of fully-qualified local service names
+     * @return The list of fully-qualified local service names
      */
     ArrayList<String> getServices() {
         return mServices;

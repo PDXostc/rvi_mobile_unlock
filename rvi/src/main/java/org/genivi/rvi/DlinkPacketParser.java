@@ -19,7 +19,7 @@ import com.google.gson.Gson;
 
 /**
  * The Dlink packet parser. Class that parses received strings first into json objects, and then parses complete json
- * objects into dlink packets based on their 'cmd'
+ * objects into dlink packets based on their 'cmd'.
  */
 class DlinkPacketParser
 {
@@ -37,7 +37,7 @@ class DlinkPacketParser
          * On packet parsed. Callback method that notifies listener when a complete dlink packet was parsed out of the
          * input stream coming from an rvi node over the network.
          *
-         * @param packet the dlink packet
+         * @param packet The dlink packet.
          */
         void onPacketParsed(DlinkPacket packet);
 
@@ -45,7 +45,8 @@ class DlinkPacketParser
          * Failed when trying to parse the packet. Callback method that notifies listener when a dlink packet was unable to
          * be parsed out of the input stream coming from an rvi node over the network.
          *
-         * @param error the error
+         * @param packet The dlink packet.
+         * @param error The error.
          */
         void onPacketFailedToParse(DlinkPacket packet, Throwable error);
     }
@@ -60,7 +61,7 @@ class DlinkPacketParser
          * On json string parsed. Callback method that notifies listener when a complete json string was parsed out of
          * the input stream coming from an rvi node over the network.
          *
-         * @param jsonString the json string
+         * @param jsonString The json string.
          */
         void onJsonStringParsed(String jsonString);
 
@@ -68,7 +69,7 @@ class DlinkPacketParser
          * On json object parsed. Callback method that notifies listener when a complete json object was parsed out of
          * the input stream coming from an rvi node over the network.
          *
-         * @param jsonObject the json object
+         * @param jsonObject The json object.
          */
         void onJsonObjectParsed(Object jsonObject);
     }
@@ -76,17 +77,19 @@ class DlinkPacketParser
     /**
      * Instantiates a new Dlink packet parser.
      *
-     * @param listener the listener
+     * @param listener The listener.
      */
     DlinkPacketParser(DlinkPacketParserListener listener) {
         mDataParserListener = listener;
     }
 
     /**
+     * Finds the length of the string that represents the json object or array, assuming that the
+     * object or array starts at the first character of the passed in string.
      *
-     * @param  buffer String to parse out JSON objects from
+     * @param  buffer String to parse out JSON objects from.
      * @return The length of the first JSON object found, 0 if it is an incomplete object,
-     *                -1 if the string does not start with a '{' or an '['
+     *                -1 if the string does not start with a '{' or an '['.
      */
     private int getLengthOfJsonObject(String buffer) {
         if (buffer.charAt(0) != '{' && buffer.charAt(0) != '[') return -1;
@@ -107,8 +110,13 @@ class DlinkPacketParser
         return 0;
     }
 
+    /**
+     * Takes a json string and deserializes it into a DlinkPacket.
+     *
+     * @param string The json string representing the packet.
+     * @return The deserialized DlinkPacket.
+     */
     private DlinkPacket stringToPacket(String string) {
-        //Log.d(TAG, "Received packet: " + string);
 
         if (mDataParserListener instanceof DlinkPacketParserTestCaseListener)
             ((DlinkPacketParserTestCaseListener) mDataParserListener).onJsonStringParsed(string);
@@ -144,6 +152,15 @@ class DlinkPacketParser
         }
     }
 
+    /**
+     * Recurses of the buffer, pulling out complete json objects to be parsed into DlinkPackets. Some strings contain
+     * one whole packet, some contain several packets, and some contain partial packets.
+     *
+     * @param buffer The string to be recursed on.
+     * @return The remainder of the string if the string contains more than one packet json object, or the remainder of
+     *         the string if the remainder of the string is a partial packet json object, or an empty string if the
+     *         string was exactly one packet json object.
+     */
     private String recurse(String buffer) {
         int lengthOfString     = buffer.length();
         int lengthOfJsonObject = getLengthOfJsonObject(buffer);
@@ -177,7 +194,7 @@ class DlinkPacketParser
      * deserializing them into dlink packets. Remaining string (thereby assumed to be only a partial json object)
      * is saved until rest of the json object is received over the networked and appended to the buffer.
      *
-     * @param data a json string, consisting of 0-n partial or complete json objects.
+     * @param data A json string, consisting of 0-n partial or complete json objects.
      */
     void parseData(String data) {
         if (mBuffer == null) mBuffer = "";

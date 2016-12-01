@@ -49,19 +49,19 @@ class DlinkAuthPacket extends DlinkPacket
         mPrivileges = privileges;
     }
 
-    public ArrayList<String> getPrivileges() {
+    ArrayList<String> getPrivileges() {
         return mPrivileges;
     }
 
-    public String getVer() {
+    String getVer() {
         return mVer;
     }
 
-    public Integer getPort() {
+    Integer getPort() {
         return mPort;
     }
 
-    public String getAddr() {
+    String getAddr() {
         return mAddr;
     }
 

@@ -20,14 +20,14 @@ import com.google.gson.annotations.SerializedName;
 import java.util.HashMap;
 
 /**
- * The Dlink request packet base class
+ * The Dlink request packet base class.
  */
 class DlinkPacket
 {
     private final static String TAG = "RVI/DlinkPacket________";
 
     /**
-     * The Command enumeration, used to enumerate the different commands, or dlink packet types
+     * The Command enumeration, used to enumerate the different commands, or dlink packet types.
      */
     protected enum Command
     {
@@ -78,8 +78,9 @@ class DlinkPacket
     protected String mLogId = null;
 
     /**
-     * Serializes the object into json strVal
-     * @return the serialized json string
+     * Serializes the object into json strVal.
+     *
+     * @return The serialized json string.
      */
     protected String toJsonString() {
         Gson gson = new Gson();
@@ -94,8 +95,9 @@ class DlinkPacket
     }
 
     /**
-     * Base constructor of the DlinkPacket
-     * @param command the command ("au", "sa", "rcv", or "ping")
+     * Base constructor of the DlinkPacket.
+     *
+     * @param command The command ("au", "sa", "rcv", or "ping").
      */
     protected DlinkPacket(Command command) {
         if (command == null) {
@@ -111,8 +113,8 @@ class DlinkPacket
     /**
      * Instantiates a new Dlink packet.
      *
-     * @param command the command
-     * @param jsonHash the json hash
+     * @param command The command.
+     * @param jsonHash The json hash.
      */
     protected DlinkPacket(Command command, HashMap jsonHash) {
         if (command == null || jsonHash == null) {
