@@ -120,10 +120,7 @@ class Util
         if (identifierComponent.equals("")) throw new IllegalArgumentException("Component can't be an empty string.");
 
         /* Look for repeating '/'s. */
-        //String regex = "/\1{2,}";
-        //boolean hasRepeatingSlash = identifierComponent.matches(regex);
-
-        if (identifierComponent.contains("//"))//hasRepeatingSlash)
+        if (identifierComponent.contains("//"))
             throw new IllegalArgumentException("Component \"" + identifierComponent + "\" contains an illegal character sequence: two or more '/'s in a row.");
 
         /* Check that the string does not begin or end with a forward-slash */
