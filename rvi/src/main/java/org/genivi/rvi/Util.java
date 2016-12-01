@@ -93,7 +93,7 @@ class Util
             throw new IllegalArgumentException("Domain \"" + domain + "\" cannot end with a '.' character, per the RFC1035 specification.");
 
         /* Check that each label of the domain is at least one character and that the first character is a letter. */
-        String[] domainLabels = domain.split("\\.");
+        String[] domainLabels = domain.split("\\.", -1);
 
         for (String domainLabel : domainLabels) {
             if (domainLabel.equals(""))
@@ -120,10 +120,10 @@ class Util
         if (identifierComponent.equals("")) throw new IllegalArgumentException("Component can't be an empty string.");
 
         /* Look for repeating '/'s. */
-        String regex = "/\1{2,}";
-        boolean hasRepeatingSlash = identifierComponent.matches(regex);
+        //String regex = "/\1{2,}";
+        //boolean hasRepeatingSlash = identifierComponent.matches(regex);
 
-        if (hasRepeatingSlash)
+        if (identifierComponent.contains("//"))//hasRepeatingSlash)
             throw new IllegalArgumentException("Component \"" + identifierComponent + "\" contains an illegal character sequence: two or more '/'s in a row.");
 
         /* Check that the string does not begin or end with a forward-slash */
@@ -135,7 +135,7 @@ class Util
 
         /* Split the string by the topic separator character, and check each bit to make sure it's legal */
         /* Check that each label of the domain is at least one character and that the first character is a letter. */
-        String[] topicLevels = identifierComponent.split("/");
+        String[] topicLevels = identifierComponent.split("/", -1);
 
         for (String topicLevel : topicLevels) {
             if (topicLevel.equals("")) /* This should have already been caught above... */

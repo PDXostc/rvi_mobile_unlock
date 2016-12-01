@@ -97,7 +97,7 @@ public class UtilTest extends AndroidTestCase
         assertTrue("Test string '" + d1 + "' failed", false);
     }
 
-    public final void testRFC1035DomainValidation_EmptyLabel() {
+    public final void testRFC1035DomainValidation_EmptyLabel1() {
         String d1 = "foo..bar";
 
         try {
@@ -112,7 +112,37 @@ public class UtilTest extends AndroidTestCase
         assertTrue("Test string '" + d1 + "' failed", false);
     }
 
-    public final void testRFC1035DomainValidation_IllegalPrecedingDot() {
+    public final void testRFC1035DomainValidation_EmptyLabel2() {
+        String d1 = "foo...bar";
+
+        try {
+            d1 = Util.rfc1035(d1);
+
+        } catch (Exception e) {
+            assertTrue(true);
+
+            return;
+        }
+
+        assertTrue("Test string '" + d1 + "' failed", false);
+    }
+
+    public final void testRFC1035DomainValidation_EmptyLabel3() {
+        String d1 = "foo..bar..baz";
+
+        try {
+            d1 = Util.rfc1035(d1);
+
+        } catch (Exception e) {
+            assertTrue(true);
+
+            return;
+        }
+
+        assertTrue("Test string '" + d1 + "' failed", false);
+    }
+
+    public final void testRFC1035DomainValidation_IllegalPrecedingSingleDot() {
         String d1 = ".foo.bar.baz";
 
         try {
@@ -127,8 +157,38 @@ public class UtilTest extends AndroidTestCase
         assertTrue("Test string '" + d1 + "' failed", false);
     }
 
-    public final void testRFC1035DomainValidation_IllegalSucceedingDot() {
+    public final void testRFC1035DomainValidation_IllegalPrecedingDoubleDot() {
+        String d1 = "..foo.bar.baz";
+
+        try {
+            d1 = Util.rfc1035(d1);
+
+        } catch (Exception e) {
+            assertTrue(true);
+
+            return;
+        }
+
+        assertTrue("Test string '" + d1 + "' failed", false);
+    }
+
+    public final void testRFC1035DomainValidation_IllegalSucceedingSingleDot() {
         String d1 = "foo.bar.baz.";
+
+        try {
+            d1 = Util.rfc1035(d1);
+
+        } catch (Exception e) {
+            assertTrue(true);
+
+            return;
+        }
+
+        assertTrue("Test string '" + d1 + "' failed", false);
+    }
+
+    public final void testRFC1035DomainValidation_IllegalSucceedingDoubleDot() {
+        String d1 = "foo.bar.baz..";
 
         try {
             d1 = Util.rfc1035(d1);
@@ -378,8 +438,38 @@ public class UtilTest extends AndroidTestCase
         assertTrue("Test string '" + d1 + "' failed", false);
     }
 
-    public final void testIdentifierComponentValidation_EmptyTopicLevel() {
+    public final void testIdentifierComponentValidation_EmptyTopicLevelStart() {
+        String d1 = "//foo/bar";
+
+        try {
+            d1 = Util.validated(d1);
+
+        } catch (Exception e) {
+            assertTrue(true);
+
+            return;
+        }
+
+        assertTrue("Test string '" + d1 + "' failed", false);
+    }
+
+    public final void testIdentifierComponentValidation_EmptyTopicLevelMiddle() {
         String d1 = "foo//bar";
+
+        try {
+            d1 = Util.validated(d1);
+
+        } catch (Exception e) {
+            assertTrue(true);
+
+            return;
+        }
+
+        assertTrue("Test string '" + d1 + "' failed", false);
+    }
+
+    public final void testIdentifierComponentValidation_EmptyTopicLevelEnd() {
+        String d1 = "foo/bar//";
 
         try {
             d1 = Util.validated(d1);
