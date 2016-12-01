@@ -35,7 +35,7 @@ class TestServerNode
         void testServerNodeDidAuthorizeLocalServices(Set<String> serviceIdentifiers);
     }
 
-    private static RVIRemoteNode rviNode = new RVIRemoteNode(null);
+    private static RVIRemoteNode rviNode = new RVIRemoteNode();
 
     private static ArrayList<Listener> listeners = new ArrayList<>();
 
