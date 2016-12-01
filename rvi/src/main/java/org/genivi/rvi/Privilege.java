@@ -32,7 +32,7 @@ import java.util.HashMap;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.impl.DefaultClaims;
 
-class Credential {
+class Privilege {
     private final static String TAG = "RVI/Credential_________";
 
     @SerializedName("right_to_invoke")
@@ -57,10 +57,10 @@ class Credential {
 
     private String mJwt = null;
 
-    public Credential() {
+    public Privilege() {
     }
 
-    Credential(String jwt) {
+    Privilege(String jwt) {
 //        Gson gson = new Gson();
 //        Credential credentials = gson.fromJson((String) Jwts.parser().parse(jwt).getBody(), Credential.class);
 //

@@ -189,7 +189,7 @@ class ServerConnection implements RemoteConnectionInterface
             } catch (Exception e) {
                 e.printStackTrace();
 
-                return e;   
+                return e;
             }
 
             return null;

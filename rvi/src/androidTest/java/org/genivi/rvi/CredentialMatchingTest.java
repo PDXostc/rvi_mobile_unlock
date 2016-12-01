@@ -30,7 +30,7 @@ public class CredentialMatchingTest extends AndroidTestCase
     protected void setUp() throws Exception {
         super.setUp();
 
-        rightMatchesServiceIdentifierMethod = Credential.class.getDeclaredMethod("rightMatchesServiceIdentifier", argTypes);
+        rightMatchesServiceIdentifierMethod = Privilege.class.getDeclaredMethod("rightMatchesServiceIdentifier", argTypes);
         rightMatchesServiceIdentifierMethod.setAccessible(true);
     }
 

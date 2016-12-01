@@ -37,10 +37,10 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
     private HashMap<String, Service>            mAnnouncedRemoteServices   = new HashMap<>();
     private HashMap<String, ArrayList<Service>> mPendingServiceInvocations = new HashMap<>();
 
-    private ArrayList<Credential> mRemoteCredentials = new ArrayList<>();
+    private ArrayList<Privilege> mRemoteCredentials = new ArrayList<>();
 
-    private ArrayList<Credential> mValidRemoteCredentials = new ArrayList<Credential>();
-    private ArrayList<Credential> mValidLocalCredentials  = new ArrayList<Credential>();
+    private ArrayList<Privilege> mValidRemoteCredentials = new ArrayList<Privilege>();
+    private ArrayList<Privilege> mValidLocalCredentials  = new ArrayList<Privilege>();
 
     private Integer mRemotePort;
     private String  mRemoteAddr;
@@ -452,12 +452,12 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 
         if (localCertificate == null || serverCertificate == null) return; // TODO: There's a problem, but have we already handled it and disconnected?
 
-        ArrayList<Credential> localCredentials = RVILocalNode.getCredentials();
+        ArrayList<Privilege> localCredentials = RVILocalNode.getCredentials();
 
         mValidLocalCredentials.clear();
         CredentialManager.clearLocalCredentialsRevalidationTime();
 
-        for (Credential credential : localCredentials) {
+        for (Privilege credential : localCredentials) {
             if (credential.parse(serverCertificate.getPublicKey()) && credential.deviceCertificateMatches(localCertificate)) {
                 if (credential.getValidity().getStatus() == ValidityStatus.PENDING) {
                     CredentialManager.updateLocalCredentialsRevalidationTime(credential.getValidity().getStart());
@@ -481,12 +481,12 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 
         if (remoteCertificate == null || serverCertificate == null) return; // TODO: There's a problem, but have we already handled it and disconnected?
 
-        ArrayList<Credential> remoteCredentials = mRemoteCredentials;
+        ArrayList<Privilege> remoteCredentials = mRemoteCredentials;
 
         mValidRemoteCredentials.clear();
         CredentialManager.clearRemoteCredentialsRevalidationTime();
 
-        for (Credential credential : remoteCredentials) {
+        for (Privilege credential : remoteCredentials) {
             if (credential.parse(serverCertificate.getPublicKey()) && credential.deviceCertificateMatches(remoteCertificate))
                 if (credential.getValidity().getStatus() == ValidityStatus.PENDING) {
                     CredentialManager.updateRemoteCredentialsRevalidationTime(credential.getValidity().getStart());
@@ -510,14 +510,14 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
         ArrayList<Service> authorizedToReceive = new ArrayList<>();
         ArrayList<Service> authorizedLocalServices = new ArrayList<>();
 
-        for (Credential credential : mValidLocalCredentials) {
+        for (Privilege credential : mValidLocalCredentials) {
             for (Service service : allLocalServices) {
                 if (credential.grantsRightToReceive(service.getFullyQualifiedServiceIdentifier()))
                     authorizedToReceive.add(service);
             }
         }
 
-        for (Credential credential : mValidRemoteCredentials) {
+        for (Privilege credential : mValidRemoteCredentials) {
             for (Service service : authorizedToReceive) {
                 if (credential.grantsRightToInvoke(service.getFullyQualifiedServiceIdentifier()))
                     authorizedLocalServices.add(service);
@@ -550,14 +550,14 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
         ArrayList<Service> authorizedToInvoke = new ArrayList<>();
         ArrayList<Service> authorizedRemoteServices = new ArrayList<>();
 
-        for (Credential credential : mValidLocalCredentials) {
+        for (Privilege credential : mValidLocalCredentials) {
             for (Service service : allRemoteServices) {
                 if (credential.grantsRightToInvoke(service.getFullyQualifiedServiceIdentifier()))
                     authorizedToInvoke.add(service);
             }
         }
 
-        for (Credential credential : mValidRemoteCredentials) {
+        for (Privilege credential : mValidRemoteCredentials) {
             for (Service service : authorizedToInvoke) {
                 if (credential.grantsRightToReceive(service.getFullyQualifiedServiceIdentifier()))
                     authorizedRemoteServices.add(service);

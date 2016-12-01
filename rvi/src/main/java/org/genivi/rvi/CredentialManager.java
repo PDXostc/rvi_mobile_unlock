@@ -15,7 +15,6 @@ package org.genivi.rvi;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 import java.util.ArrayList;
-import java.util.Calendar;
 
 class CredentialManager {
     private final static String TAG = "RVI/CredentialManager__";
@@ -29,22 +28,22 @@ class CredentialManager {
     private CredentialManager() {
     }
 
-    static ArrayList<String> toCredentialStringArray(ArrayList<Credential> credentialObjects) {
+    static ArrayList<String> toCredentialStringArray(ArrayList<Privilege> credentialObjects) {
         ArrayList<String> credentialStrings = new ArrayList<>();
 
         if (credentialObjects != null)
-            for (Credential credential : credentialObjects)
+            for (Privilege credential : credentialObjects)
                 credentialStrings.add(credential.getJwt());
 
         return credentialStrings;
     }
 
-    static ArrayList<Credential> fromCredentialStringArray(ArrayList<String> credentialStrings) {
-        ArrayList<Credential> credentialObjects = new ArrayList<>();
+    static ArrayList<Privilege> fromCredentialStringArray(ArrayList<String> credentialStrings) {
+        ArrayList<Privilege> credentialObjects = new ArrayList<>();
 
         if (credentialStrings != null)
             for (String credential : credentialStrings)
-                credentialObjects.add(new Credential(credential));
+                credentialObjects.add(new Privilege(credential));
 
         return credentialObjects;
     }

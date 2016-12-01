@@ -40,7 +40,7 @@ public class RVILocalNode {
 
     private static RVILocalNode ourInstance = new RVILocalNode();
 
-    private static ArrayList<Credential> localCredentials = new ArrayList<>();
+    private static ArrayList<Privilege> localCredentials = new ArrayList<>();
 
     private static KeyStore serverKeyStore = null;
     private static KeyStore deviceKeyStore = null;
@@ -217,7 +217,7 @@ public class RVILocalNode {
         }
     }
 
-    static ArrayList<Credential> getCredentials() {
+    static ArrayList<Privilege> getCredentials() {
         return localCredentials;
     }
 
