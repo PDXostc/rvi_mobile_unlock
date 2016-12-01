@@ -16,6 +16,9 @@ package org.genivi.pki;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * Base class for all provisioning server response objects.
+ */
 public class ProvisioningServerResponse {
     private final static String TAG = "PKI/ProvServerResponse_";
 
@@ -29,9 +32,16 @@ public class ProvisioningServerResponse {
         CERTIFICATE_RESPONSE
     }
 
+    /**
+     * Constructor.
+     */
     public ProvisioningServerResponse() {
     }
 
+    /**
+     * Gets the status of the response.
+     * @return The status.
+     */
     public Status getStatus() {
         switch (mStatus) {
             case "error":

@@ -16,20 +16,34 @@ package org.genivi.pki;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * Object that represents the body of an error response from the provisioning server.
+ */
 public class PSErrorResponse extends ProvisioningServerResponse
 {
     @SerializedName("reason")
     private String mReason = "unknown";
 
+    /**
+     * Constructor.
+     */
     public PSErrorResponse() {
     }
 
+    /**
+     * Constructor.
+     * @param reason The reason for the error.
+     */
     PSErrorResponse(String reason) {
         setStatus("error");
 
         mReason = reason;
     }
 
+    /**
+     * Gets the reason for the error.
+     * @return The reason for the error.
+     */
     public String getReason() {
         return mReason;
     }

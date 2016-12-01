@@ -16,14 +16,24 @@ package org.genivi.pki;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * Object that represents the body of a verification needed response from the provisioning server.
+ */
 public class PSVerificationNeededResponse extends ProvisioningServerResponse
 {
     @SerializedName("message")
     private String mMessage = "";
 
+    /**
+     * Constructor.
+     */
     public PSVerificationNeededResponse() {
     }
 
+    /**
+     * Gets the message.
+     * @return The message.
+     */
     public String getMessage() {
         return mMessage;
     }
