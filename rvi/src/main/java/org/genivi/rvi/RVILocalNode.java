@@ -251,7 +251,7 @@ public class RVILocalNode {
     private final static String LOCAL_SERVICE_PREFIX_STRING = "localServicePrefix";
 
     // TODO: Test and verify this function
-    private static String uuidB58String() {
+    public static String uuidB58String() {
         UUID uuid = UUID.randomUUID();
         String b64Str;
 

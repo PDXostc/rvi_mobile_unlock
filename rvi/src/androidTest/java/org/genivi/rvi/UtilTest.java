@@ -34,6 +34,10 @@ public class UtilTest extends AndroidTestCase
         super.tearDown();
     }
 
+    public final void testFoo() {
+        RVILocalNode.uuidB58String();
+    }
+
     public final void testRFC1035DomainValidation_NormalDomains() {
         String d1 = "foo";
         String d2 = "foo.bar";

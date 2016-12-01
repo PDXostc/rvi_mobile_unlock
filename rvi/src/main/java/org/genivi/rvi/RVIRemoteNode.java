@@ -402,7 +402,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
 
             String[] serviceParts = fullyQualifiedRemoteServiceName.split("/", -1);
 
-            if (serviceParts.length < 4) return; // TODO: Handle error
+            if (serviceParts.length < 4) continue;
 
             String domain = serviceParts[0];
             String nodeIdentifier = serviceParts[1] + "/" + serviceParts[2];
@@ -418,10 +418,8 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
             String serviceIdentifier = builder.toString();
 
             mAnnouncedRemoteServices.put(serviceIdentifier, new Service(domain, nodeIdentifier, serviceIdentifier));
-            //addRemoteService(serviceIdentifier, new Service(domain, nodeIdentifier, null, serviceIdentifier));
-        }
 
-        //if (mListener != null) mListener.nodeDidAuthorizeRemoteServices(this, mAuthorizedRemoteServices.keySet());
+        }
 
         if (packet.getStatus() == DlinkServiceAnnouncePacket.Status.AVAILABLE) {
             sortThroughRemoteServices();
@@ -442,7 +440,7 @@ public class RVIRemoteNode implements RVILocalNode.LocalNodeListener
         validateRemoteCredentials();
         sortThroughLocalServices();
 
-        mAuthorizedRemoteServices.clear(); // TODO: Check w Ulf about assumptions made wrt remote services and creds/auth and deleting list vs. adding to list and not checking against own creds
+        mAuthorizedRemoteServices.clear();
         if (mListener != null) mListener.nodeDidAuthorizeRemoteServices(this, mAuthorizedRemoteServices.keySet());
     }
 

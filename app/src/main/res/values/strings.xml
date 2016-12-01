@@ -44,7 +44,6 @@
     <string name="LOCK">lock</string>
     <string name="ENGINE">engine</string>
 
-<!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="keyfob_logo">keyfob logo</string>
     <string name="panic">panic</string>

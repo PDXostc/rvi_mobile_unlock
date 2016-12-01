@@ -256,7 +256,6 @@ class ServerConnection implements RemoteConnectionInterface
         }
     }
 
-    // TODO: Extract SendDataTask and ListenTask to their own classes that can be called by both BluetoothConnection and ServerConnection
     private class SendDataTask extends AsyncTask<Void, Void, Throwable>
     {
         private DlinkPacket mPacket;
