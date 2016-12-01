@@ -42,8 +42,8 @@ public class PKIManager
         void generateCertificateSigningRequestFailed(Throwable reason);
     }
 
-    public static void generateKeyPairAndCertificateSigningRequest(Context context, CertificateSigningRequestGeneratorListener listener, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
-        KeyStoreInterface.generateKeyPairAndCertificateSigningRequest(context, listener, startDate, endDate, principalFormatterPattern, principalFormatterArgs);
+    public static void generateKeyPairAndCertificateSigningRequest(Context context, CertificateSigningRequestGeneratorListener listener, Integer keySize, Boolean setEncryptionRequired, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
+        KeyStoreInterface.generateKeyPairAndCertificateSigningRequest(context, listener, keySize, setEncryptionRequired, startDate, endDate, principalFormatterPattern, principalFormatterArgs);
     }
 
     public static void sendCertificateSigningRequest(Context context, PKIManager.ProvisioningServerListener listener, String baseUrl, String requestUrl, ProvisioningServerRequest certificateSigningRequest) {
