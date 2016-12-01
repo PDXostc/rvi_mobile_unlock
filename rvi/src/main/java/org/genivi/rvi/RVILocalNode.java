@@ -33,6 +33,42 @@ import java.util.UUID;
 
 import static android.content.Context.MODE_PRIVATE;
 
+/**
+ * This class represents your local RVI node, sitting right here in your Android application. This class and @RVIRemoteNode
+ * are the main points of entry for you to interact with the Android RVI SDK. There is only one single instance of the
+ * RVILocalNode class, encapsulated behind static methods. You need to set this class up first, and then you can use
+ * RVIRemoteNode to make the connection between other remote nodes on your network. The RVIRemoteNode can't interact
+ * with remote nodes without getting some configuration stuff from the local node.
+ *
+ * To set up the remote node, you need to do some PKI stuff. You need to generate a public/private key pair and a certificate
+ * signing request. The CSR needs to contain your public key and be signed by your private key. You need to send this CSR to
+ * your provisioning server and have the provisioning server sign your certificate with its private key and send that back to you.
+ * You need to add this signed certificate to your Android keystore (the one containing your public/private key pair),
+ * and you also need the server-self-signed server certificate as well. The server-self-signed certificate
+ * should contain the server's public key and be signed by the server's private key. These signed certificates are used in
+ * both the TLS upgrade to remote RVI nodes and in authorizing nodes and validating privileges.
+ *
+ * You need to provide the RVILocalNode with server-signed privileges too, which you should get from the provisioning
+ * server. These privileges will need to contain your server-signed device certificate and will contain lists of
+ * services that your node will be able to invoke/receive. This privileges object will need to be encoded in a JWT
+ * and signed by the provisioning server's private key. You will always need to pass these to the RVILocalNode when you
+ * start using RVI. You can have the RVILocalNode save the privileges for you, if you'd like, but this doesn't happen
+ * explicitly.
+ *
+ * How you implement your provisioning server is up to you, but a lot of this stuff has been done already in the RVI PKI
+ * Example project, found here: https://github.com/GENIVI/rvi_pki_android. Feel free to use this code! It will help a lot!
+ * Just make sure that your provisioning server is expecting/sending back the json objects I used in the example, or
+ * change it if you'd like!
+ *
+ * Once you've set up the local node with some keys and privileges, you can create an RVIRemoteNode object, pass it a server
+ * url and port, and then connect. The RVIRemoteNode will authorize your app with the remote node, sending the privileges,
+ * and comparing all the certificates used in the TLS upgrade. It will get a list of services from the RVILocalNode and a list
+ * of remote services from over the network, and it will use the privileges to figure out what can be invoked and received across
+ * the wire. You invoke services and receive services through this class. You should have one instance of this class for
+ * each remote node you are connecting to. You should not have two instances of this class connecting to the same remote
+ * node. If you do, I have absolutely no idea what will happen or how anything will get routed or if there will be awful
+ * infinite loops. You have been warned!
+ */
 public class RVILocalNode {
     private final static String TAG = "RVI/RVILocalNode_______";
 
@@ -68,23 +104,34 @@ public class RVILocalNode {
         void onLocalPrivilegesUpdated();
     }
 
+    /**
+     * Sets the domain part of your fully qualified service identifier. Must be RFC1035 compliant. Can't be null or empty.
+     * Cannot contain any '/'s. Must only contain 'a-z', 'A-Z', '0-9', and '-' characters. E.g., "genivi.org" or "jaguarlandrover.com".
+     *
+     * @param rviDomain The domain.
+     */
     public static void setRviDomain(String rviDomain) {
         RVILocalNode.rviDomain = Util.rfc1035(rviDomain);
     }
 
+    /**
+     * Get the RVI domain.
+     *
+     * @return The rvi domain.
+     */
     public static String getRviDomain() {
         return rviDomain;
     }
 
     /**
-     * Adds new local services
+     * Adds new local services.
      *
-     * @param context            the current context. This value cannot be null.
+     * @param context            The current context. This value cannot be null.
      *
-     * @param serviceIdentifiers a list of the identifiers for all the local services. The service identifiers must only contain
-     *                           alphanumeric characters, underscores, hyphens, or forward-slashes. No other characters or whitespace
-     *                           are allowed. Two forward-slashes in a row is also forbidden. This value cannot be an empty string or null.
-     *                           Leading and trailing forward-slashes are trimmed.
+     * @param serviceIdentifiers A list of the identifiers for all the local services. Two forward-slashes in a row is also forbidden.
+     *                           Leading and trailing forward-slashes are not allowed. This value cannot be an empty string or null.
+     *                           The strings can't contain '+', '#', or the null unicode character. Must be UTF-8.
+     *
      *
      * @exception java.lang.IllegalArgumentException Throws an exception when the context is null or if any of the service identifiers are
      *                                               empty strings, contain illegal characters, or are null.

@@ -22,14 +22,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 /**
- * This class represents a connection to a remote RVI node. This class and RVILocalNode are the main points of entry for you
+ * This class represents a connection to a remote RVI node. This class and @RVILocalNode are the main points of entry for you
  * to interact with the Android RVI SDK. There is only one single instance of the RVILocalNode class, encapsulated behind
- * static methods. The @RVILocalNode class represents, you, the Android application that is running RVI locally. You need
+ * static methods. The RVILocalNode class represents, you, the Android application that is running RVI locally. You need
  * to set that up first. The RVIRemoteNode bridges the connection between your local node and another node on the network,
  * and it can't interact with that node without getting some configuration stuff from the local node.
  *
- * Once you've set up the local node, you can supply the remote node with some keys and privileges, a server url and port,
- * and then connect. The RVIRemoteNode will authorize your app with the remote node, sending the privileges, and comparing
+ * To set up the local node, you supply the it node with some keys and privileges. Then you give the remote node a server url
+ * and port and then connect. The RVIRemoteNode will authorize your app with the remote node, sending the privileges, and comparing
  * all the certificates used in the TLS upgrade. It will get a list of services from the RVILocalNode and a list of remote
  * services from over the network, and it will use the privileges to figure out what can be invoked and received across the
  * wire. You invoke services and receive services through this class. You should have one instance of this class for

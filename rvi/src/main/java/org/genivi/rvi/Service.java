@@ -49,6 +49,7 @@ class Service
     /**
      * Instantiates a new service object.
      *   @param domain The domain. Must conform to RFC1035. Cannot contain any '/'s. Must only contain 'a-z', 'A-Z', '0-9', and '-' characters.
+     *                 E.g., "genivi.org" or "jaguarlandrover.com".
      *
      *   @param nodeIdentifier The service's nodeIdentifier. Must be two parts, separated by a '/', the device type token and a unique device id.
      *                         E.g., "android/12345" or "vehicle/54321".
