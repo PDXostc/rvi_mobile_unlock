@@ -44,18 +44,18 @@ class TestServerNode
 
     private final static ArrayList<String> testLocalServiceIdentifiers =
             new ArrayList<>(Arrays.asList(
-                    "/test/india/alpha",
-                    "/test/india/bravo",
-                    "/test/india/charlie",
-                    "/test/juliette/charlie",
-                    "/test/juliette/delta",
-                    "/test/juliette/echo",
-                    "/test/kilo/foxtrot/golf",
-                    "/test/kilo/foxtrot/hotel",
-                    "/test/kilo/golf/hotel",
-                    "/test/kilo/hotel/golf",
-                    "/test/kilo/foxtrot/golf/hotel",
-                    "/test/lima"
+                    "test/india/alpha",
+                    "test/india/bravo",
+                    "test/india/charlie",
+                    "test/juliette/charlie",
+                    "test/juliette/delta",
+                    "test/juliette/echo",
+                    "test/kilo/foxtrot/golf",
+                    "test/kilo/foxtrot/hotel",
+                    "test/kilo/golf/hotel",
+                    "test/kilo/hotel/golf",
+                    "test/kilo/foxtrot/golf/hotel",
+                    "test/lima"
             ));
 
     private enum ConnectionStatus

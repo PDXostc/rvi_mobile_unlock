@@ -58,6 +58,9 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
 
     private final static boolean BLUETOOTH_RANGING_SERVICE_ENABLED = false;
 
+    private final static Integer KEY_SIZE = 4096;
+    private final static Boolean SET_ENCRYPTION_ENABLED = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -313,7 +316,7 @@ public class LoginActivity extends ActionBarActivity implements LoginActivityFra
         mLoginActivityFragment.setHasKeys(false);
         mLoginActivityFragment.setHasSignedCerts(false);
 
-        PKIManager.generateKeyPairAndCertificateSigningRequest(this, mCertificateSigningRequestGeneratorListener,
+        PKIManager.generateKeyPairAndCertificateSigningRequest(this, mCertificateSigningRequestGeneratorListener, KEY_SIZE, SET_ENCRYPTION_ENABLED,
                 start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT, email.replace("+", "\\+"));
     }
 

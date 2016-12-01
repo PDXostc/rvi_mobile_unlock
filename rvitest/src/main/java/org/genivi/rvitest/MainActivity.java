@@ -35,6 +35,9 @@ public class MainActivity extends AppCompatActivity {
     private final static String PROVISIONING_SERVER_BASE_URL = "http://38.129.64.40:8000";
     private final static String PROVISIONING_SERVER_CSR_URL  = "/csr_veh";
 
+    private final static Integer KEY_SIZE = 2048;
+    private final static Boolean SET_ENCRYPTION_ENABLED = false;
+
     private Button testSetButton1;
     private Button testSetButton2;
     private Button testSetButton3;
@@ -87,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, reason.getLocalizedMessage());
             }
 
-        }, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT);
+        }, KEY_SIZE, SET_ENCRYPTION_ENABLED, start.getTime(), end.getTime(), X509_PRINCIPAL_PATTERN, RVILocalNode.getLocalNodeIdentifier(this), X509_ORG_UNIT);
     }
 
     private void sendCertificateSigningRequest(String certificateSigningRequest) {

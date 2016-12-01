@@ -78,10 +78,8 @@ class KeyStoreInterface
     private final static String PEM_CERTIFICATE_HEADER_FOOTER_STRING                 = "CERTIFICATE";
     private final static String PEM_PUBLIC_KEY_HEADER_FOOTER_STRING                  = "PUBLIC KEY";
 
-    private final static Integer KEY_SIZE = 2048;//4096;
-
-    static void generateKeyPairAndCertificateSigningRequest(Context context, PKIManager.CertificateSigningRequestGeneratorListener listener, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
-        new CertificateSigningRequestGeneratorTask(listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, context, startDate, endDate, principalFormatterPattern, principalFormatterArgs);
+    static void generateKeyPairAndCertificateSigningRequest(Context context, PKIManager.CertificateSigningRequestGeneratorListener listener, Integer keySize, Boolean setEncryptionRequired, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
+        new CertificateSigningRequestGeneratorTask(listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, context, keySize, setEncryptionRequired, startDate, endDate, principalFormatterPattern, principalFormatterArgs);
     }
 
     private static class CertificateSigningRequestGeneratorTask extends AsyncTask<Object, String, Throwable>
@@ -95,16 +93,18 @@ class KeyStoreInterface
         @Override
         protected Throwable doInBackground(Object... params) {
             Context  context                   = (Context)  params[0];
-            Date     startDate                 = (Date)     params[1];
-            Date     endDate                   = (Date)     params[2];
-            String   principalFormatterPattern = (String)   params[3];
-            Object[] principalFormatterArgs    = (Object[]) params[4];//Arrays.copyOfRange(params, 4, params.length - 4); // TODO: Test all possibilities thoroughly!
+            Integer  keySize                   = (Integer)  params[1];
+            Boolean  setEncryptionRequired     = (Boolean)  params[2];
+            Date     startDate                 = (Date)     params[3];
+            Date     endDate                   = (Date)     params[4];
+            String   principalFormatterPattern = (String)   params[5];
+            Object[] principalFormatterArgs    = (Object[]) params[6]; // TODO: Test all possibilities thoroughly!
 
             // TODO: Validate parameters!
 
             try {
                 String certificateSigningRequest =
-                        KeyStoreInterface.generateCertificateSigningRequest(context, startDate, endDate, principalFormatterPattern, principalFormatterArgs);
+                        KeyStoreInterface.generateCertificateSigningRequest(context, keySize, setEncryptionRequired, startDate, endDate, principalFormatterPattern, principalFormatterArgs);
 
                 publishProgress(certificateSigningRequest);
 
@@ -132,7 +132,7 @@ class KeyStoreInterface
         }
     }
 
-    private static String generateCertificateSigningRequest(Context context, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
+    private static String generateCertificateSigningRequest(Context context, Integer keySize, Boolean setEncryptionRequired, Date startDate, Date endDate, String principalFormatterPattern, Object... principalFormatterArgs) {
 
         String   principal = String.format(principalFormatterPattern, principalFormatterArgs);
         KeyStore keyStore  = null;
@@ -157,15 +157,30 @@ class KeyStoreInterface
 
             if (!keyStore.containsAlias(KEYSTORE_CLIENT_ALIAS)) {
 
-                KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
-                        .setAlias(KEYSTORE_CLIENT_ALIAS)
-                        .setKeySize(KEY_SIZE)
-                        .setSubject(new X500Principal(principal))
-                        .setSerialNumber(BigInteger.ONE)
-                        .setStartDate(startDate)
-                        .setEndDate(endDate)
-                        //.setEncryptionRequired () TODO: Document that this is currently disabled and enabling it might be complicated (i.e., fails whole method if screen pwd lock isn't on)
-                        .build();
+                KeyPairGeneratorSpec spec = null;
+
+                if (setEncryptionRequired) {
+                    spec = new KeyPairGeneratorSpec.Builder(context)
+                                                .setAlias(KEYSTORE_CLIENT_ALIAS)
+                                                .setKeySize(keySize)
+                                                .setSubject(new X500Principal(principal))
+                                                .setSerialNumber(BigInteger.ONE)
+                                                .setStartDate(startDate)
+                                                .setEndDate(endDate)
+                                                //.setEncryptionRequired()
+                                                .build();
+                } else {
+                    spec = new KeyPairGeneratorSpec.Builder(context)
+                                                .setAlias(KEYSTORE_CLIENT_ALIAS)
+                                                .setKeySize(keySize)
+                                                .setSubject(new X500Principal(principal))
+                                                .setSerialNumber(BigInteger.ONE)
+                                                .setStartDate(startDate)
+                                                .setEndDate(endDate)
+                                                //.setEncryptionRequired()
+                                                .build();
+                }
+
                 KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
                 generator.initialize(spec);
 
