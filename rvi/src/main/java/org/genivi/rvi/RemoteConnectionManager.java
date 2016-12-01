@@ -23,7 +23,7 @@ import java.security.cert.Certificate;
 /**
  * The remote connection manager of the RVI node.
  */
-public class RemoteConnectionManager
+class RemoteConnectionManager
 {
     private final static String TAG = "RVI/RemoteCnnctnManager";
 
@@ -34,6 +34,9 @@ public class RemoteConnectionManager
 
     private RemoteConnectionManagerListener mListener;
 
+    /**
+     * Constructs a new RemoteConnectionManager.
+     */
     RemoteConnectionManager() {
         mDataParser = new DlinkPacketParser(new DlinkPacketParser.DlinkPacketParserListener()
         {
@@ -114,7 +117,7 @@ public class RemoteConnectionManager
     /**
      * Send an RVI request packet.
      *
-     * @param dlinkPacket the dlink packet
+     * @param dlinkPacket The dlink packet.
      */
     void sendPacket(DlinkPacket dlinkPacket) {
         if (dlinkPacket == null) return;
@@ -132,6 +135,13 @@ public class RemoteConnectionManager
         }
     }
 
+    /**
+     * Sets the key stores used by the connection.
+     *
+     * @param serverKeyStore The keystore containing the server certificate.
+     * @param deviceKeyStore The keystore containing the device certificate.
+     * @param deviceKeyStorePassword The password for the keystore containing the device certificate.
+     */
     void setKeyStores(KeyStore serverKeyStore, KeyStore deviceKeyStore, String deviceKeyStorePassword) {
         mDirectServerConnection.setServerKeyStore(serverKeyStore);
         mDirectServerConnection.setLocalDeviceKeyStore(deviceKeyStore);
@@ -141,7 +151,7 @@ public class RemoteConnectionManager
     /**
      * Sets the server url to the remote RVI node, when using a TCP/IP link to interface with a remote node.
      *
-     * @param serverUrl the server url
+     * @param serverUrl The server url.
      */
     void setServerUrl(String serverUrl) {
         mDirectServerConnection.setServerUrl(serverUrl);
@@ -150,7 +160,7 @@ public class RemoteConnectionManager
     /**
      * Sets the server port of the remote RVI node, when using a TCP/IP link to interface with a remote node.
      *
-     * @param serverPort the server port
+     * @param serverPort The server port.
      */
     void setServerPort(Integer serverPort) {
         mDirectServerConnection.setServerPort(serverPort);
@@ -159,20 +169,35 @@ public class RemoteConnectionManager
     /**
      * Sets the remote connection manager listener.
      *
-     * @param listener the listener
+     * @param listener The listener.
      */
     void setListener(RemoteConnectionManagerListener listener) {
         mListener = listener;
     }
 
+    /**
+     * Gets the remote device certificate used in the TLS connection.
+     *
+     * @return The remote device certificate used in the TLS connection.
+     */
     Certificate getRemoteDeviceCertificate() {
         return mRemoteConnection.getRemoteDeviceCertificate();
     }
 
+    /**
+     * Gets the local device certificate used in the TLS connection.
+     *
+     * @return The local device certificate used in the TLS connection.
+     */
     Certificate getLocalDeviceCertificate() {
         return mRemoteConnection.getLocalDeviceCertificate();
     }
 
+    /**
+     * Gets the server certificate used in the TLS connection.
+     *
+     * @return The server certificate used in the TLS connection.
+     */
     Certificate getServerCertificate() {
         return mRemoteConnection.getServerCertificate();
     }

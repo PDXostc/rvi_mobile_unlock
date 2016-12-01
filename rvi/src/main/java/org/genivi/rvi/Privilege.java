@@ -116,7 +116,7 @@ class Privilege {
 
     /**
      * Old comparator method before use of multi-topic-level tail matching ('#').
-     * @param right The topic filter contained in the credential, representing a pattern for a service identifier to match against to confirm if the node has the
+     * @param right The topic filter contained in the privilege, representing a pattern for a service identifier to match against to confirm if the node has the
      *              right to receive or right to invoke that service.
      * @param serviceIdentifier The service identifier the right to receive string or right to invoke string is being compared against.
      * @return True if matches, false if not.
@@ -140,7 +140,7 @@ class Privilege {
      * This is the method that takes a string representing a service identifier and one of the string contained in the privilege's right_to_receive/right_to_invoke
      * arrays and matches that string against the service identifier.
      *
-     * @param right The topic filter contained in the credential, representing a pattern for a service identifier to match against to confirm if the node has the
+     * @param right The topic filter contained in the privilege, representing a pattern for a service identifier to match against to confirm if the node has the
      *              right to receive or right to invoke that service.
      * @param serviceIdentifier The service identifier the right to receive string or right to invoke string is being compared against.
      * @return True if matches, false if not.
@@ -173,7 +173,13 @@ class Privilege {
 
         return true;
     }
-    
+
+    /**
+     * Checks the service identifier against the privilege's right_to_receive list.
+     *
+     * @param fullyQualifiedServiceIdentifier The service identifier to check.
+     * @return True if matches, false if not.
+     */
     boolean grantsRightToReceive(String fullyQualifiedServiceIdentifier) {
         if (fullyQualifiedServiceIdentifier == null || mRightToReceive == null)
             return false;
@@ -186,6 +192,12 @@ class Privilege {
         return false;
     }
 
+    /**
+     * Checks the service identifier against the privilege's right_to_invoke list.
+     *
+     * @param fullyQualifiedServiceIdentifier The service identifier to check.
+     * @return True if matches, false if not.
+     */
     boolean grantsRightToInvoke(String fullyQualifiedServiceIdentifier) {
         if (fullyQualifiedServiceIdentifier == null || mRightToInvoke == null)
             return false;
@@ -235,6 +247,9 @@ enum ValidityStatus
     INVALID
 }
 
+/**
+ * Class to encapsulate the validity object
+ */
 class Validity {
     private final static String PRETTY_DATE_TIME_FORMATTER = "MM/dd/yyyy h:mm a z";
 

@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * The type Vehicle service.
+ * A class that encapsulates a service that can be received (locally) or invoked (remotely)
  */
 class Service
 {
@@ -47,23 +47,30 @@ class Service
     Service() {}
 
     /**
-     * Instantiates a new Vehicle service.
-     *   @param domain the domain
+     * Instantiates a new service object.
+     *   @param domain The domain. Must conform to RFC1035. Cannot contain any '/'s. Must only contain 'a-z', 'A-Z', '0-9', and '-' characters.
      *
-     *   @param nodeIdentifier the service's nodeIdentifier
+     *   @param nodeIdentifier The service's nodeIdentifier. Must be two parts, separated by a '/', the device type token and a unique device id.
+     *                         E.g., "android/12345" or "vehicle/54321".
      *
-     *
-     *   @param serviceIdentifier the service identifier
+     *   @param serviceIdentifier The rest of the fully qualified service identifier. Should be more "topic levels" separated by '/'s. Shouldn't
+     *                            begin or end with a '/'.
      */
     Service(String domain, String nodeIdentifier, String serviceIdentifier) {
-        mDomain            = domain;
-        mNodeIdentifier    = nodeIdentifier;
-        mServiceIdentifier = serviceIdentifier;
+        mDomain            = domain == null            ? null : Util.rfc1035(domain);
+        mNodeIdentifier    = nodeIdentifier == null    ? null : Util.validated(nodeIdentifier);
+        mServiceIdentifier = serviceIdentifier == null ? null : Util.validated(serviceIdentifier);
 
         if (!(mDomain == null || mNodeIdentifier == null || mServiceIdentifier == null))
             mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceIdentifier();
     }
 
+    /**
+     * Unwraps the parameters json thing.
+     *
+     * @param parameters The parameters.
+     * @return The parameters unwrapped.
+     */
     HashMap unwrap(ArrayList<LinkedTreeMap> parameters) {
         HashMap unwrapped = new HashMap();
 
@@ -74,6 +81,12 @@ class Service
         return unwrapped;
     }
 
+    /**
+     * Should we parse (deserialized) the parameters (from the json)? I wouldn't change this code if I were you!!
+     * Pretty sure there's some touchy and complicated logic going on in here!
+     *
+     * @return If we should.
+     */
     /* If the Service object was deserialized from json, mParameters field might not yet have been unwrapped, but the mJsonParameters
        field will be set. If this is the case, unwrap the mJsonParameters field into something more easily consumable and set mParameters.
        We only have the intermediary value here, because RVI sends parameters as a _list_ of single-kvpair objects, instead of one
@@ -82,6 +95,9 @@ class Service
         return mJsonParameters != null && mParameters == null;
     }
 
+    /**
+     * If we should parse (deserialize) the parameters (from the json), then parse them!
+     */
     private void parseParameters() {
         if (mJsonParameters.getClass().equals(ArrayList.class) && ((ArrayList<LinkedTreeMap>)mJsonParameters).size() == 1)
             mParameters = ((ArrayList<LinkedTreeMap>) mJsonParameters).get(0);
@@ -91,12 +107,21 @@ class Service
             mParameters = mJsonParameters;
     }
 
+    /**
+     * Should we parse the fully qualified service identifier?  I wouldn't change this code if I were you!! Definitely not this stuff!
+     * Pretty sure there's some touchy and complicated logic going on in here!
+     *
+     * @return If we should.
+     */
     /* If the Service object was deserialized from json, some of its fields might not be set, but the mFullyQualifiedServiceIdentifier field will be set.
        If this is the case, parse out the mFullyQualifiedServiceIdentifier field into its parts and set the rest of the fields. */
     private Boolean shouldParseServiceName() {
         return mFullyQualifiedServiceIdentifier != null && (mDomain == null || mNodeIdentifier == null || mServiceIdentifier == null);
     }
 
+    /**
+     * Parse the fully qualified service name from one long string into its parts (domain, node identifier, remainder of service identifier).
+     */
     private void parseFullyQualifiedServiceName() {
         String[] serviceParts = mFullyQualifiedServiceIdentifier.split("/", -1);
 
@@ -119,7 +144,7 @@ class Service
     /**
      * Gets fully qualified service name.
      *
-     * @return the fully qualified service name
+     * @return The fully qualified service name.
      */
     String getFullyQualifiedServiceIdentifier() {
         if (shouldParseServiceName())
@@ -129,23 +154,28 @@ class Service
     }
 
     /**
-     * Has the node identifier portion of the fully-qualified service name. This happens if the remote node is
-     * connected and has announced this service.
+     * Has the node identifier portion of the fully-qualified service name (device type and device uuid). This happens if the remote node is
+     * connected and has announced this service. E.g., "android/123" or "vehicle/321".
      *
-     * @return the boolean
+     * @return The boolean.
      */
     boolean hasNodeIdentifier() {
         return mNodeIdentifier != null;
     }
 
+    /**
+     * Gets the node identifier. E.g., "android/123" or "vehicle/321".
+     *
+     * @return The node identifier. E.g., "android/123" or "vehicle/321".
+     */
     String getNodeIdentifier() {
         return mNodeIdentifier;
     }
 
     /**
-     * Sets the node identifier portion of the fully-qualified service name
+     * Sets the node identifier portion of the fully-qualified service name.
      *
-     * @param nodeIdentifier the local or remote RVI node's identifier
+     * @param nodeIdentifier the local or remote RVI node's identifier. E.g., "android/123" or "vehicle/321".
      */
     void setNodeIdentifier(String nodeIdentifier) {
         mNodeIdentifier = nodeIdentifier;
@@ -155,7 +185,7 @@ class Service
     /**
      * Gets the domain.
      *
-     * @return the domain
+     * @return The domain.
      */
     String getDomain() {
         if (shouldParseServiceName())
@@ -164,27 +194,20 @@ class Service
         return mDomain;
     }
 
-    public void setDomain(String domain) {
+    /**
+     * Sets the domain.
+     *
+     * @param domain The domain.
+     */
+    void setDomain(String domain) {
         mDomain = domain;
         mFullyQualifiedServiceIdentifier = getFullyQualifiedServiceIdentifier();
     }
 
-//    /**
-//     * Gets bundle identifier.
-//     *
-//     * @return the bundle identifier
-//     */
-//    String getBundleIdentifier() {
-//        if (shouldParseServiceName())
-//            parseFullyQualifiedServiceName();
-//
-//        return mBundleIdentifier;
-//    }
-
     /**
      * Gets service identifier.
      *
-     * @return the service identifier
+     * @return The service identifier.
      */
     String  getServiceIdentifier() {
         if (shouldParseServiceName())
@@ -196,7 +219,7 @@ class Service
     /**
      * Gets parameters.
      *
-     * @return the parameters
+     * @return The parameters.
      */
     Object getParameters() {
         if (shouldParseParameters())
@@ -208,7 +231,7 @@ class Service
     /**
      * Sets parameters.
      *
-     * @param parameters the parameters
+     * @param parameters The parameters.
      */
     void setParameters(Object parameters) {
         if (parameters == null)
@@ -220,7 +243,7 @@ class Service
     /**
      * Gets the timeout. This value is the timeout, in milliseconds, from the epoch.
      *
-     * @return the timeout
+     * @return The timeout.
      */
     Long getTimeout() {
         return mTimeout;
@@ -229,12 +252,17 @@ class Service
     /**
      * Sets the timeout.
      *
-     * @param timeout the timeout in milliseconds from the epoch.
+     * @param timeout The timeout in milliseconds from the epoch.
      */
     void setTimeout(Long timeout) {
         mTimeout = timeout;
     }
 
+    /**
+     * Copies the service. Copy is somewhat deep. Probably should change this code either. Trace through to see what gets copied.
+     *
+     * @return The copy of the service.
+     */
     public Service copy() {
         Service copy = new Service(this.getDomain(), this.getNodeIdentifier(), this.getServiceIdentifier());
 

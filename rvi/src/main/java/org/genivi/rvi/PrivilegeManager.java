@@ -16,6 +16,9 @@ package org.genivi.rvi;
 
 import java.util.ArrayList;
 
+/**
+ * Singleton class that handles some privilege related stuff like tracking expiration and stuff.
+ */
 class PrivilegeManager {
     private final static String TAG = "RVI/PrivilegeManager___";
 
