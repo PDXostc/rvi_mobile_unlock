@@ -136,7 +136,6 @@ class Credential {
     private static boolean rightMatchesServiceIdentifier(String right, String serviceIdentifier) {
         /* If for whatever reason, the service identifier or topic filter (rights string) contains 2+ '/'s in a row,
            then this is considered an empty topic level, which is not allowed, so return 'false' */
-        //String regex = "(/)\1{1,}";
         if (right.contains("//") || serviceIdentifier.contains("//"))
             return false;
 
@@ -145,9 +144,6 @@ class Credential {
 
         if (rightParts.length == 0)
             return false;
-
-        //if (rightParts.length > (serviceParts.length + 1))
-        //    return false;
 
         for (int i = 0; i < rightParts.length; i++) {
             if (i == (rightParts.length - 1) && rightParts[i].equals("#"))
